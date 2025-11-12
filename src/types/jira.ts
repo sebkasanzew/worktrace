@@ -1,7 +1,7 @@
 export interface JiraConfig {
   url: string | null;
-  email: string | null;
-  token: string | null;
+  username: string | null;
+  password: string | null;
 }
 
 export interface JiraIssue {

@@ -2,8 +2,8 @@
 name = "worktrace"
 version = "0.1.0"
 description = "A minimal desktop app that makes time and work tracking with issue tracking tools, like JIRA, easy."
-authors = ["you"]
-edition = "2021"
+authors = ["Sebastian Kasanzew"]
+edition = "2024"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -15,12 +15,12 @@ name = "worktrace_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2.5.1", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
-tauri-plugin-opener = "2"
-tauri-plugin-store = "2"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+tauri = { version = "2.9.2", features = [] }
+tauri-plugin-opener = "2.5.2"
+tauri-plugin-store = "2.4.1"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
 

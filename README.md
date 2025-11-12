@@ -64,13 +64,44 @@ This will:
 
 ## Building
 
-Build the app for production:
+### Local Builds
+
+Build the app for your current platform:
 
 ```bash
-pnpm tauri build
+# Build for current platform with default bundles
+pnpm build:all
+
+# Platform-specific builds
+pnpm build:macos    # macOS .app bundle
+pnpm build:windows  # Windows .msi installer
+pnpm build:linux    # Linux .deb and .AppImage
 ```
 
-This will create platform-specific installers in `src-tauri/target/release/bundle/`.
+**Note**: To build for a specific platform, you must run the build on that platform. Cross-compilation is not supported by default.
+
+### Cross-Platform Builds with GitHub Actions
+
+This project includes a GitHub Actions workflow (`.github/workflows/build.yml`) that automatically builds for macOS and Windows on:
+- Push to `main` branch
+- Pull requests to `main`
+- Manual workflow dispatch
+
+The workflow:
+- Builds optimized bundles using GitHub's hosted runners (macOS .dmg and Windows .msi)
+- Uploads artifacts for each platform
+- Can be triggered manually from the Actions tab
+
+To use the workflow for releases, you can optionally configure code signing by adding these secrets to your GitHub repository:
+- `TAURI_SIGNING_PRIVATE_KEY`
+- `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`
+
+### Build Outputs
+
+After building, installers will be located in `src-tauri/target/release/bundle/`:
+- **macOS**: `.dmg` installer (most common distribution format)
+- **Windows**: `.msi` installer (most common installer format)
+- **Linux**: Build locally using `pnpm build:linux` for `.deb` and `.AppImage`
 
 ## Usage
 
@@ -130,7 +161,13 @@ worktrace/
 - `pnpm dev` - Start Vite development server
 - `pnpm build` - Build frontend for production
 - `pnpm tauri dev` - Run the app in development mode
-- `pnpm tauri build` - Build the app for production
+- `pnpm build:all` - Build the app for current platform
+- `pnpm build:macos` - Build macOS .app bundle
+- `pnpm build:windows` - Build Windows .msi installer
+- `pnpm build:linux` - Build Linux .deb and .AppImage
+- `pnpm lint` - Check code with Biome
+- `pnpm lint:fix` - Fix linting issues automatically
+- `pnpm format` - Format code with Biome
 
 ## Configuration
 
