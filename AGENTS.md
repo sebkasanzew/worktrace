@@ -41,14 +41,16 @@ Worktrace is a cross-platform desktop application for JIRA time tracking, built 
   - `error()` for error messages (import as `logError` to avoid conflicts)
   - `debug()` for debug messages
   - `warn()` for warnings
+- **Redact sensitive data**: Use `redactSensitive()` from `@/lib/utils` for URLs, tokens, emails
 - Logs are automatically written to both stdout and log files
 - Example:
   ```typescript
   import { info, error as logError, debug } from "@tauri-apps/plugin-log";
+  import { redactSensitive } from "@/lib/utils";
   
   info("User logged in successfully");
-  logError(`Failed to fetch data: ${error}`);
-  debug(`API response: ${JSON.stringify(data)}`);
+  logError(`Failed to fetch from ${redactSensitive(url)}`);
+  debug(`Response: ${redactSensitive(JSON.stringify(data))}`);
   ```
 
 ### TypeScript
@@ -80,7 +82,28 @@ Worktrace is a cross-platform desktop application for JIRA time tracking, built 
 
 - Use Tanstack React Query for server state
 - Use React hooks (useState, useEffect) for local state
+- Use custom hooks from `src/services/jira.hooks.ts`:
+  - `useCurrentUser()` - Fetches JIRA user session
+  - `useMyIssues()` - Fetches assigned issues
+  - `useIssuesByJql(jql)` - Custom JQL search
+- Query keys centralized in `src/services/jira.keys.ts`
 - Keep queries in service files for reusability
+
+### Type Safety & Validation
+
+- **Specta**: Auto-generates TypeScript types from Rust (Tauri commands)
+  - Run on `tauri dev` in debug builds
+  - Output: `src/types/bindings.ts`
+- **ts-to-zod**: Auto-generates Zod schemas from TS types
+  - Runs after Specta export via `src-tauri/src/bindings.rs`
+  - Config: `ts-to-zod.config.mjs`
+  - Output: `src/types/bindings.zod.ts`
+- **Runtime validation**: Use Zod schemas in `jiraClient.ts` to validate API responses
+- Example:
+  ```typescript
+  import { jiraSearchResponseSchema } from "@/types/bindings.zod";
+  const validated = jiraSearchResponseSchema.parse(response);
+  ```
 
 ## Project Structure
 
@@ -91,11 +114,16 @@ src/
 │   ├── Login.tsx        # JIRA credentials configuration
 │   └── TaskList.tsx     # Issue list view
 ├── services/
-│   └── jira.ts          # JIRA API integration
+│   ├── jira.ts          # JIRA config service + legacy API wrapper
+│   ├── jiraClient.ts    # Typed JIRA client with validation & Zod
+│   ├── jira.hooks.ts    # React Query hooks for JIRA data
+│   └── jira.keys.ts     # Centralized query keys
 ├── types/
-│   └── jira.ts          # TypeScript type definitions
+│   ├── bindings.ts      # Auto-generated from Rust (Specta)
+│   ├── bindings.zod.ts  # Auto-generated Zod schemas (ts-to-zod)
+│   └── jira.ts          # Manual TypeScript type definitions
 ├── lib/
-│   └── utils.ts         # Utility functions (cn, etc.)
+│   └── utils.ts         # Utility functions (cn, redactSensitive, etc.)
 ├── App.tsx              # Main application component
 ├── main.tsx             # Application entry point
 └── index.css            # Global styles & Tailwind imports
@@ -103,9 +131,21 @@ src/
 src-tauri/
 ├── src/
 │   ├── lib.rs           # Tauri commands and plugin initialization
-│   └── main.rs          # Entry point
+│   ├── bindings.rs      # Specta bindings export + Zod generation
+│   ├── main.rs          # Entry point
+│   └── jira/
+│       ├── mod.rs       # JIRA module
+│       ├── commands.rs  # JIRA Tauri commands
+│       ├── config.rs    # Config storage commands
+│       └── types.rs     # Rust JIRA types
 ├── Cargo.toml           # Rust dependencies
 └── tauri.conf.json      # Tauri configuration
+
+e2e/
+├── utils/
+│   └── tauri.ts         # Mock helpers for __TAURI_INTERNALS__.invoke
+├── login.spec.ts        # Login flow tests
+└── task-list.spec.ts    # Task list UI tests
 ```
 
 ## Development Workflow
@@ -114,17 +154,22 @@ src-tauri/
 
 1. **Install dependencies**: `pnpm install`
 2. **Run development server**: `pnpm tauri dev`
-3. **Build frontend only**: `pnpm build`
-4. **Build production app**: `pnpm tauri build`
-5. **Lint code**: `pnpm lint`
-6. **Format code**: `pnpm format`
+3. **Type check**: `pnpm typecheck`
+4. **Build frontend only**: `pnpm build`
+5. **Build production app**: `pnpm tauri build`
+6. **Lint code**: `pnpm lint`
+7. **Format code**: `pnpm format`
+8. **Run e2e tests**: `pnpm test:e2e`
+9. **Generate Zod schemas**: `pnpm gen:zod:bindings` (auto-runs on `tauri dev`)
 
 ### Before Committing
 
-1. Run `pnpm lint:fix` to fix linting issues
-2. Run `pnpm format` to format code
-3. Ensure `pnpm build` completes without errors
-4. Test changes manually if modifying UI
+1. Run `pnpm typecheck` to check types
+2. Run `pnpm lint:fix` to fix linting issues
+3. Run `pnpm format` to format code
+4. Ensure `pnpm build` completes without errors
+5. Run `pnpm test:e2e` if modifying UI or JIRA logic
+6. Test changes manually if modifying UI
 
 ## JIRA Integration
 
@@ -136,10 +181,13 @@ src-tauri/
 
 ### API Calls
 
-- All JIRA API calls go through `src/services/jira.ts`
+- All JIRA API calls go through `src/services/jiraClient.ts`
+- Use `createJiraClient(config)` for typed, validated client
+- Responses validated with Zod schemas from `bindings.zod.ts`
 - Use JIRA REST API v3
-- Handle errors gracefully with user-friendly messages
-- Use React Query for caching and automatic refetching
+- Handle errors via `mapJiraError()` for user-friendly messages
+- URLs normalized via `normalizeJiraUrl()` (adds https, removes trailing slash)
+- Use React Query hooks: `useCurrentUser()`, `useMyIssues()`, `useIssuesByJql()`
 
 ### Logging
 
@@ -172,11 +220,13 @@ src-tauri/
 
 ### Modifying JIRA Integration
 
-1. Update types in `src/types/jira.ts` if needed
-2. Modify API calls in `src/services/jira.ts`
-3. Update React Query hooks in components
-4. Handle errors appropriately
-5. Test with real JIRA instance if possible
+1. Update Rust types in `src-tauri/src/jira/types.rs` if needed
+2. Specta auto-generates `src/types/bindings.ts` on `tauri dev`
+3. ts-to-zod auto-generates `src/types/bindings.zod.ts` for validation
+4. Modify `jiraClient.ts` to use new schemas for validation
+5. Add/update React Query hooks in `jira.hooks.ts` if needed
+6. Handle errors appropriately via `mapJiraError()`
+7. Test with real JIRA instance if possible
 
 ## Security Considerations
 
@@ -235,6 +285,11 @@ src-tauri/
 - Mock `__TAURI_INTERNALS__.invoke()` for IPC calls
 - Test UI + mocked backend responses
 - Run: `pnpm test:e2e`
+- Mock helpers in `e2e/utils/tauri.ts`:
+  - `setupTauriMocks(responses)` - General mock setup
+  - `mockJiraConfig(page, config)` - Mock stored config
+  - `mockJiraError(page, message)` - Mock API errors
+  - `mockJiraData` - Reusable test data
 - See `e2e/README.md` for details
 
 ### Unit Tests (Rust)
