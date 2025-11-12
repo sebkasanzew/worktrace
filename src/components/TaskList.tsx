@@ -24,7 +24,7 @@ export function TaskList({ onLogout }: TaskListProps) {
     queryKey: ["jiraIssues", config],
     queryFn: () =>
       config ? jiraApi.getCurrentUserIssues(config) : Promise.resolve({ issues: [], total: 0 }),
-    enabled: !!config?.url && !!config?.email && !!config?.token,
+    enabled: !!config?.url && !!config?.username && !!config?.password,
     refetchInterval: 60000, // Refetch every minute
   });
 

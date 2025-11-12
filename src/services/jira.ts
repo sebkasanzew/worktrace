@@ -2,11 +2,11 @@ import { invoke } from "@tauri-apps/api/core";
 import type { JiraConfig, JiraSearchResponse } from "@/types/jira";
 
 export const configService = {
-  async save(config: { url: string; email: string; token: string }): Promise<void> {
+  async save(config: { url: string; username: string; password: string }): Promise<void> {
     await invoke("save_jira_config", {
       url: config.url,
-      email: config.email,
-      token: config.token,
+      username: config.username,
+      password: config.password,
     });
   },
 
@@ -22,11 +22,11 @@ export const configService = {
 
 export const jiraApi = {
   async searchIssues(config: JiraConfig, jql: string): Promise<JiraSearchResponse> {
-    if (!config.url || !config.email || !config.token) {
+    if (!config.url || !config.username || !config.password) {
       throw new Error("JIRA configuration is incomplete");
     }
 
-    const auth = btoa(`${config.email}:${config.token}`);
+    const auth = btoa(`${config.username}:${config.password}`);
     const url = `${config.url}/rest/api/2/search?jql=${encodeURIComponent(jql)}`;
 
     const response = await fetch(url, {

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:base", ":dependencyDashboard", "schedule:automergeEarlyMondays"],
+  "regexManagers": [
+    {
+      "fileMatch": ["(^|/)rust-toolchain\\.toml$"],
+      "matchStrings": [
+        "channel\\s*=\\s*\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
+      ],
+      "depNameTemplate": "rust",
+      "datasourceTemplate": "rust",
+      "versioningTemplate": "semver"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "matchManagers": ["cargo"],
+      "groupName": "rust dependencies",
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "matchDatasources": ["npm"],
+      "groupName": "pnpm dependencies",
+      "minimumReleaseAge": "3 days"
+    }
+  ]
+}

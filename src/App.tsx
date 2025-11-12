@@ -13,7 +13,7 @@ function App() {
   const checkLoginStatus = useCallback(async () => {
     try {
       const config = await configService.get();
-      setIsLoggedIn(!!(config.url && config.email && config.token));
+      setIsLoggedIn(!!(config.url && config.username && config.password));
     } catch (error) {
       console.error("Failed to check login status:", error);
       setIsLoggedIn(false);

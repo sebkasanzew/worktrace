@@ -1,6 +1,33 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  /* Border radius */
+  --radius: 0.5rem;
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+
+  /* Light mode colors */
+  --color-background: oklch(100% 0 0);
+  --color-foreground: oklch(25.59% 0.013 285.885);
+  --color-card: oklch(100% 0 0);
+  --color-card-foreground: oklch(25.59% 0.013 285.885);
+  --color-popover: oklch(100% 0 0);
+  --color-popover-foreground: oklch(25.59% 0.013 285.885);
+  --color-primary: oklch(28.66% 0.014 285.82);
+  --color-primary-foreground: oklch(98% 0 0);
+  --color-secondary: oklch(96.48% 0.003 286.375);
+  --color-secondary-foreground: oklch(28.66% 0.014 285.82);
+  --color-muted: oklch(96.48% 0.003 286.375);
+  --color-muted-foreground: oklch(58.8% 0.023 285.938);
+  --color-accent: oklch(96.48% 0.003 286.375);
+  --color-accent-foreground: oklch(28.66% 0.014 285.82);
+  --color-destructive: oklch(62.8% 0.257 29.234);
+  --color-destructive-foreground: oklch(98% 0 0);
+  --color-border: oklch(91.42% 0.004 286.32);
+  --color-input: oklch(91.42% 0.004 286.32);
+  --color-ring: oklch(28.66% 0.014 285.82);
+}
 
 @layer base {
   :root {
