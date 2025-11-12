@@ -25,7 +25,9 @@ export function TaskList({ onLogout }: TaskListProps) {
   } = useQuery({
     queryKey: ["jiraIssues", config],
     queryFn: () =>
-      config ? jiraApi.getCurrentUserIssues(config) : Promise.resolve({ issues: [], total: 0 }),
+      config
+        ? jiraApi.getCurrentUserIssues(config)
+        : Promise.resolve({ issues: [], total: 0, isLast: true }),
     enabled: !!config?.url && !!config?.username && !!config?.password,
     refetchInterval: 60000, // Refetch every minute
     retry: false, // Don't retry failed requests automatically

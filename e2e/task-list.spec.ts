@@ -1,10 +1,15 @@
 import { test, expect } from "@playwright/test";
+import type {
+    JiraSearchResponse,
+    JiraUserSession,
+    JiraConfig,
+} from "../src/types/bindings";
 
 test.describe("Task List UI", () => {
     test.beforeEach(async ({ page }) => {
         // Mock Tauri API with successful login and issues
         await page.addInitScript(() => {
-            (window as any).__TAURI_INTERNALS__ = {
+            window.__TAURI_INTERNALS__ = {
                 metadata: {
                     currentWindow: { label: "main" },
                     currentWebview: { windowLabel: "main", label: "main" },
@@ -16,14 +21,12 @@ test.describe("Task List UI", () => {
                             url: "https://test.atlassian.net",
                             username: "test@example.com",
                             password: "test-token",
-                        };
+                        } as const satisfies JiraConfig;
                     }
                     if (cmd === "jira_get_current_user") {
                         return {
-                            accountId: "test-account-123",
-                            emailAddress: "test@example.com",
-                            displayName: "Test User",
-                        };
+                            name: "Test User",
+                        } as const satisfies JiraUserSession;
                     }
                     if (cmd === "jira_api_request") {
                         // Mock JIRA search response
@@ -35,12 +38,12 @@ test.describe("Task List UI", () => {
                                     fields: {
                                         summary: "Implement user authentication",
                                         status: { name: "In Progress" },
-                                        issuetype: { name: "Task" },
-                                        priority: { name: "High" },
                                         assignee: {
                                             displayName: "Test User",
+                                            emailAddress: "test@example.com",
                                         },
-                                        updated: "2025-11-10T14:30:00.000Z",
+                                        created: Date.parse("2025-11-09T10:00:00.000Z"),
+                                        updated: Date.parse("2025-11-10T14:30:00.000Z"),
                                     },
                                 },
                                 {
@@ -49,12 +52,12 @@ test.describe("Task List UI", () => {
                                     fields: {
                                         summary: "Fix login bug",
                                         status: { name: "To Do" },
-                                        issuetype: { name: "Bug" },
-                                        priority: { name: "Critical" },
                                         assignee: {
                                             displayName: "Test User",
+                                            emailAddress: "test@example.com",
                                         },
-                                        updated: "2025-11-12T09:15:00.000Z",
+                                        created: Date.parse("2025-11-11T08:00:00.000Z"),
+                                        updated: Date.parse("2025-11-12T09:15:00.000Z"),
                                     },
                                 },
                                 {
@@ -63,17 +66,18 @@ test.describe("Task List UI", () => {
                                     fields: {
                                         summary: "Update documentation",
                                         status: { name: "Done" },
-                                        issuetype: { name: "Task" },
-                                        priority: { name: "Low" },
                                         assignee: {
                                             displayName: "Test User",
+                                            emailAddress: "test@example.com",
                                         },
-                                        updated: "2025-11-08T16:45:00.000Z",
+                                        created: Date.parse("2025-11-07T12:00:00.000Z"),
+                                        updated: Date.parse("2025-11-08T16:45:00.000Z"),
                                     },
                                 },
                             ],
                             total: 3,
-                        };
+                            isLast: true,
+                        } as const satisfies JiraSearchResponse;
                     }
                     if (cmd === "save_jira_config") {
                         return Promise.resolve();
@@ -180,7 +184,7 @@ test.describe("Task List UI", () => {
     test("should show loading state initially", async ({ page }) => {
         // Create a new page with delayed response
         await page.addInitScript(() => {
-            (window as any).__TAURI_INTERNALS__ = {
+            window.__TAURI_INTERNALS__ = {
                 metadata: {
                     currentWindow: { label: "main" },
                     currentWebview: { windowLabel: "main", label: "main" },
@@ -191,7 +195,7 @@ test.describe("Task List UI", () => {
                             url: "https://test.atlassian.net",
                             username: "test@example.com",
                             password: "test-token",
-                        };
+                        } as const satisfies JiraConfig;
                     }
                     if (cmd === "jira_api_request") {
                         // Delay response to show loading state
@@ -210,7 +214,7 @@ test.describe("Task List UI", () => {
     test("should show empty state when no issues", async ({ page }) => {
         // Mock with empty issues array
         await page.addInitScript(() => {
-            (window as any).__TAURI_INTERNALS__ = {
+            window.__TAURI_INTERNALS__ = {
                 metadata: {
                     currentWindow: { label: "main" },
                     currentWebview: { windowLabel: "main", label: "main" },
@@ -221,7 +225,7 @@ test.describe("Task List UI", () => {
                             url: "https://test.atlassian.net",
                             username: "test@example.com",
                             password: "test-token",
-                        };
+                        } as const satisfies JiraConfig;
                     }
                     if (cmd === "jira_api_request") {
                         return { issues: [], total: 0 };
@@ -246,7 +250,7 @@ test.describe("Task List UI", () => {
     test("should display error state when API fails", async ({ page }) => {
         // Mock with API error
         await page.addInitScript(() => {
-            (window as any).__TAURI_INTERNALS__ = {
+            window.__TAURI_INTERNALS__ = {
                 metadata: {
                     currentWindow: { label: "main" },
                     currentWebview: { windowLabel: "main", label: "main" },
@@ -257,7 +261,7 @@ test.describe("Task List UI", () => {
                             url: "https://test.atlassian.net",
                             username: "test@example.com",
                             password: "test-token",
-                        };
+                        } as const satisfies JiraConfig;
                     }
                     if (cmd === "jira_api_request") {
                         throw new Error("Failed to fetch issues: Network error");

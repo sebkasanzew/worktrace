@@ -1,12 +1,17 @@
 import { test, expect } from "@playwright/test";
 import { mockIPC, clearMocks } from "@tauri-apps/api/mocks";
+import type {
+    JiraSearchResponse,
+    JiraUserSession,
+    JiraConfig,
+} from "../src/types/bindings";
 
 test.describe("JIRA Integration with Mocked Tauri APIs", () => {
     test.beforeEach(async ({ page }) => {
         // Inject Tauri API mocks before navigating
         await page.addInitScript(() => {
             // Mock window.__TAURI_INTERNALS__
-            (window as any).__TAURI_INTERNALS__ = {
+            window.__TAURI_INTERNALS__ = {
                 metadata: {
                     currentWindow: { label: "main" },
                     currentWebview: { windowLabel: "main", label: "main" },
@@ -22,10 +27,8 @@ test.describe("JIRA Integration with Mocked Tauri APIs", () => {
                     }
                     if (cmd === "jira_get_current_user") {
                         return {
-                            accountId: "test-account",
-                            emailAddress: "test@example.com",
-                            displayName: "Test User",
-                        };
+                            name: "Test User",
+                        } as const satisfies JiraUserSession;
                     }
                     if (cmd === "jira_api_request") {
                         return {
@@ -36,17 +39,18 @@ test.describe("JIRA Integration with Mocked Tauri APIs", () => {
                                     fields: {
                                         summary: "Test issue",
                                         status: { name: "In Progress" },
-                                        issuetype: { name: "Task" },
-                                        priority: { name: "Medium" },
                                         assignee: {
                                             displayName: "Test User",
+                                            emailAddress: "test@example.com",
                                         },
-                                        updated: new Date().toISOString(),
+                                        created: Date.now(),
+                                        updated: Date.now(),
                                     },
                                 },
                             ],
                             total: 1,
-                        };
+                            isLast: true,
+                        } as const satisfies JiraSearchResponse;
                     }
                     return Promise.reject(new Error(`Unknown command: ${cmd}`));
                 },
