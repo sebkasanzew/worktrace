@@ -15,12 +15,14 @@
     "tauri": "tauri",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "format": "biome format --write ."
+    "format": "biome format --write .",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",
     "@tanstack/react-query": "5.90.7",
-    "@tauri-apps/api": "2.9.0",
     "@tauri-apps/plugin-dialog": "2.4.2",
     "@tauri-apps/plugin-log": "2.7.1",
     "@tauri-apps/plugin-opener": "2.5.2",
@@ -38,7 +40,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.5",
+    "@playwright/test": "1.56.1",
     "@tailwindcss/vite": "4.1.17",
+    "@tauri-apps/api": "2.9.0",
     "@tauri-apps/cli": "2.9.4",
     "@types/node": "24.10.1",
     "@types/react": "19.2.3",
