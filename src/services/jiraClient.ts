@@ -1,4 +1,5 @@
 import { debug, info, error as logError } from "@tauri-apps/plugin-log";
+import { redactSensitive } from "@/lib/utils";
 import { commands, type JiraSearchResponse, type JiraUserSession } from "@/types/bindings";
 import { jiraSearchResponseSchema, jiraUserSessionSchema } from "@/types/bindings.zod";
 import type { JiraConfig } from "@/types/jira";
@@ -52,11 +53,13 @@ export function mapJiraError(error: unknown, config: JiraConfig): Error {
     return new Error("Access forbidden. Please check your permissions in JIRA.");
   }
   if (message.includes("404")) {
-    return new Error(`JIRA instance not found. Please verify the URL: ${config.url}`);
+    return new Error(
+      `JIRA instance not found. Please verify the URL: ${redactSensitive(config.url)}`
+    );
   }
   if (message.toLowerCase().includes("connection") || message.includes("network")) {
     return new Error(
-      `Cannot connect to ${config.url}. Please check the URL and your internet connection.`
+      `Cannot connect to ${redactSensitive(config.url)}. Please check the URL and your internet connection.`
     );
   }
 
@@ -70,6 +73,8 @@ export function createJiraClient(config: JiraConfig) {
   assertJiraConfig(config);
   const normalizedUrl = normalizeJiraUrl(config.url);
   const { username, password } = config;
+
+  debug(`[JIRA Client] Using URL: ${redactSensitive(normalizedUrl)}`);
 
   return {
     /**
