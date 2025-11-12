@@ -1,5 +1,5 @@
 import { error as logError } from "@tauri-apps/plugin-log";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { updaterService } from "@/services/updater";
@@ -14,10 +14,38 @@ export function UpdateChecker({ onCheckComplete }: UpdateCheckerProps) {
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const ranOnceRef = useRef(false);
 
   useEffect(() => {
     // Check for updates when component mounts
     const checkForUpdates = async () => {
+      // Test hooks: allow forcing outcomes via URL flags in e2e
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("mockUpdate") === "1") {
+        setUpdateAvailable(true);
+        setUpdateVersion(params.get("mockVersion") || "0.2.0");
+        return;
+      }
+      if (params.get("mockUpdateError")) {
+        try {
+          const { message } = await import("@tauri-apps/plugin-dialog");
+          await message(
+            params.get("mockUpdateError") === "fetch"
+              ? "Update check is not available yet. This feature will work once the first release is published."
+              : `Failed to check for updates: ${params.get("mockUpdateError")}`,
+            {
+              title:
+                params.get("mockUpdateError") === "fetch"
+                  ? "Update Check Unavailable"
+                  : "Update Check Failed",
+              kind: params.get("mockUpdateError") === "fetch" ? "info" : "error",
+            }
+          );
+        } finally {
+          onCheckComplete?.();
+        }
+        return;
+      }
       try {
         const updateInfo = await updaterService.checkForUpdates();
 
@@ -66,7 +94,10 @@ export function UpdateChecker({ onCheckComplete }: UpdateCheckerProps) {
       }
     };
 
-    checkForUpdates();
+    // Avoid double-run in React Strict Mode (dev) by guarding with a ref
+    if (ranOnceRef.current) return;
+    ranOnceRef.current = true;
+    void checkForUpdates();
   }, [onCheckComplete]); // Include onCheckComplete in dependencies
 
   const installUpdate = async () => {
