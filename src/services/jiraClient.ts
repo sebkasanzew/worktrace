@@ -1,0 +1,134 @@
+import { debug, info, error as logError } from "@tauri-apps/plugin-log";
+import { commands, type JiraSearchResponse, type JiraUserSession } from "@/types/bindings";
+import { jiraSearchResponseSchema, jiraUserSessionSchema } from "@/types/bindings.zod";
+import type { JiraConfig } from "@/types/jira";
+
+/**
+ * Validates that JIRA config has all required fields
+ * @throws Error if config is incomplete
+ */
+export function assertJiraConfig(
+  config: JiraConfig
+): asserts config is { url: string; username: string; password: string } {
+  if (!config.url || !config.username || !config.password) {
+    throw new Error("JIRA configuration is incomplete");
+  }
+}
+
+/**
+ * Normalizes JIRA URL by ensuring protocol and removing trailing slash
+ */
+export function normalizeJiraUrl(url: string): string {
+  let normalized = url.trim();
+
+  // Add https:// if no protocol specified
+  if (!normalized.match(/^https?:\/\//i)) {
+    normalized = `https://${normalized}`;
+  }
+
+  // Remove trailing slash
+  normalized = normalized.replace(/\/$/, "");
+
+  return normalized;
+}
+
+/**
+ * Maps JIRA API errors to user-friendly messages
+ */
+export function mapJiraError(error: unknown, config: JiraConfig): Error {
+  if (!(error instanceof Error)) {
+    return new Error("Unknown error occurred while communicating with JIRA");
+  }
+
+  const message = error.message;
+  logError(`[JIRA Client] Error: ${message}`);
+
+  if (message.includes("401")) {
+    return new Error(
+      "Authentication failed. Please check your JIRA credentials (email and API token)."
+    );
+  }
+  if (message.includes("403")) {
+    return new Error("Access forbidden. Please check your permissions in JIRA.");
+  }
+  if (message.includes("404")) {
+    return new Error(`JIRA instance not found. Please verify the URL: ${config.url}`);
+  }
+  if (message.toLowerCase().includes("connection") || message.includes("network")) {
+    return new Error(
+      `Cannot connect to ${config.url}. Please check the URL and your internet connection.`
+    );
+  }
+
+  return new Error(`JIRA API error: ${message}`);
+}
+
+/**
+ * Creates a typed JIRA API client with validation
+ */
+export function createJiraClient(config: JiraConfig) {
+  assertJiraConfig(config);
+  const normalizedUrl = normalizeJiraUrl(config.url);
+  const { username, password } = config;
+
+  return {
+    /**
+     * Fetches current user session info
+     */
+    async getCurrentUser(): Promise<JiraUserSession> {
+      info("[JIRA Client] Fetching current user info");
+
+      try {
+        const result = await commands.jiraGetCurrentUser(normalizedUrl, username, password);
+
+        if (result.status === "error") {
+          throw new Error(result.error);
+        }
+
+        // Validate response with Zod
+        const validated = jiraUserSessionSchema.parse(result.data);
+        debug(`[JIRA Client] Current user: ${validated.name}`);
+
+        return validated;
+      } catch (error) {
+        logError(`[JIRA Client] Failed to get current user: ${error}`);
+        throw mapJiraError(error, config);
+      }
+    },
+
+    /**
+     * Searches for issues using JQL
+     */
+    async searchIssues(jql: string): Promise<JiraSearchResponse> {
+      info("[JIRA Client] Searching issues");
+      debug(`[JIRA Client] JQL: "${jql}"`);
+
+      try {
+        const result = await commands.jiraApiRequest(normalizedUrl, username, password, jql);
+
+        if (result.status === "error") {
+          throw new Error(result.error);
+        }
+
+        // Validate response with Zod
+        const validated = jiraSearchResponseSchema.parse(result.data);
+        info(`[JIRA Client] Found ${validated.issues.length} issues`);
+
+        return validated;
+      } catch (error) {
+        logError(`[JIRA Client] Failed to search issues: ${error}`);
+        throw mapJiraError(error, config);
+      }
+    },
+
+    /**
+     * Gets current user's unresolved issues
+     */
+    async getCurrentUserIssues(): Promise<JiraSearchResponse> {
+      const jql = "assignee = currentUser() AND resolution = Unresolved ORDER BY updated DESC";
+      return this.searchIssues(jql);
+    },
+  };
+}
+
+export type JiraClient = ReturnType<typeof createJiraClient>;

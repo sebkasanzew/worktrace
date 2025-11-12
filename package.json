@@ -7,6 +7,7 @@
     "dev": "tauri dev",
     "dev:vite": "vite",
     "build": "tsc && vite build",
+    "typecheck": "tsc",
     "preview": "vite preview",
     "build:all": "tauri build",
     "build:macos": "tauri build --bundles app",
