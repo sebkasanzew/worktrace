@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { JiraConfig, JiraSearchResponse } from "@/types/jira";
+import type { JiraConfig, JiraSearchResponse } from "@/types/jira";
 
 export const configService = {
   async save(config: { url: string; email: string; token: string }): Promise<void> {

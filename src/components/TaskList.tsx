@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { configService, jiraApi } from "@/services/jira";
-import { JiraConfig } from "@/types/jira";
 import { LogOut, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { configService, jiraApi } from "@/services/jira";
+import type { JiraConfig } from "@/types/jira";
 
 interface TaskListProps {
   onLogout: () => void;
@@ -22,7 +22,8 @@ export function TaskList({ onLogout }: TaskListProps) {
     refetch,
   } = useQuery({
     queryKey: ["jiraIssues", config],
-    queryFn: () => config ? jiraApi.getCurrentUserIssues(config) : Promise.resolve({ issues: [], total: 0 }),
+    queryFn: () =>
+      config ? jiraApi.getCurrentUserIssues(config) : Promise.resolve({ issues: [], total: 0 }),
     enabled: !!config?.url && !!config?.email && !!config?.token,
     refetchInterval: 60000, // Refetch every minute
   });
@@ -38,12 +39,7 @@ export function TaskList({ onLogout }: TaskListProps) {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">My JIRA Issues</h1>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => refetch()}
-              disabled={isLoading}
-            >
+            <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading}>
               <RefreshCw className="h-4 w-4" />
               Refresh
             </Button>
@@ -82,9 +78,7 @@ export function TaskList({ onLogout }: TaskListProps) {
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-lg">{issue.key}</CardTitle>
-                        <CardDescription className="mt-1">
-                          {issue.fields.summary}
-                        </CardDescription>
+                        <CardDescription className="mt-1">{issue.fields.summary}</CardDescription>
                       </div>
                       <div className="text-sm font-medium px-3 py-1 bg-secondary rounded-md">
                         {issue.fields.status.name}
@@ -98,9 +92,7 @@ export function TaskList({ onLogout }: TaskListProps) {
                           <span>Assigned to: {issue.fields.assignee.displayName}</span>
                         )}
                       </div>
-                      <div>
-                        Updated: {new Date(issue.fields.updated).toLocaleDateString()}
-                      </div>
+                      <div>Updated: {new Date(issue.fields.updated).toLocaleDateString()}</div>
                     </div>
                   </CardContent>
                 </Card>

@@ -1,7 +1,7 @@
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { configService } from "@/services/jira";
 
 interface LoginProps {
@@ -35,9 +35,7 @@ export function Login({ onLoginSuccess }: LoginProps) {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Worktrace - JIRA Configuration</CardTitle>
-          <CardDescription>
-            Enter your JIRA credentials to get started
-          </CardDescription>
+          <CardDescription>Enter your JIRA credentials to get started</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -91,9 +89,7 @@ export function Login({ onLoginSuccess }: LoginProps) {
                 </a>
               </p>
             </div>
-            {error && (
-              <div className="text-sm text-destructive">{error}</div>
-            )}
+            {error && <div className="text-sm text-destructive">{error}</div>}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Saving..." : "Save Configuration"}
             </Button>

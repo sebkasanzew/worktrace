@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useCallback, useEffect, useState } from "react";
 import { Login } from "@/components/Login";
 import { TaskList } from "@/components/TaskList";
 import { configService } from "@/services/jira";
@@ -10,11 +10,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    checkLoginStatus();
-  }, []);
-
-  const checkLoginStatus = async () => {
+  const checkLoginStatus = useCallback(async () => {
     try {
       const config = await configService.get();
       setIsLoggedIn(!!(config.url && config.email && config.token));
@@ -24,7 +20,11 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    checkLoginStatus();
+  }, [checkLoginStatus]);
 
   if (isLoading) {
     return (
@@ -46,4 +46,3 @@ function App() {
 }
 
 export default App;
-
