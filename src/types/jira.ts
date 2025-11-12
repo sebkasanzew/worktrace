@@ -16,12 +16,12 @@ export interface JiraIssue {
       displayName: string;
       emailAddress: string;
     };
-    created: string;
-    updated: string;
+    created: number; // Unix timestamp in milliseconds
+    updated: number; // Unix timestamp in milliseconds
   };
 }
 
 export interface JiraSearchResponse {
   issues: JiraIssue[];
-  total: number;
+  isLast?: boolean;
 }

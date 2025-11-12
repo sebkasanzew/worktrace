@@ -7,12 +7,21 @@ This document provides guidance for AI agents working on the Worktrace codebase.
 Worktrace is a cross-platform desktop application for JIRA time tracking, built with:
 
 - **Frontend**: React 19 + TypeScript 5.8 + Vite 7
-- **Styling**: Tailwind CSS v3 + shadcn/ui
+- **Styling**: Tailwind CSS v4 + shadcn/ui
 - **State Management**: Tanstack React Query v5
 - **Backend**: Tauri v2.9.4 (Rust)
 - **Storage**: tauri-plugin-store v2
+- **Logging**: tauri-plugin-log v2 (with module-specific filtering)
 
 ## Code Standards
+
+### Dependency Management
+
+- **Always use fixed versions** for all packages in `package.json` and `Cargo.toml`
+- Never use version ranges like `^`, `~`, `>=`, or `*`
+- Example: Use `"react": "19.2.0"` instead of `"react": "^19.2.0"`
+- Example: Use `tauri = "2.9.2"` instead of `tauri = "^2.9"`
+- This ensures reproducible builds and prevents unexpected breaking changes
 
 ### Linting and Formatting
 
@@ -21,6 +30,24 @@ Worktrace is a cross-platform desktop application for JIRA time tracking, built 
 - Run `pnpm lint:fix` to auto-fix linting issues
 - Run `pnpm format` to format code
 - Configuration is in `biome.json`
+
+### Logging
+
+- **Never use `console.log()`, `console.error()`, etc.** in frontend code
+- Always use `@tauri-apps/plugin-log` for logging:
+  - `info()` for informational messages
+  - `error()` for error messages (import as `logError` to avoid conflicts)
+  - `debug()` for debug messages
+  - `warn()` for warnings
+- Logs are automatically written to both stdout and log files
+- Example:
+  ```typescript
+  import { info, error as logError, debug } from "@tauri-apps/plugin-log";
+  
+  info("User logged in successfully");
+  logError(`Failed to fetch data: ${error}`);
+  debug(`API response: ${JSON.stringify(data)}`);
+  ```
 
 ### TypeScript
 
@@ -108,9 +135,15 @@ src-tauri/
 ### API Calls
 
 - All JIRA API calls go through `src/services/jira.ts`
-- Use JIRA REST API v2
+- Use JIRA REST API v3
 - Handle errors gracefully with user-friendly messages
 - Use React Query for caching and automatic refetching
+
+### Logging
+
+- JIRA-specific logs use the `jira` target: `log::info!(target: "jira", "...")`
+- Debug level enabled for JIRA logs by default
+- See `LOGGING.md` for full logging documentation
 
 ### Supported Features
 
@@ -188,6 +221,7 @@ src-tauri/
 - Check shadcn/ui docs: https://ui.shadcn.com/
 - Check React Query docs: https://tanstack.com/query/
 - Check Biome docs: https://biomejs.dev/
+- Check tauri-plugin-log docs: https://github.com/tauri-apps/plugins-workspace/tree/main/plugins/log
 
 ## Best Practices
 
@@ -197,6 +231,7 @@ src-tauri/
 4. **Write clean code**: Use meaningful variable names
 5. **Handle errors**: Always provide user feedback for failures
 6. **Type everything**: Avoid `any`, use proper TypeScript types
+7. **Use proper logging**: Use `log::*!()` macros instead of `println!()` for structured logging
 7. **Document complex logic**: Add comments for non-obvious code
 8. **Optimize imports**: Let Biome organize imports automatically
 

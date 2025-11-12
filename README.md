@@ -8,6 +8,7 @@ A minimal desktop app that makes time and work tracking with issue tracking tool
 - **Login Screen**: Easy configuration of JIRA URL, email, and API token
 - **Task List View**: View all your unresolved JIRA issues in a clean, modern interface
 - **Real-time Updates**: Automatically refreshes your issue list
+- **Auto-Updates**: Automatic update checking and installation from GitHub Releases
 - **Modern UI**: Built with shadcn/ui components and Tailwind CSS
 
 ## Tech Stack
