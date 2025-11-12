@@ -18,7 +18,8 @@
     "format": "biome format --write .",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug"
+    "test:e2e:debug": "playwright test --debug",
+    "gen:zod:bindings": "ts-to-zod --config bindings && biome check --write src/types/bindings.zod.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",
@@ -50,6 +51,7 @@
     "@vitejs/plugin-react": "5.1.1",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
-    "vite": "7.2.2"
+    "vite": "7.2.2",
+    "ts-to-zod": "5.0.1"
   }
 }

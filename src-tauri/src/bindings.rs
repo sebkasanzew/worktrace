@@ -31,4 +31,19 @@ pub fn export_bindings() {
     if let Err(e) = status {
         log::warn!("Failed to run biome on generated bindings: {}", e);
     }
+
+    // Generate Zod schemas from the freshly formatted bindings
+    match std::process::Command::new("pnpm")
+        .args(["run", "gen:zod:bindings"])
+        .current_dir("..")
+        .status()
+    {
+        Ok(exit) if exit.success() => {}
+        Ok(exit) => {
+            log::warn!("ts-to-zod generation exited with non-zero status: {}", exit);
+        }
+        Err(e) => {
+            log::warn!("Failed to run ts-to-zod for bindings: {}", e);
+        }
+    }
 }
