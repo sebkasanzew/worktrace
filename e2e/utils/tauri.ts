@@ -56,6 +56,10 @@ export function setupTauriMocks(responses: Record<string, unknown> = {}) {
   return `
     window.__TAURI_INTERNALS__ = window.__TAURI_INTERNALS__ || {};
     window.__TAURI_INTERNALS__.invoke = async (cmd, args) => {
+      // simple call log for debugging
+      const w = window as any;
+      w.__TAURI_INVOKE_LOG = w.__TAURI_INVOKE_LOG || [];
+      w.__TAURI_INVOKE_LOG.push(cmd);
       const responses = ${JSON.stringify(responses)};
       
       // Return mocked response if available
@@ -63,6 +67,11 @@ export function setupTauriMocks(responses: Record<string, unknown> = {}) {
         return responses[cmd];
       }
       
+      // Updater plugin mock: return no update by default
+      if (cmd === 'plugin:updater|check') {
+        return null;
+      }
+
       // Default responses for common commands
       switch (cmd) {
         case 'get_jira_config':
@@ -93,6 +102,29 @@ export function setupTauriMocks(responses: Record<string, unknown> = {}) {
       error: () => Promise.resolve(),
       debug: () => Promise.resolve(),
     };
+
+    // Mock tauri event API
+    (function(){
+      const listeners = new Map();
+      window.__TAURI_INTERNALS__.event = {
+        listen: async (event, cb) => {
+          const arr = listeners.get(event) || [];
+          arr.push(cb);
+          listeners.set(event, arr);
+          return () => {
+            const list = listeners.get(event) || [];
+            const idx = list.indexOf(cb);
+            if (idx > -1) list.splice(idx, 1);
+            listeners.set(event, list);
+          };
+        },
+      };
+      // helper to emit events from tests
+      window.__TAURI_MOCK_EMIT = (event, payload) => {
+        const list = listeners.get(event) || [];
+        for (const cb of list) cb({ event, payload });
+      };
+    })();
   `;
 }
 
