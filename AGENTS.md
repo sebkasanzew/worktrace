@@ -2,6 +2,8 @@
 
 This document provides guidance for AI agents working on the Worktrace codebase.
 
+Be extremely concise. Sacrifice grammar for the sake of concision.
+
 ## Project Overview
 
 Worktrace is a cross-platform desktop application for JIRA time tracking, built with:
@@ -222,6 +224,26 @@ src-tauri/
 - Check React Query docs: https://tanstack.com/query/
 - Check Biome docs: https://biomejs.dev/
 - Check tauri-plugin-log docs: https://github.com/tauri-apps/plugins-workspace/tree/main/plugins/log
+- Check Playwright docs: https://playwright.dev/
+
+## Testing
+
+### E2E Tests (Playwright)
+
+- Tests in `e2e/` directory
+- Mock Tauri APIs using `page.addInitScript()` 
+- Mock `__TAURI_INTERNALS__.invoke()` for IPC calls
+- Test UI + mocked backend responses
+- Run: `pnpm test:e2e`
+- See `e2e/README.md` for details
+
+### Unit Tests (Rust)
+
+- Use `cargo test` in `src-tauri/`
+- Test Tauri commands and business logic
+- Tests in `#[cfg(test)]` modules
+- Run: `cd src-tauri && cargo test`
+- Currently tests: Command error handling for invalid inputs
 
 ## Best Practices
 
