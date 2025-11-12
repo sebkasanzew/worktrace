@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { debug, info, error as logError, warn } from "@tauri-apps/plugin-log";
-import type { JiraConfig, JiraSearchResponse } from "@/types/jira";
+import { commands, type JiraSearchResponse, type JiraUserSession } from "@/types/bindings";
+import type { JiraConfig } from "@/types/jira";
 
 export const configService = {
   async save(config: { url: string; username: string; password: string }): Promise<void> {
@@ -22,7 +23,7 @@ export const configService = {
 };
 
 export const jiraApi = {
-  async getCurrentUser(config: JiraConfig): Promise<unknown> {
+  async getCurrentUser(config: JiraConfig): Promise<JiraUserSession> {
     info("[JIRA API] Fetching current user info");
 
     if (!config.url || !config.username || !config.password) {
@@ -30,14 +31,18 @@ export const jiraApi = {
     }
 
     try {
-      const userInfo = await invoke("jira_get_current_user", {
-        url: config.url,
-        username: config.username,
-        password: config.password,
-      });
+      const result = await commands.jiraGetCurrentUser(
+        config.url,
+        config.username,
+        config.password
+      );
 
-      debug(`[JIRA API] Current user info: ${JSON.stringify(userInfo)}`);
-      return userInfo;
+      if (result.status === "error") {
+        throw new Error(result.error);
+      }
+
+      debug(`[JIRA API] Current user info: ${JSON.stringify(result.data)}`);
+      return result.data;
     } catch (error) {
       logError(`[JIRA API] Failed to get current user: ${error}`);
       throw error;
@@ -60,26 +65,31 @@ export const jiraApi = {
       const jql = "assignee = currentUser() AND resolution = Unresolved ORDER BY updated DESC";
       debug(`[JIRA API] Using JQL: "${jql}"`);
 
-      const result = await invoke<JiraSearchResponse>("jira_api_request", {
-        url: config.url,
-        username: config.username,
-        password: config.password,
-        jql,
-      });
+      const result = await commands.jiraApiRequest(
+        config.url,
+        config.username,
+        config.password,
+        jql
+      );
 
-      debug(`[JIRA API] Response received: ${JSON.stringify(result)}`);
-      info(`[JIRA API] Issues found: ${result.issues?.length || 0}`);
+      if (result.status === "error") {
+        throw new Error(result.error);
+      }
 
-      if (!result.issues || result.issues.length === 0) {
+      const response = result.data;
+      debug(`[JIRA API] Response received: ${JSON.stringify(response)}`);
+      info(`[JIRA API] Issues found: ${response.issues?.length || 0}`);
+
+      if (!response.issues || response.issues.length === 0) {
         warn("[JIRA API] No issues returned. This could mean:");
         warn("  - No issues are assigned to you");
         warn("  - All your issues are resolved");
         warn("  - The JQL query doesn't match any issues");
       }
 
-      info(`[JIRA API] Successfully fetched ${result.issues?.length ?? 0} issues`);
+      info(`[JIRA API] Successfully fetched ${response.issues?.length ?? 0} issues`);
 
-      return result;
+      return response;
     } catch (error) {
       logError(`[JIRA API] Error details: ${error}`);
 

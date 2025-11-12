@@ -1,11 +1,14 @@
 use gouqi::{Credentials, Jira};
 
+use super::types::*;
+
 #[tauri::command]
+#[specta::specta]
 pub fn jira_get_current_user(
     url: String,
     username: String,
     password: String,
-) -> Result<serde_json::Value, String> {
+) -> Result<JiraUserSession, String> {
     log::info!(target: "jira", "Getting current user info");
 
     let credentials = Credentials::Basic(username, password);
@@ -18,20 +21,20 @@ pub fn jira_get_current_user(
 
     log::debug!(target: "jira", "User authenticated: {}", session.name);
 
-    // Convert session to JSON
-    let user_info = serde_json::to_value(&session)
-        .map_err(|e| format!("Failed to serialize session: {}", e))?;
+    // Convert gouqi session to our typed struct
+    let user_session = JiraUserSession { name: session.name };
 
-    Ok(user_info)
+    Ok(user_session)
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn jira_api_request(
     url: String,
     username: String,
     password: String,
     jql: String,
-) -> Result<serde_json::Value, String> {
+) -> Result<JiraSearchResponse, String> {
     log::info!(target: "jira", "Making JIRA API request");
     log::debug!(target: "jira", "URL: {}", url);
     log::debug!(target: "jira", "Username: {}", username);
@@ -54,40 +57,38 @@ pub fn jira_api_request(
 
     log::info!(target: "jira", "Found {} issues", results.total);
 
-    // Transform the results to match the expected frontend structure
-    let issues: Vec<serde_json::Value> = results
+    // Transform the results to our typed structs
+    let issues: Vec<JiraIssue> = results
         .issues
         .iter()
         .map(|issue| {
             let updated = issue.updated().map(|dt| dt.unix_timestamp()).unwrap_or(0);
             let created = issue.created().map(|dt| dt.unix_timestamp()).unwrap_or(0);
 
-            serde_json::json!({
-                "id": issue.id,
-                "key": issue.key,
-                "fields": {
-                    "summary": issue.summary().unwrap_or_default(),
-                    "status": {
-                        "name": issue.status().map(|s| s.name).unwrap_or_default()
+            JiraIssue {
+                id: issue.id.clone(),
+                key: issue.key.clone(),
+                fields: JiraFields {
+                    summary: issue.summary().unwrap_or_default().to_string(),
+                    status: JiraStatus {
+                        name: issue.status().map(|s| s.name.clone()).unwrap_or_default(),
                     },
-                    "assignee": issue.assignee().map(|a| serde_json::json!({
-                        "displayName": a.display_name,
-                        "emailAddress": a.email_address
-                    })),
-                    "updated": updated * 1000, // Convert to milliseconds for JavaScript Date
-                    "created": created * 1000, // Convert to milliseconds for JavaScript Date
-                }
-            })
+                    assignee: issue.assignee().map(|a| JiraAssignee {
+                        display_name: a.display_name.clone(),
+                        email_address: a.email_address.clone().unwrap_or_default(),
+                    }),
+                    updated: updated * 1000, // Convert to milliseconds for JavaScript Date
+                    created: created * 1000, // Convert to milliseconds for JavaScript Date
+                },
+            }
         })
         .collect();
 
-    let json_response = serde_json::json!({
-        "issues": issues,
-        "total": results.total,
-        "isLast": results.is_last_page.unwrap_or(false)
-    });
-
-    Ok(json_response)
+    Ok(JiraSearchResponse {
+        issues,
+        total: results.total,
+        is_last: results.is_last_page.unwrap_or(false),
+    })
 }
 
 #[cfg(test)]

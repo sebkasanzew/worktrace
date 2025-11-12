@@ -1,4 +1,5 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+mod bindings;
 mod jira;
 mod menu;
 
@@ -27,6 +28,9 @@ pub fn run() {
         .setup(|app| {
             // Setup application menu
             menu::setup_menu(app)?;
+
+            #[cfg(debug_assertions)]
+            bindings::export_bindings();
 
             Ok(())
         })

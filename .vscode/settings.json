@@ -4,6 +4,7 @@
         "jira",
         "rlib",
         "serde",
+        "specta",
         "staticlib",
         "tauri",
         "worktrace"
