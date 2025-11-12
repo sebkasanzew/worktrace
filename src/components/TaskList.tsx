@@ -3,7 +3,9 @@ import { info } from "@tauri-apps/plugin-log";
 import { LogOut, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { configService, jiraApi } from "@/services/jira";
+import { configService } from "@/services/jira";
+import { useMyIssues } from "@/services/jira.hooks";
+import { jiraKeys } from "@/services/jira.keys";
 import type { JiraConfig } from "@/types/jira";
 
 interface TaskListProps {
@@ -12,26 +14,11 @@ interface TaskListProps {
 
 export function TaskList({ onLogout }: TaskListProps) {
   const { data: config } = useQuery<JiraConfig>({
-    queryKey: ["jiraConfig"],
+    queryKey: jiraKeys.config(),
     queryFn: () => configService.get(),
   });
 
-  const {
-    data: issues,
-    isLoading,
-    error,
-    refetch,
-    isFetching,
-  } = useQuery({
-    queryKey: ["jiraIssues", config],
-    queryFn: () =>
-      config
-        ? jiraApi.getCurrentUserIssues(config)
-        : Promise.resolve({ issues: [], total: 0, isLast: true }),
-    enabled: !!config?.url && !!config?.username && !!config?.password,
-    refetchInterval: 60000, // Refetch every minute
-    retry: false, // Don't retry failed requests automatically
-  });
+  const { data: issues, isLoading, error, refetch, isFetching } = useMyIssues();
 
   const handleRefresh = async () => {
     info("[TaskList] Manual refresh triggered");
