@@ -52,6 +52,62 @@ export const mockJiraData = {
 };
 
 /**
+ * Helper to inject a mock for a single Tauri command
+ * Reduces duplication in mock files by providing a reusable pattern
+ *
+ * @param page - Playwright page instance
+ * @param commandName - The Tauri command to mock
+ * @param mockData - The data to return for that command
+ */
+export async function injectCommandMock<T>(
+  page: Page,
+  commandName: TauriCommand,
+  mockData: T
+): Promise<void> {
+  await page.addInitScript(
+    ([cmd, data]) => {
+      window.__TAURI_INTERNALS__ = window.__TAURI_INTERNALS__ || {};
+      const originalInvoke = window.__TAURI_INTERNALS__.invoke;
+
+      window.__TAURI_INTERNALS__.invoke = async (command, args) => {
+        if (command === cmd) {
+          return data;
+        }
+        return originalInvoke ? originalInvoke(command, args) : null;
+      };
+    },
+    [commandName, mockData]
+  );
+}
+
+/**
+ * Helper to inject error mocks for multiple Tauri commands
+ * Useful for testing error handling in the UI
+ *
+ * @param page - Playwright page instance
+ * @param commands - Array of commands that should throw errors
+ * @param errorMessage - Error message to throw
+ */
+export async function injectCommandErrors(
+  page: Page,
+  commands: TauriCommand[],
+  errorMessage: string
+): Promise<void> {
+  await page.addInitScript(
+    ([cmds, message]) => {
+      window.__TAURI_INTERNALS__ = window.__TAURI_INTERNALS__ || {};
+      window.__TAURI_INTERNALS__.invoke = async (cmd) => {
+        if ((cmds as string[]).includes(cmd as string)) {
+          throw new Error(message as string);
+        }
+        return null;
+      };
+    },
+    [commands, errorMessage]
+  );
+}
+
+/**
  * Creates the mock invoke handler function
  * Separated for clarity and easier maintenance
  */
