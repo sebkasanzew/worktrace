@@ -1,8 +1,10 @@
+import { invoke } from "@tauri-apps/api/core";
 import { debug, info, error as logError } from "@tauri-apps/plugin-log";
+import { z } from "zod";
 import { redactSensitive } from "@/lib/utils";
 import { commands, type JiraSearchResponse, type JiraUserSession } from "@/types/bindings";
 import { jiraSearchResponseSchema, jiraUserSessionSchema } from "@/types/bindings.zod";
-import type { JiraConfig } from "@/types/jira";
+import type { JiraConfig, WorklogPayload, WorklogResponse } from "@/types/jira";
 
 /**
  * Validates that JIRA config has all required fields
@@ -132,6 +134,29 @@ export function createJiraClient(config: JiraConfig) {
     async getCurrentUserIssues(): Promise<JiraSearchResponse> {
       const jql = "assignee = currentUser() AND resolution = Unresolved ORDER BY updated DESC";
       return this.searchIssues(jql);
+    },
+
+    /**
+     * Adds a worklog to a JIRA issue
+     */
+    async addWorklog(issueKey: string, payload: WorklogPayload): Promise<WorklogResponse> {
+      info(`[JIRA Client] Adding worklog to ${issueKey}`);
+      const schema = z.object({ id: z.string() });
+      try {
+        const result = await invoke("jira_add_worklog", {
+          url: normalizedUrl,
+          username,
+          password,
+          issueKey,
+          payload,
+        });
+        const validated = schema.parse(result);
+        debug(`[JIRA Client] Worklog created: ${validated.id}`);
+        return validated;
+      } catch (error) {
+        logError(`[JIRA Client] Failed to add worklog: ${error}`);
+        throw mapJiraError(error, config);
+      }
     },
   };
 }

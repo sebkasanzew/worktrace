@@ -25,3 +25,13 @@ export interface JiraSearchResponse {
   issues: JiraIssue[];
   isLast?: boolean;
 }
+
+export interface WorklogPayload {
+  timeSpentSeconds: number;
+  started: string;
+  comment: string;
+}
+
+export interface WorklogResponse {
+  id: string;
+}

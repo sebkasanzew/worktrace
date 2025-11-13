@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { mockJiraConfig, setupTauriMocks } from "./utils/tauri";
+import { mockJiraConfig } from "./mocks/jira";
+import { setupTauriMocks } from "./utils/tauri";
 
 // Helper update metadata matching the plugin's expected shape
 const updateMetadata = {
@@ -21,7 +22,7 @@ async function triggerUpdateCheck(page: import("@playwright/test").Page) {
 test.describe("Updater", () => {
   test("shows update card once and can be dismissed", async ({ page }) => {
     // Mock stored JIRA config so app loads TaskList view
-    await mockJiraConfig(page);
+    await mockJiraConfig({ page });
 
     // Add mocks: updater check returns an available update
     await page.addInitScript(

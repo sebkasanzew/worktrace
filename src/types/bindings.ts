@@ -39,6 +39,29 @@ export const commands = {
       else return { status: "error", error: e as any };
     }
   },
+  async jiraAddWorklog(
+    url: string,
+    username: string,
+    password: string,
+    issueKey: string,
+    payload: WorklogPayload
+  ): Promise<Result<WorklogResponse, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("jira_add_worklog", {
+          url,
+          username,
+          password,
+          issueKey,
+          payload,
+        }),
+      };
+    } catch (e) {
+      if (e instanceof Error) throw e;
+      else return { status: "error", error: e as any };
+    }
+  },
   async saveJiraConfig(
     url: string,
     username: string,
@@ -118,6 +141,14 @@ export type JiraStatus = { name: string };
  * JIRA current user session info
  */
 export type JiraUserSession = { name: string };
+/**
+ * Worklog payload for creating a worklog in JIRA
+ */
+export type WorklogPayload = { timeSpentSeconds: number; started: string; comment: string };
+/**
+ * Minimal worklog response
+ */
+export type WorklogResponse = { id: string };
 
 /** tauri-specta globals **/
 
