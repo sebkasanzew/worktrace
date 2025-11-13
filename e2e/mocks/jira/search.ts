@@ -8,7 +8,7 @@ import type {
   JiraSearchResponse,
   JiraStatus,
 } from "@/types/bindings";
-import type { TauriCommand } from "../../utils/tauri";
+import { injectCommandMock } from "../../utils/tauri";
 
 interface SearchResponseMockOptions {
   /**
@@ -110,17 +110,7 @@ export async function mockJiraSearchResponse(options: SearchResponseMockOptions)
     override: options.override,
   });
 
-  await options.page.addInitScript((mockResponse: JiraSearchResponse) => {
-    window.__TAURI_INTERNALS__ = window.__TAURI_INTERNALS__ || {};
-    const originalInvoke = window.__TAURI_INTERNALS__.invoke;
-
-    window.__TAURI_INTERNALS__.invoke = async (cmd: TauriCommand, args?: unknown) => {
-      if (cmd === "jira_api_request") {
-        return mockResponse;
-      }
-      return originalInvoke ? originalInvoke(cmd, args) : null;
-    };
-  }, searchResponse);
+  await injectCommandMock(options.page, "jira_api_request", searchResponse);
 }
 
 /**

@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import type { Page } from "@playwright/test";
 import { mergePartially } from "merge-partially";
 import type { JiraConfig } from "@/types/bindings";
-import type { TauriCommand } from "../../utils/tauri";
+import { injectCommandMock } from "../../utils/tauri";
 
 interface ConfigMockOptions {
   /**
@@ -54,18 +54,7 @@ function generateJiraConfig(options: { override?: Partial<JiraConfig> } = {}): J
  */
 export async function mockJiraConfig(options: ConfigMockOptions): Promise<void> {
   const config = generateJiraConfig({ override: options.override });
-
-  await options.page.addInitScript((mockConfig: JiraConfig) => {
-    window.__TAURI_INTERNALS__ = window.__TAURI_INTERNALS__ || {};
-    const originalInvoke = window.__TAURI_INTERNALS__.invoke;
-
-    window.__TAURI_INTERNALS__.invoke = async (cmd: TauriCommand, args?: unknown) => {
-      if (cmd === "get_jira_config") {
-        return mockConfig;
-      }
-      return originalInvoke ? originalInvoke(cmd, args) : null;
-    };
-  }, config);
+  await injectCommandMock(options.page, "get_jira_config", config);
 }
 
 /**
@@ -86,17 +75,7 @@ export async function mockNoJiraConfig(options: EmptyConfigMockOptions): Promise
     password: null,
   };
 
-  await options.page.addInitScript((mockConfig: JiraConfig) => {
-    window.__TAURI_INTERNALS__ = window.__TAURI_INTERNALS__ || {};
-    const originalInvoke = window.__TAURI_INTERNALS__.invoke;
-
-    window.__TAURI_INTERNALS__.invoke = async (cmd: TauriCommand, args?: unknown) => {
-      if (cmd === "get_jira_config") {
-        return mockConfig;
-      }
-      return originalInvoke ? originalInvoke(cmd, args) : null;
-    };
-  }, emptyConfig);
+  await injectCommandMock(options.page, "get_jira_config", emptyConfig);
 }
 
 /**

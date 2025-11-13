@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test";
-import type { TauriCommand } from "../../utils/tauri";
+import { injectCommandErrors } from "../../utils/tauri";
 
 interface JiraErrorMockOptions {
   /**
@@ -28,13 +28,9 @@ interface JiraErrorMockOptions {
  * ```
  */
 export async function mockJiraError(options: JiraErrorMockOptions): Promise<void> {
-  await options.page.addInitScript((message: string) => {
-    window.__TAURI_INTERNALS__ = window.__TAURI_INTERNALS__ || {};
-    window.__TAURI_INTERNALS__.invoke = async (cmd: TauriCommand) => {
-      if (cmd === "jira_api_request" || cmd === "jira_get_current_user") {
-        throw new Error(message);
-      }
-      return null;
-    };
-  }, options.errorMessage);
+  await injectCommandErrors(
+    options.page,
+    ["jira_api_request", "jira_get_current_user"],
+    options.errorMessage
+  );
 }

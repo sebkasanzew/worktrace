@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import type { Page } from "@playwright/test";
 import { mergePartially } from "merge-partially";
 import type { JiraUserSession } from "@/types/bindings";
-import type { TauriCommand } from "../../utils/tauri";
+import { injectCommandMock } from "../../utils/tauri";
 
 interface UserSessionMockOptions {
   /**
@@ -47,18 +47,7 @@ function generateJiraUserSession(
  */
 export async function mockJiraUserSession(options: UserSessionMockOptions): Promise<void> {
   const userSession = generateJiraUserSession({ override: options.override });
-
-  await options.page.addInitScript((mockUser: JiraUserSession) => {
-    window.__TAURI_INTERNALS__ = window.__TAURI_INTERNALS__ || {};
-    const originalInvoke = window.__TAURI_INTERNALS__.invoke;
-
-    window.__TAURI_INTERNALS__.invoke = async (cmd: TauriCommand, args?: unknown) => {
-      if (cmd === "jira_get_current_user") {
-        return mockUser;
-      }
-      return originalInvoke ? originalInvoke(cmd, args) : null;
-    };
-  }, userSession);
+  await injectCommandMock(options.page, "jira_get_current_user", userSession);
 }
 
 /**
