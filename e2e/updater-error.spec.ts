@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { mockJiraConfig } from "./utils/tauri";
+import { mockJiraConfig } from "./mocks/jira";
 
 async function triggerUpdateCheck(page: import("@playwright/test").Page) {
   await page.goto("/?openUpdate=1&mockUpdateError=fetch");
@@ -10,7 +10,7 @@ async function triggerUpdateCheck(page: import("@playwright/test").Page) {
 }
 
 test("Updater error triggers no update UI and returns control", async ({ page }) => {
-  await mockJiraConfig(page);
+  await mockJiraConfig({ page });
   // Override updater check to throw
   await page.addInitScript(() => {
     type Invoke = (cmd: string, args?: unknown) => Promise<unknown>;

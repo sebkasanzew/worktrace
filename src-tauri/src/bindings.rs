@@ -6,6 +6,7 @@ pub fn export_bindings() {
     let builder = Builder::<tauri::Wry>::new().commands(collect_commands![
         crate::jira::commands::jira_api_request,
         crate::jira::commands::jira_get_current_user,
+        crate::jira::commands::jira_add_worklog,
         crate::jira::config::save_jira_config,
         crate::jira::config::get_jira_config,
         crate::jira::config::clear_jira_config,

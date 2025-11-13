@@ -1,5 +1,11 @@
-import { type UseQueryResult, useQuery } from "@tanstack/react-query";
+import {
+  type UseMutationResult,
+  type UseQueryResult,
+  useMutation,
+  useQuery,
+} from "@tanstack/react-query";
 import type { JiraSearchResponse, JiraUserSession } from "@/types/bindings";
+import type { WorklogPayload, WorklogResponse } from "@/types/jira";
 import { configService } from "./jira";
 import { jiraKeys } from "./jira.keys";
 import { createJiraClient } from "./jiraClient";
@@ -53,5 +59,22 @@ export function useIssuesByJql(jql: string): UseQueryResult<JiraSearchResponse, 
     enabled: !!jql,
     retry: 1,
     staleTime: 1 * 60 * 1000, // 1 minute
+  });
+}
+
+/**
+ * Mutation to add a worklog to an issue
+ */
+export function useAddWorklog(): UseMutationResult<
+  WorklogResponse,
+  Error,
+  { issueKey: string; payload: WorklogPayload }
+> {
+  return useMutation({
+    mutationFn: async ({ issueKey, payload }) => {
+      const config = await configService.get();
+      const client = createJiraClient(config);
+      return client.addWorklog(issueKey, payload);
+    },
   });
 }

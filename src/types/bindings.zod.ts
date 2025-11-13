@@ -34,6 +34,16 @@ export const jiraUserSessionSchema = z.object({
   name: z.string(),
 });
 
+export const worklogPayloadSchema = z.object({
+  timeSpentSeconds: z.number(),
+  started: z.string(),
+  comment: z.string(),
+});
+
+export const worklogResponseSchema = z.object({
+  id: z.string(),
+});
+
 export const jiraSearchResponseSchema = z.object({
   issues: z.array(jiraIssueSchema),
   total: z.number(),

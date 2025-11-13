@@ -1,4 +1,6 @@
-use gouqi::{Credentials, Jira};
+use gouqi::{Credentials, Jira, WorklogInput};
+use time::format_description::well_known::Rfc3339;
+use time::OffsetDateTime;
 
 use super::types::*;
 
@@ -89,6 +91,49 @@ pub fn jira_api_request(
         total: results.total,
         is_last: results.is_last_page.unwrap_or(false),
     })
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn jira_add_worklog(
+    url: String,
+    username: String,
+    password: String,
+    issue_key: String,
+    payload: WorklogPayload,
+) -> Result<WorklogResponse, String> {
+    log::info!(target: "jira", "Adding worklog to {}", issue_key);
+
+    // Create Jira client via gouqi (consistent with other commands)
+    let credentials = Credentials::Basic(username, password);
+    let jira = Jira::new(&url, credentials)
+        .map_err(|e| format!("Failed to create JIRA client: {}", e))?;
+
+    // Build WorklogInput with precise started timestamp
+    let mut started_str = payload.started.clone();
+    // Convert "+HHMM"/"-HHMM" to RFC3339 "+HH:MM" for robust parsing
+    if let Some(sign_idx) = started_str.rfind(|c| c == '+' || c == '-') {
+        if started_str.len() >= sign_idx + 5 {
+            // Insert ':' if not already present
+            if started_str.chars().nth(sign_idx + 3) != Some(':') {
+                started_str.insert(sign_idx + 3, ':');
+            }
+        }
+    }
+
+    let started: OffsetDateTime = OffsetDateTime::parse(&started_str, &Rfc3339)
+        .map_err(|e| format!("Invalid 'started' timestamp: {}", e))?;
+
+    let worklog = WorklogInput::new(payload.time_spent_seconds as u64)
+        .with_comment(payload.comment)
+        .started_at(started);
+
+    let created = jira
+        .issues()
+        .add_worklog(&issue_key, worklog)
+        .map_err(|e| format!("Failed to add worklog: {}", e))?;
+
+    Ok(WorklogResponse { id: created.id })
 }
 
 #[cfg(test)]

@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
-import { info } from "@tauri-apps/plugin-log";
-import { LogOut, RefreshCw } from "lucide-react";
+import { info, info as logInfo } from "@tauri-apps/plugin-log";
+import { LogOut, Play, RefreshCw, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { WorklogDialog } from "@/components/WorklogDialog";
+import { formatDuration } from "@/lib/utils";
 import { configService } from "@/services/jira";
-import { useMyIssues } from "@/services/jira.hooks";
+import { useAddWorklog, useMyIssues } from "@/services/jira.hooks";
 import { jiraKeys } from "@/services/jira.keys";
+import { useTimeTracker } from "@/services/time-tracker.hooks";
 import type { JiraConfig } from "@/types/jira";
 
 interface TaskListProps {
@@ -19,6 +22,17 @@ export function TaskList({ onLogout }: TaskListProps) {
   });
 
   const { data: issues, isLoading, error, refetch, isFetching } = useMyIssues();
+  const {
+    activeIssueKey,
+    dialogOpen,
+    elapsedMs,
+    getElapsedFor,
+    requestStart,
+    stopAndOpenDialog,
+    resume,
+    clearAfterLogged,
+  } = useTimeTracker();
+  const addWorklog = useAddWorklog();
 
   const handleRefresh = async () => {
     info("[TaskList] Manual refresh triggered");
@@ -95,8 +109,34 @@ export function TaskList({ onLogout }: TaskListProps) {
                         <CardTitle className="text-lg">{issue.key}</CardTitle>
                         <CardDescription className="mt-1">{issue.fields.summary}</CardDescription>
                       </div>
-                      <div className="text-sm font-medium px-3 py-1 bg-secondary rounded-md">
-                        {issue.fields.status.name}
+                      <div className="flex items-center gap-3">
+                        {activeIssueKey === issue.key ? (
+                          <>
+                            <div className="text-sm text-muted-foreground min-w-16 text-right">
+                              {formatDuration(Math.floor(getElapsedFor(issue.key) / 1000))}
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={stopAndOpenDialog}
+                              aria-label={`Stop timer for ${issue.key}`}
+                            >
+                              <Square className="h-4 w-4" /> Stop
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => requestStart(issue.key)}
+                            aria-label={`Start timer for ${issue.key}`}
+                          >
+                            <Play className="h-4 w-4" /> Start
+                          </Button>
+                        )}
+                        <div className="text-sm font-medium px-3 py-1 bg-secondary rounded-md">
+                          {issue.fields.status.name}
+                        </div>
                       </div>
                     </div>
                   </CardHeader>
@@ -126,6 +166,29 @@ export function TaskList({ onLogout }: TaskListProps) {
           </>
         )}
       </div>
+      {/* Worklog Dialog */}
+      <WorklogDialog
+        isOpen={dialogOpen}
+        issueKey={activeIssueKey ?? ""}
+        initialSeconds={Math.floor(elapsedMs / 1000)}
+        onCancel={() => {
+          logInfo("[TaskList] Worklog canceled, resuming timer");
+          resume();
+        }}
+        onSubmit={({ timeSpentSeconds, comment, started }) => {
+          if (!activeIssueKey) return;
+          logInfo(`[TaskList] Submitting worklog for ${activeIssueKey}`);
+          addWorklog.mutate(
+            { issueKey: activeIssueKey, payload: { timeSpentSeconds, comment, started } },
+            {
+              onSuccess: () => {
+                clearAfterLogged();
+                refetch();
+              },
+            }
+          );
+        }}
+      />
     </div>
   );
 }

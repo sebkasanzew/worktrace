@@ -62,3 +62,20 @@ pub struct JiraConfig {
     pub username: Option<String>,
     pub password: Option<String>,
 }
+
+/// Worklog payload for creating a worklog in JIRA
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct WorklogPayload {
+    #[serde(rename = "timeSpentSeconds")]
+    pub time_spent_seconds: u32,
+    pub started: String,
+    pub comment: String,
+}
+
+/// Minimal worklog response
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct WorklogResponse {
+    pub id: String,
+}

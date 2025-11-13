@@ -39,7 +39,8 @@ pub fn run() {
             get_jira_config,
             clear_jira_config,
             jira_api_request,
-            jira_get_current_user
+            jira_get_current_user,
+            jira_add_worklog
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
