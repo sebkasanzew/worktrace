@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
-import { mockJiraConfig } from "./mocks/jira";
-import { setupTauriMocks } from "./utils/tauri";
+import { expect, test } from "@playwright/test"
+import { mockJiraConfig } from "./mocks/jira"
+import { setupTauriMocks } from "./utils/tauri"
 
 // Helper update metadata matching the plugin's expected shape
 const updateMetadata = {
@@ -10,52 +10,52 @@ const updateMetadata = {
   date: new Date().toISOString(),
   body: "Test release",
   rawJson: {},
-};
+}
 
 // Opens the app and triggers the menu event to check for updates
 async function triggerUpdateCheck(page: import("@playwright/test").Page) {
-  await page.goto("/?openUpdate=1&mockUpdate=1&mockVersion=0.2.0");
+  await page.goto("/?openUpdate=1&mockUpdate=1&mockVersion=0.2.0")
   // Wait for initial DOM to be ready (avoid depending on specific view)
-  await page.waitForLoadState("domcontentloaded");
+  await page.waitForLoadState("domcontentloaded")
 }
 
 test.describe("Updater", () => {
   test("shows update card once and can be dismissed", async ({ page }) => {
     // Mock stored JIRA config so app loads TaskList view
-    await mockJiraConfig({ page });
+    await mockJiraConfig({ page })
 
     // Add mocks: updater check returns an available update
     await page.addInitScript(
       setupTauriMocks({
         "plugin:updater|check": updateMetadata,
       })
-    );
+    )
 
-    await triggerUpdateCheck(page);
+    await triggerUpdateCheck(page)
 
     // Try dispatching the app's test event a few times until the effect is ready
     for (let i = 0; i < 8; i++) {
       await page.evaluate(() => {
-        window.dispatchEvent(new Event("worktrace:triggerUpdateCheck"));
-      });
+        window.dispatchEvent(new Event("worktrace:triggerUpdateCheck"))
+      })
       // small pause between retries
-      await page.waitForTimeout(250);
-      const count = await page.getByText("Update Available").count();
-      if (count > 0) break;
+      await page.waitForTimeout(250)
+      const count = await page.getByText("Update Available").count()
+      if (count > 0) break
     }
 
     // Expect update card visible with version
-    await expect(page.getByText("Update Available")).toBeVisible();
-    await expect(page.getByText(/Version 0\.2\.0 is now available/)).toBeVisible();
+    await expect(page.getByText("Update Available")).toBeVisible()
+    await expect(page.getByText(/Version 0\.2\.0 is now available/)).toBeVisible()
 
     // Dismiss via "Later"
-    await page.getByRole("button", { name: "Later" }).click();
+    await page.getByRole("button", { name: "Later" }).click()
 
     // Card should disappear and not immediately re-open
-    await expect(page.getByText("Update Available")).toHaveCount(0);
+    await expect(page.getByText("Update Available")).toHaveCount(0)
 
     // Trigger again: card should show again (fresh check)
-    await triggerUpdateCheck(page);
-    await expect(page.getByText("Update Available")).toBeVisible();
-  });
-});
+    await triggerUpdateCheck(page)
+    await expect(page.getByText("Update Available")).toBeVisible()
+  })
+})

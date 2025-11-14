@@ -1,25 +1,25 @@
-import { faker } from "@faker-js/faker";
-import type { Page } from "@playwright/test";
-import { mergePartially } from "merge-partially";
-import type { JiraConfig } from "@/types/bindings";
-import { injectCommandMock } from "../../utils/tauri";
+import { faker } from "@faker-js/faker"
+import type { Page } from "@playwright/test"
+import { mergePartially } from "merge-partially"
+import type { JiraConfig } from "@/types/bindings"
+import { injectCommandMock } from "../../utils/tauri"
 
 interface ConfigMockOptions {
   /**
    * Playwright page instance to inject mock into
    */
-  page: Page;
+  page: Page
   /**
    * Partial config to override default values
    */
-  override?: Partial<JiraConfig>;
+  override?: Partial<JiraConfig>
 }
 
 interface EmptyConfigMockOptions {
   /**
    * Playwright page instance to inject mock into
    */
-  page: Page;
+  page: Page
 }
 
 /**
@@ -32,9 +32,9 @@ function generateJiraConfig(options: { override?: Partial<JiraConfig> } = {}): J
     url: faker.internet.url({ appendSlash: false, protocol: "https" }),
     username: faker.internet.email(),
     password: faker.string.alphanumeric({ length: 24 }),
-  };
+  }
 
-  return options.override ? mergePartially.deep(response, options.override) : response;
+  return options.override ? mergePartially.deep(response, options.override) : response
 }
 
 /**
@@ -53,8 +53,8 @@ function generateJiraConfig(options: { override?: Partial<JiraConfig> } = {}): J
  * ```
  */
 export async function mockJiraConfig(options: ConfigMockOptions): Promise<void> {
-  const config = generateJiraConfig({ override: options.override });
-  await injectCommandMock(options.page, "get_jira_config", config);
+  const config = generateJiraConfig({ override: options.override })
+  await injectCommandMock(options.page, "get_jira_config", config)
 }
 
 /**
@@ -73,9 +73,9 @@ export async function mockNoJiraConfig(options: EmptyConfigMockOptions): Promise
     url: null,
     username: null,
     password: null,
-  };
+  }
 
-  await injectCommandMock(options.page, "get_jira_config", emptyConfig);
+  await injectCommandMock(options.page, "get_jira_config", emptyConfig)
 }
 
 /**
@@ -89,5 +89,5 @@ export function getDefaultMockConfig(): JiraConfig {
       username: "test@example.com",
       password: "test-token",
     },
-  });
+  })
 }

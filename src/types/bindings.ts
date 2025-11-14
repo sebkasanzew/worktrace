@@ -18,10 +18,10 @@ export const commands = {
       return {
         status: "ok",
         data: await TAURI_INVOKE("jira_api_request", { url, username, password, jql }),
-      };
+      }
     } catch (e) {
-      if (e instanceof Error) throw e;
-      else return { status: "error", error: e as any };
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
     }
   },
   async jiraGetCurrentUser(
@@ -33,10 +33,10 @@ export const commands = {
       return {
         status: "ok",
         data: await TAURI_INVOKE("jira_get_current_user", { url, username, password }),
-      };
+      }
     } catch (e) {
-      if (e instanceof Error) throw e;
-      else return { status: "error", error: e as any };
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
     }
   },
   async jiraAddWorklog(
@@ -56,10 +56,10 @@ export const commands = {
           issueKey,
           payload,
         }),
-      };
+      }
     } catch (e) {
-      if (e instanceof Error) throw e;
-      else return { status: "error", error: e as any };
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
     }
   },
   async saveJiraConfig(
@@ -71,29 +71,29 @@ export const commands = {
       return {
         status: "ok",
         data: await TAURI_INVOKE("save_jira_config", { url, username, password }),
-      };
+      }
     } catch (e) {
-      if (e instanceof Error) throw e;
-      else return { status: "error", error: e as any };
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
     }
   },
   async getJiraConfig(): Promise<Result<JiraConfig, string>> {
     try {
-      return { status: "ok", data: await TAURI_INVOKE("get_jira_config") };
+      return { status: "ok", data: await TAURI_INVOKE("get_jira_config") }
     } catch (e) {
-      if (e instanceof Error) throw e;
-      else return { status: "error", error: e as any };
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
     }
   },
   async clearJiraConfig(): Promise<Result<null, string>> {
     try {
-      return { status: "ok", data: await TAURI_INVOKE("clear_jira_config") };
+      return { status: "ok", data: await TAURI_INVOKE("clear_jira_config") }
     } catch (e) {
-      if (e instanceof Error) throw e;
-      else return { status: "error", error: e as any };
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
     }
   },
-};
+}
 
 /** user-defined events **/
 
@@ -104,76 +104,76 @@ export const commands = {
 /**
  * JIRA issue assignee
  */
-export type JiraAssignee = { displayName: string; emailAddress: string };
+export type JiraAssignee = { displayName: string; emailAddress: string }
 /**
  * JIRA configuration stored in app settings
  */
-export type JiraConfig = { url: string | null; username: string | null; password: string | null };
+export type JiraConfig = { url: string | null; username: string | null; password: string | null }
 /**
  * JIRA issue fields
  */
 export type JiraFields = {
-  summary: string;
-  status: JiraStatus;
-  assignee: JiraAssignee | null;
+  summary: string
+  status: JiraStatus
+  assignee: JiraAssignee | null
   /**
    * Unix timestamp in milliseconds (for JavaScript Date compatibility)
    */
-  created: number;
+  created: number
   /**
    * Unix timestamp in milliseconds (for JavaScript Date compatibility)
    */
-  updated: number;
-};
+  updated: number
+}
 /**
  * JIRA issue
  */
-export type JiraIssue = { id: string; key: string; fields: JiraFields };
+export type JiraIssue = { id: string; key: string; fields: JiraFields }
 /**
  * JIRA search API response
  */
-export type JiraSearchResponse = { issues: JiraIssue[]; total: number; isLast: boolean };
+export type JiraSearchResponse = { issues: JiraIssue[]; total: number; isLast: boolean }
 /**
  * JIRA issue status
  */
-export type JiraStatus = { name: string };
+export type JiraStatus = { name: string }
 /**
  * JIRA current user session info
  */
-export type JiraUserSession = { name: string };
+export type JiraUserSession = { name: string }
 /**
  * Worklog payload for creating a worklog in JIRA
  */
-export type WorklogPayload = { timeSpentSeconds: number; started: string; comment: string };
+export type WorklogPayload = { timeSpentSeconds: number; started: string; comment: string }
 /**
  * Minimal worklog response
  */
-export type WorklogResponse = { id: string };
+export type WorklogResponse = { id: string }
 
 /** tauri-specta globals **/
 
-import { Channel as TAURI_CHANNEL, invoke as TAURI_INVOKE } from "@tauri-apps/api/core";
-import * as TAURI_API_EVENT from "@tauri-apps/api/event";
-import type { WebviewWindow as __WebviewWindow__ } from "@tauri-apps/api/webviewWindow";
+import { Channel as TAURI_CHANNEL, invoke as TAURI_INVOKE } from "@tauri-apps/api/core"
+import * as TAURI_API_EVENT from "@tauri-apps/api/event"
+import type { WebviewWindow as __WebviewWindow__ } from "@tauri-apps/api/webviewWindow"
 
 type __EventObj__<T> = {
-  listen: (cb: TAURI_API_EVENT.EventCallback<T>) => ReturnType<typeof TAURI_API_EVENT.listen<T>>;
-  once: (cb: TAURI_API_EVENT.EventCallback<T>) => ReturnType<typeof TAURI_API_EVENT.once<T>>;
+  listen: (cb: TAURI_API_EVENT.EventCallback<T>) => ReturnType<typeof TAURI_API_EVENT.listen<T>>
+  once: (cb: TAURI_API_EVENT.EventCallback<T>) => ReturnType<typeof TAURI_API_EVENT.once<T>>
   emit: null extends T
     ? (payload?: T) => ReturnType<typeof TAURI_API_EVENT.emit>
-    : (payload: T) => ReturnType<typeof TAURI_API_EVENT.emit>;
-};
+    : (payload: T) => ReturnType<typeof TAURI_API_EVENT.emit>
+}
 
-export type Result<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
+export type Result<T, E> = { status: "ok"; data: T } | { status: "error"; error: E }
 
 function __makeEvents__<T extends Record<string, any>>(mappings: Record<keyof T, string>) {
   return new Proxy(
     {} as unknown as {
-      [K in keyof T]: __EventObj__<T[K]> & ((handle: __WebviewWindow__) => __EventObj__<T[K]>);
+      [K in keyof T]: __EventObj__<T[K]> & ((handle: __WebviewWindow__) => __EventObj__<T[K]>)
     },
     {
       get: (_, event) => {
-        const name = mappings[event as keyof T];
+        const name = mappings[event as keyof T]
 
         return new Proxy((() => {}) as any, {
           apply: (_, __, [window]: [__WebviewWindow__]) => ({
@@ -184,15 +184,15 @@ function __makeEvents__<T extends Record<string, any>>(mappings: Record<keyof T,
           get: (_, command: keyof __EventObj__<any>) => {
             switch (command) {
               case "listen":
-                return (arg: any) => TAURI_API_EVENT.listen(name, arg);
+                return (arg: any) => TAURI_API_EVENT.listen(name, arg)
               case "once":
-                return (arg: any) => TAURI_API_EVENT.once(name, arg);
+                return (arg: any) => TAURI_API_EVENT.once(name, arg)
               case "emit":
-                return (arg: any) => TAURI_API_EVENT.emit(name, arg);
+                return (arg: any) => TAURI_API_EVENT.emit(name, arg)
             }
           },
-        });
+        })
       },
     }
-  );
+  )
 }

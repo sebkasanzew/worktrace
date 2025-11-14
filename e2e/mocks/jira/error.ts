@@ -1,15 +1,15 @@
-import type { Page } from "@playwright/test";
-import { injectCommandErrors } from "../../utils/tauri";
+import type { Page } from "@playwright/test"
+import { injectCommandErrors } from "../../utils/tauri"
 
 interface JiraErrorMockOptions {
   /**
    * Playwright page instance to inject mock into
    */
-  page: Page;
+  page: Page
   /**
    * Error message to throw for JIRA API calls
    */
-  errorMessage: string;
+  errorMessage: string
 }
 
 /**
@@ -32,5 +32,5 @@ export async function mockJiraError(options: JiraErrorMockOptions): Promise<void
     options.page,
     ["jira_api_request", "jira_get_current_user"],
     options.errorMessage
-  );
+  )
 }

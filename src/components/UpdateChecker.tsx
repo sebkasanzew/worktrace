@@ -1,34 +1,34 @@
-import { error as logError } from "@tauri-apps/plugin-log";
-import { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { updaterService } from "@/services/updater";
+import { error as logError } from "@tauri-apps/plugin-log"
+import { useEffect, useRef, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { updaterService } from "@/services/updater"
 
 interface UpdateCheckerProps {
-  onCheckComplete?: () => void;
+  onCheckComplete?: () => void
 }
 
 export function UpdateChecker({ onCheckComplete }: UpdateCheckerProps) {
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [updateVersion, setUpdateVersion] = useState<string>("");
-  const [downloading, setDownloading] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  const ranOnceRef = useRef(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false)
+  const [updateVersion, setUpdateVersion] = useState<string>("")
+  const [downloading, setDownloading] = useState(false)
+  const [downloadProgress, setDownloadProgress] = useState(0)
+  const [error, setError] = useState<string | null>(null)
+  const ranOnceRef = useRef(false)
 
   useEffect(() => {
     // Check for updates when component mounts
     const checkForUpdates = async () => {
       // Test hooks: allow forcing outcomes via URL flags in e2e
-      const params = new URLSearchParams(window.location.search);
+      const params = new URLSearchParams(window.location.search)
       if (params.get("mockUpdate") === "1") {
-        setUpdateAvailable(true);
-        setUpdateVersion(params.get("mockVersion") || "0.2.0");
-        return;
+        setUpdateAvailable(true)
+        setUpdateVersion(params.get("mockVersion") || "0.2.0")
+        return
       }
       if (params.get("mockUpdateError")) {
         try {
-          const { message } = await import("@tauri-apps/plugin-dialog");
+          const { message } = await import("@tauri-apps/plugin-dialog")
           await message(
             params.get("mockUpdateError") === "fetch"
               ? "Update check is not available yet. This feature will work once the first release is published."
@@ -40,35 +40,35 @@ export function UpdateChecker({ onCheckComplete }: UpdateCheckerProps) {
                   : "Update Check Failed",
               kind: params.get("mockUpdateError") === "fetch" ? "info" : "error",
             }
-          );
+          )
         } finally {
-          onCheckComplete?.();
+          onCheckComplete?.()
         }
-        return;
+        return
       }
       try {
-        const updateInfo = await updaterService.checkForUpdates();
+        const updateInfo = await updaterService.checkForUpdates()
 
         if (updateInfo.available) {
-          setUpdateAvailable(true);
-          setUpdateVersion(updateInfo.version || "");
+          setUpdateAvailable(true)
+          setUpdateVersion(updateInfo.version || "")
           // Don't call onCheckComplete here - keep component mounted to show update card
         } else {
           // Show dialog for manual checks
-          const { message } = await import("@tauri-apps/plugin-dialog");
+          const { message } = await import("@tauri-apps/plugin-dialog")
           await message("You're running the latest version!", {
             title: "No Updates Available",
             kind: "info",
-          });
+          })
           // Call onCheckComplete to unmount after showing dialog
-          onCheckComplete?.();
+          onCheckComplete?.()
         }
       } catch (err) {
-        logError(`Failed to check for updates: ${err}`);
-        const errorMessage = err instanceof Error ? err.message : String(err);
+        logError(`Failed to check for updates: ${err}`)
+        const errorMessage = err instanceof Error ? err.message : String(err)
 
         // Show dialog for errors
-        const { message } = await import("@tauri-apps/plugin-dialog");
+        const { message } = await import("@tauri-apps/plugin-dialog")
 
         // Check if it's a network/fetch error (update endpoint doesn't exist yet)
         if (
@@ -82,42 +82,42 @@ export function UpdateChecker({ onCheckComplete }: UpdateCheckerProps) {
               title: "Update Check Unavailable",
               kind: "info",
             }
-          );
+          )
         } else {
           await message(`Failed to check for updates: ${errorMessage}`, {
             title: "Update Check Failed",
             kind: "error",
-          });
+          })
         }
         // Call onCheckComplete to unmount after showing dialog
-        onCheckComplete?.();
+        onCheckComplete?.()
       }
-    };
+    }
 
     // Avoid double-run in React Strict Mode (dev) by guarding with a ref
-    if (ranOnceRef.current) return;
-    ranOnceRef.current = true;
-    void checkForUpdates();
-  }, [onCheckComplete]); // Include onCheckComplete in dependencies
+    if (ranOnceRef.current) return
+    ranOnceRef.current = true
+    void checkForUpdates()
+  }, [onCheckComplete]) // Include onCheckComplete in dependencies
 
   const installUpdate = async () => {
     try {
-      setDownloading(true);
-      setError(null);
+      setDownloading(true)
+      setError(null)
 
       await updaterService.installUpdate((progress) => {
-        setDownloadProgress(progress);
-      });
+        setDownloadProgress(progress)
+      })
     } catch (err) {
-      logError(`Failed to install update: ${err}`);
-      setError(err instanceof Error ? err.message : "Failed to install update");
+      logError(`Failed to install update: ${err}`)
+      setError(err instanceof Error ? err.message : "Failed to install update")
     } finally {
-      setDownloading(false);
+      setDownloading(false)
     }
-  };
+  }
 
   if (!updateAvailable) {
-    return null;
+    return null
   }
 
   return (
@@ -159,5 +159,5 @@ export function UpdateChecker({ onCheckComplete }: UpdateCheckerProps) {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

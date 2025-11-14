@@ -1,11 +1,11 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { configService } from "@/services/jira";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { configService } from "@/services/jira"
 
 // Zod schema for form validation
 const loginSchema = z.object({
@@ -18,17 +18,17 @@ const loginSchema = z.object({
     }),
   username: z.string().min(1, "Email/Username is required"),
   password: z.string().min(1, "API Token/Password is required"),
-});
+})
 
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = z.infer<typeof loginSchema>
 
 interface LoginProps {
-  onLoginSuccess: () => void;
+  onLoginSuccess: () => void
 }
 
 export function Login({ onLoginSuccess }: LoginProps) {
-  const [useApiToken, setUseApiToken] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [useApiToken, setUseApiToken] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const {
     register,
@@ -41,18 +41,18 @@ export function Login({ onLoginSuccess }: LoginProps) {
       username: "",
       password: "",
     },
-  });
+  })
 
   const onSubmit = async (data: LoginFormData) => {
-    setError(null);
+    setError(null)
 
     try {
-      await configService.save(data);
-      onLoginSuccess();
+      await configService.save(data)
+      onLoginSuccess()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save configuration");
+      setError(err instanceof Error ? err.message : "Failed to save configuration")
     }
-  };
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
@@ -139,5 +139,5 @@ export function Login({ onLoginSuccess }: LoginProps) {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

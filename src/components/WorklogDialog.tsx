@@ -1,61 +1,61 @@
-import { useEffect, useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatDuration, formatJiraStarted, parseDuration } from "@/lib/utils";
+import { useEffect, useMemo, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { formatDuration, formatJiraStarted, parseDuration } from "@/lib/utils"
 
-type WorkType = "Development" | "Concept" | "Testing";
+type WorkType = "Development" | "Concept" | "Testing"
 
 export interface WorklogForm {
-  timeSpentSeconds: number;
-  comment: string;
-  started: string; // formatted for JIRA
+  timeSpentSeconds: number
+  comment: string
+  started: string // formatted for JIRA
 }
 
 interface Props {
-  isOpen: boolean;
-  issueKey: string;
-  initialSeconds: number;
-  onCancel: () => void;
-  onSubmit: (data: WorklogForm) => void;
+  isOpen: boolean
+  issueKey: string
+  initialSeconds: number
+  onCancel: () => void
+  onSubmit: (data: WorklogForm) => void
 }
 
 const typePrefix: Record<WorkType, string> = {
   Development: "(D)",
   Concept: "(C)",
   Testing: "(T)",
-};
+}
 
 export function WorklogDialog({ isOpen, issueKey, initialSeconds, onCancel, onSubmit }: Props) {
-  const [timeInput, setTimeInput] = useState("");
-  const [comment, setComment] = useState("");
-  const [workType, setWorkType] = useState<WorkType>("Development");
+  const [timeInput, setTimeInput] = useState("")
+  const [comment, setComment] = useState("")
+  const [workType, setWorkType] = useState<WorkType>("Development")
 
   useEffect(() => {
     if (isOpen) {
-      setTimeInput(formatDuration(initialSeconds));
-      setComment("");
-      setWorkType("Development");
+      setTimeInput(formatDuration(initialSeconds))
+      setComment("")
+      setWorkType("Development")
     }
-  }, [isOpen, initialSeconds]);
+  }, [isOpen, initialSeconds])
 
   const timeError = useMemo(() => {
-    const seconds = parseDuration(timeInput);
-    return seconds <= 0 ? "Enter a valid duration" : "";
-  }, [timeInput]);
+    const seconds = parseDuration(timeInput)
+    return seconds <= 0 ? "Enter a valid duration" : ""
+  }, [timeInput])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   const handleSubmit = () => {
-    const seconds = parseDuration(timeInput);
-    if (seconds <= 0) return;
-    const started = new Date(Date.now() - seconds * 1000);
+    const seconds = parseDuration(timeInput)
+    if (seconds <= 0) return
+    const started = new Date(Date.now() - seconds * 1000)
     const payload: WorklogForm = {
       timeSpentSeconds: seconds,
       comment: `${typePrefix[workType]} ${comment}`.trim(),
       started: formatJiraStarted(started),
-    };
-    onSubmit(payload);
-  };
+    }
+    onSubmit(payload)
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -120,5 +120,5 @@ export function WorklogDialog({ isOpen, issueKey, initialSeconds, onCancel, onSu
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

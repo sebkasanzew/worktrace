@@ -1,27 +1,27 @@
-import { useQuery } from "@tanstack/react-query";
-import { info, info as logInfo } from "@tauri-apps/plugin-log";
-import { LogOut, Play, RefreshCw, Square } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { WorklogDialog } from "@/components/WorklogDialog";
-import { formatDuration } from "@/lib/utils";
-import { configService } from "@/services/jira";
-import { useAddWorklog, useMyIssues } from "@/services/jira.hooks";
-import { jiraKeys } from "@/services/jira.keys";
-import { useTimeTracker } from "@/services/time-tracker.hooks";
-import type { JiraConfig } from "@/types/jira";
+import { useQuery } from "@tanstack/react-query"
+import { info, info as logInfo } from "@tauri-apps/plugin-log"
+import { LogOut, Play, RefreshCw, Square } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { WorklogDialog } from "@/components/WorklogDialog"
+import { formatDuration } from "@/lib/utils"
+import { configService } from "@/services/jira"
+import { useAddWorklog, useMyIssues } from "@/services/jira.hooks"
+import { jiraKeys } from "@/services/jira.keys"
+import { useTimeTracker } from "@/services/time-tracker.hooks"
+import type { JiraConfig } from "@/types/jira"
 
 interface TaskListProps {
-  onLogout: () => void;
+  onLogout: () => void
 }
 
 export function TaskList({ onLogout }: TaskListProps) {
   const { data: config } = useQuery<JiraConfig>({
     queryKey: jiraKeys.config(),
     queryFn: () => configService.get(),
-  });
+  })
 
-  const { data: issues, isLoading, error, refetch, isFetching } = useMyIssues();
+  const { data: issues, isLoading, error, refetch, isFetching } = useMyIssues()
   const {
     activeIssueKey,
     dialogOpen,
@@ -31,18 +31,18 @@ export function TaskList({ onLogout }: TaskListProps) {
     stopAndOpenDialog,
     resume,
     clearAfterLogged,
-  } = useTimeTracker();
-  const addWorklog = useAddWorklog();
+  } = useTimeTracker()
+  const addWorklog = useAddWorklog()
 
   const handleRefresh = async () => {
-    info("[TaskList] Manual refresh triggered");
-    await refetch();
-  };
+    info("[TaskList] Manual refresh triggered")
+    await refetch()
+  }
 
   const handleLogout = async () => {
-    await configService.clear();
-    onLogout();
-  };
+    await configService.clear()
+    onLogout()
+  }
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -172,23 +172,23 @@ export function TaskList({ onLogout }: TaskListProps) {
         issueKey={activeIssueKey ?? ""}
         initialSeconds={Math.floor(elapsedMs / 1000)}
         onCancel={() => {
-          logInfo("[TaskList] Worklog canceled, resuming timer");
-          resume();
+          logInfo("[TaskList] Worklog canceled, resuming timer")
+          resume()
         }}
         onSubmit={({ timeSpentSeconds, comment, started }) => {
-          if (!activeIssueKey) return;
-          logInfo(`[TaskList] Submitting worklog for ${activeIssueKey}`);
+          if (!activeIssueKey) return
+          logInfo(`[TaskList] Submitting worklog for ${activeIssueKey}`)
           addWorklog.mutate(
             { issueKey: activeIssueKey, payload: { timeSpentSeconds, comment, started } },
             {
               onSuccess: () => {
-                clearAfterLogged();
-                refetch();
+                clearAfterLogged()
+                refetch()
               },
             }
-          );
+          )
         }}
       />
     </div>
-  );
+  )
 }

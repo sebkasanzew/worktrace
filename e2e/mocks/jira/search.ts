@@ -1,29 +1,29 @@
-import { faker } from "@faker-js/faker";
-import type { Page } from "@playwright/test";
-import { mergePartially } from "merge-partially";
+import { faker } from "@faker-js/faker"
+import type { Page } from "@playwright/test"
+import { mergePartially } from "merge-partially"
 import type {
   JiraAssignee,
   JiraFields,
   JiraIssue,
   JiraSearchResponse,
   JiraStatus,
-} from "@/types/bindings";
-import { injectCommandMock } from "../../utils/tauri";
+} from "@/types/bindings"
+import { injectCommandMock } from "../../utils/tauri"
 
 interface SearchResponseMockOptions {
   /**
    * Playwright page instance to inject mock into
    */
-  page: Page;
+  page: Page
   /**
    * Number of issues to generate in the response
    * @default 2
    */
-  issueCount?: number;
+  issueCount?: number
   /**
    * Partial search response to override default values
    */
-  override?: Partial<JiraSearchResponse>;
+  override?: Partial<JiraSearchResponse>
 }
 
 /**
@@ -33,7 +33,7 @@ function mockJiraAssignee(): JiraAssignee {
   return {
     displayName: faker.person.fullName(),
     emailAddress: faker.internet.email(),
-  };
+  }
 }
 
 /**
@@ -42,15 +42,15 @@ function mockJiraAssignee(): JiraAssignee {
 function mockJiraStatus(): JiraStatus {
   return {
     name: faker.helpers.arrayElement(["To Do", "In Progress", "Done", "Blocked", "In Review"]),
-  };
+  }
 }
 
 /**
  * Generate a mock JIRA issue
  */
 function mockJiraIssue(): JiraIssue {
-  const projectKey = faker.string.alpha({ length: 3, casing: "upper" });
-  const issueNumber = faker.number.int({ min: 1, max: 9999 });
+  const projectKey = faker.string.alpha({ length: 3, casing: "upper" })
+  const issueNumber = faker.number.int({ min: 1, max: 9999 })
 
   const fields: JiraFields = {
     summary: faker.lorem.sentence({ min: 3, max: 8 }),
@@ -58,13 +58,13 @@ function mockJiraIssue(): JiraIssue {
     assignee: faker.datatype.boolean() ? mockJiraAssignee() : null,
     created: faker.date.past().getTime(),
     updated: faker.date.recent().getTime(),
-  };
+  }
 
   return {
     id: faker.string.numeric({ length: 5 }),
     key: `${projectKey}-${issueNumber}`,
     fields,
-  };
+  }
 }
 
 /**
@@ -76,15 +76,15 @@ function mockJiraIssue(): JiraIssue {
 function generateJiraSearchResponse(
   options: { issueCount?: number; override?: Partial<JiraSearchResponse> } = {}
 ): JiraSearchResponse {
-  const issueCount = options.issueCount ?? 2;
+  const issueCount = options.issueCount ?? 2
 
   const response: JiraSearchResponse = {
     issues: Array.from({ length: issueCount }, () => mockJiraIssue()),
     total: issueCount,
     isLast: true,
-  };
+  }
 
-  return options.override ? mergePartially.deep(response, options.override) : response;
+  return options.override ? mergePartially.deep(response, options.override) : response
 }
 
 /**
@@ -108,9 +108,9 @@ export async function mockJiraSearchResponse(options: SearchResponseMockOptions)
   const searchResponse = generateJiraSearchResponse({
     issueCount: options.issueCount,
     override: options.override,
-  });
+  })
 
-  await injectCommandMock(options.page, "jira_api_request", searchResponse);
+  await injectCommandMock(options.page, "jira_api_request", searchResponse)
 }
 
 /**
@@ -118,5 +118,5 @@ export async function mockJiraSearchResponse(options: SearchResponseMockOptions)
  * @internal
  */
 export function getDefaultMockSearchResponse(): JiraSearchResponse {
-  return generateJiraSearchResponse({ issueCount: 2 });
+  return generateJiraSearchResponse({ issueCount: 2 })
 }
