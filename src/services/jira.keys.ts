@@ -9,4 +9,4 @@ export const jiraKeys = {
   issues: () => [...jiraKeys.all, "issues"] as const,
   myIssues: () => [...jiraKeys.issues(), "my"] as const,
   issuesByJql: (jql: string) => [...jiraKeys.issues(), "jql", jql] as const,
-};
+}

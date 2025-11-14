@@ -1,37 +1,37 @@
 export interface JiraConfig {
-  url: string | null;
-  username: string | null;
-  password: string | null;
+  url: string | null
+  username: string | null
+  password: string | null
 }
 
 export interface JiraIssue {
-  id: string;
-  key: string;
+  id: string
+  key: string
   fields: {
-    summary: string;
+    summary: string
     status: {
-      name: string;
-    };
+      name: string
+    }
     assignee?: {
-      displayName: string;
-      emailAddress: string;
-    };
-    created: number; // Unix timestamp in milliseconds
-    updated: number; // Unix timestamp in milliseconds
-  };
+      displayName: string
+      emailAddress: string
+    }
+    created: number // Unix timestamp in milliseconds
+    updated: number // Unix timestamp in milliseconds
+  }
 }
 
 export interface JiraSearchResponse {
-  issues: JiraIssue[];
-  isLast?: boolean;
+  issues: JiraIssue[]
+  isLast?: boolean
 }
 
 export interface WorklogPayload {
-  timeSpentSeconds: number;
-  started: string;
-  comment: string;
+  timeSpentSeconds: number
+  started: string
+  comment: string
 }
 
 export interface WorklogResponse {
-  id: string;
+  id: string
 }

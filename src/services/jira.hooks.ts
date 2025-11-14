@@ -3,12 +3,12 @@ import {
   type UseQueryResult,
   useMutation,
   useQuery,
-} from "@tanstack/react-query";
-import type { JiraSearchResponse, JiraUserSession } from "@/types/bindings";
-import type { WorklogPayload, WorklogResponse } from "@/types/jira";
-import { configService } from "./jira";
-import { jiraKeys } from "./jira.keys";
-import { createJiraClient } from "./jiraClient";
+} from "@tanstack/react-query"
+import type { JiraSearchResponse, JiraUserSession } from "@/types/bindings"
+import type { WorklogPayload, WorklogResponse } from "@/types/jira"
+import { configService } from "./jira"
+import { jiraKeys } from "./jira.keys"
+import { createJiraClient } from "./jiraClient"
 
 /**
  * Hook to fetch current user session from JIRA
@@ -18,13 +18,13 @@ export function useCurrentUser(): UseQueryResult<JiraUserSession, Error> {
   return useQuery({
     queryKey: jiraKeys.currentUser(),
     queryFn: async () => {
-      const config = await configService.get();
-      const client = createJiraClient(config);
-      return client.getCurrentUser();
+      const config = await configService.get()
+      const client = createJiraClient(config)
+      return client.getCurrentUser()
     },
     retry: 1,
     staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  })
 }
 
 /**
@@ -35,13 +35,13 @@ export function useMyIssues(): UseQueryResult<JiraSearchResponse, Error> {
   return useQuery({
     queryKey: jiraKeys.myIssues(),
     queryFn: async () => {
-      const config = await configService.get();
-      const client = createJiraClient(config);
-      return client.getCurrentUserIssues();
+      const config = await configService.get()
+      const client = createJiraClient(config)
+      return client.getCurrentUserIssues()
     },
     retry: 1,
     staleTime: 1 * 60 * 1000, // 1 minute
-  });
+  })
 }
 
 /**
@@ -52,14 +52,14 @@ export function useIssuesByJql(jql: string): UseQueryResult<JiraSearchResponse, 
   return useQuery({
     queryKey: jiraKeys.issuesByJql(jql),
     queryFn: async () => {
-      const config = await configService.get();
-      const client = createJiraClient(config);
-      return client.searchIssues(jql);
+      const config = await configService.get()
+      const client = createJiraClient(config)
+      return client.searchIssues(jql)
     },
     enabled: !!jql,
     retry: 1,
     staleTime: 1 * 60 * 1000, // 1 minute
-  });
+  })
 }
 
 /**
@@ -72,9 +72,9 @@ export function useAddWorklog(): UseMutationResult<
 > {
   return useMutation({
     mutationFn: async ({ issueKey, payload }) => {
-      const config = await configService.get();
-      const client = createJiraClient(config);
-      return client.addWorklog(issueKey, payload);
+      const config = await configService.get()
+      const client = createJiraClient(config)
+      return client.addWorklog(issueKey, payload)
     },
-  });
+  })
 }

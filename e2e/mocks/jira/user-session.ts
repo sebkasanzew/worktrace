@@ -1,18 +1,18 @@
-import { faker } from "@faker-js/faker";
-import type { Page } from "@playwright/test";
-import { mergePartially } from "merge-partially";
-import type { JiraUserSession } from "@/types/bindings";
-import { injectCommandMock } from "../../utils/tauri";
+import { faker } from "@faker-js/faker"
+import type { Page } from "@playwright/test"
+import { mergePartially } from "merge-partially"
+import type { JiraUserSession } from "@/types/bindings"
+import { injectCommandMock } from "../../utils/tauri"
 
 interface UserSessionMockOptions {
   /**
    * Playwright page instance to inject mock into
    */
-  page: Page;
+  page: Page
   /**
    * Partial user session to override default values
    */
-  override?: Partial<JiraUserSession>;
+  override?: Partial<JiraUserSession>
 }
 
 /**
@@ -25,9 +25,9 @@ function generateJiraUserSession(
 ): JiraUserSession {
   const response: JiraUserSession = {
     name: faker.person.fullName(),
-  };
+  }
 
-  return mergePartially.deep(response, options.override);
+  return mergePartially.deep(response, options.override)
 }
 
 /**
@@ -46,8 +46,8 @@ function generateJiraUserSession(
  * ```
  */
 export async function mockJiraUserSession(options: UserSessionMockOptions): Promise<void> {
-  const userSession = generateJiraUserSession({ override: options.override });
-  await injectCommandMock(options.page, "jira_get_current_user", userSession);
+  const userSession = generateJiraUserSession({ override: options.override })
+  await injectCommandMock(options.page, "jira_get_current_user", userSession)
 }
 
 /**
@@ -59,5 +59,5 @@ export function getDefaultMockUserSession(): JiraUserSession {
     override: {
       name: "Test User",
     },
-  });
+  })
 }
