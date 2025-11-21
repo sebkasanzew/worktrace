@@ -26,7 +26,6 @@ pub fn setup_menu(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>
 
     #[cfg(not(target_os = "macos"))]
     {
-        use tauri::menu::SubmenuBuilder;
         let help_submenu = SubmenuBuilder::new(app, "Help")
             .item(&check_updates)
             .build()?;
