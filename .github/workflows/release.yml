@@ -53,15 +53,15 @@ jobs:
           - platform: macos-latest
             os: macOS
             target: aarch64-apple-darwin
-            bundles: dmg
             artifact_patterns: |
               src-tauri/target/release/bundle/dmg/*.dmg
+              src-tauri/target/release/bundle/macos/*.tar.gz*
           - platform: windows-latest
             os: Windows
             target: x86_64-pc-windows-msvc
-            bundles: msi
             artifact_patterns: |
               src-tauri/target/release/bundle/msi/*.msi
+              src-tauri/target/release/bundle/nsis/*.zip*
 
     runs-on: ${{ matrix.platform }}
 
@@ -86,7 +86,7 @@ jobs:
         run: pnpm install
 
       - name: Build application
-        run: pnpm build:all --bundles ${{ matrix.bundles }}
+        run: pnpm build:all
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
