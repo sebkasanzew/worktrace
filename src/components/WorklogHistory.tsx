@@ -1,7 +1,10 @@
-import { RefreshCw } from "lucide-react"
+import { Pencil, RefreshCw } from "lucide-react"
+import { useState } from "react"
+import { EditWorklogDialog } from "@/components/EditWorklogDialog"
 import { Button } from "@/components/ui/button"
 import { formatDuration } from "@/lib/utils"
 import { useIssueWorklogs } from "@/services/jira.hooks"
+import type { JiraWorklog } from "@/types/bindings"
 
 interface WorklogHistoryProps {
   issueKey: string
@@ -9,6 +12,7 @@ interface WorklogHistoryProps {
 
 export function WorklogHistory({ issueKey }: WorklogHistoryProps) {
   const { data, isLoading, error, refetch, isFetching } = useIssueWorklogs(issueKey)
+  const [editingWorklog, setEditingWorklog] = useState<JiraWorklog | null>(null)
 
   if (isLoading) {
     return <div className="p-4 text-sm text-muted-foreground text-center">Loading worklogs...</div>
@@ -23,6 +27,11 @@ export function WorklogHistory({ issueKey }: WorklogHistoryProps) {
   if (!data || data.worklogs.length === 0) {
     return <div className="p-4 text-sm text-muted-foreground text-center">No worklogs yet.</div>
   }
+
+  // Sort worklogs by started date, most recent first
+  const sortedWorklogs = [...data.worklogs].sort((a, b) => {
+    return new Date(b.started).getTime() - new Date(a.started).getTime()
+  })
 
   return (
     <div className="border-t">
@@ -40,15 +49,26 @@ export function WorklogHistory({ issueKey }: WorklogHistoryProps) {
           </Button>
         </div>
         <div className="space-y-2 max-h-60 overflow-y-auto">
-          {data.worklogs.map((worklog) => (
+          {sortedWorklogs.map((worklog) => (
             <div
               key={worklog.id}
               className="text-sm border rounded-md p-3 bg-muted/30 hover:bg-muted/50 transition-colors"
             >
               <div className="flex justify-between items-start mb-1">
                 <div className="font-medium">{worklog.author?.displayName || "Unknown"}</div>
-                <div className="text-xs text-muted-foreground">
-                  {new Date(worklog.started).toLocaleString()}
+                <div className="flex items-center gap-2">
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(worklog.started).toLocaleString()}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditingWorklog(worklog)}
+                    className="h-6 w-6 p-0"
+                    aria-label="Edit worklog"
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
                 </div>
               </div>
               <div className="flex items-center gap-2 mb-1">
@@ -66,6 +86,17 @@ export function WorklogHistory({ issueKey }: WorklogHistoryProps) {
           ))}
         </div>
       </div>
+
+      <EditWorklogDialog
+        isOpen={!!editingWorklog}
+        issueKey={issueKey}
+        worklog={editingWorklog}
+        onClose={() => setEditingWorklog(null)}
+        onSuccess={() => {
+          setEditingWorklog(null)
+          refetch()
+        }}
+      />
     </div>
   )
 }

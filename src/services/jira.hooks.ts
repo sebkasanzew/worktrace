@@ -96,3 +96,43 @@ export function useIssueWorklogs(issueKey: string): UseQueryResult<JiraWorklogLi
     staleTime: 30 * 1000, // 30 seconds
   })
 }
+
+/**
+ * Mutation to update a worklog
+ */
+export function useUpdateWorklog(): UseMutationResult<
+  WorklogResponse,
+  Error,
+  {
+    issueKey: string
+    worklogId: string
+    timeSpentSeconds: number
+    comment: string
+    started: string
+  }
+> {
+  return useMutation({
+    mutationFn: async ({ issueKey, worklogId, timeSpentSeconds, comment, started }) => {
+      const config = await configService.get()
+      const client = createJiraClient(config)
+      return client.updateWorklog(issueKey, worklogId, { timeSpentSeconds, comment, started })
+    },
+  })
+}
+
+/**
+ * Mutation to delete a worklog
+ */
+export function useDeleteWorklog(): UseMutationResult<
+  void,
+  Error,
+  { issueKey: string; worklogId: string }
+> {
+  return useMutation({
+    mutationFn: async ({ issueKey, worklogId }) => {
+      const config = await configService.get()
+      const client = createJiraClient(config)
+      return client.deleteWorklog(issueKey, worklogId)
+    },
+  })
+}

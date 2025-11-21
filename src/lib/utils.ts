@@ -57,8 +57,33 @@ export function safeStringify(value: unknown, redact = false): string {
  * Parses duration strings like "mm:ss", "h:mm", "h:mm:ss", or plain minutes (e.g., "15") into seconds
  */
 export function parseDuration(input: string): number {
-  const trimmed = input.trim()
+  const trimmed = input.trim().toLowerCase()
   if (!trimmed) return 0
+
+  // Support "2h 30m", "1.5h", "90m", "2h"
+  if (trimmed.includes("h") || trimmed.includes("m")) {
+    let totalSeconds = 0
+
+    // Match hours (e.g., "2h", "1.5h")
+    const hoursMatch = trimmed.match(/([\d.]+)\s*h/)
+    if (hoursMatch) {
+      const hours = Number.parseFloat(hoursMatch[1])
+      if (!Number.isNaN(hours)) {
+        totalSeconds += hours * 3600
+      }
+    }
+
+    // Match minutes (e.g., "30m")
+    const minutesMatch = trimmed.match(/([\d.]+)\s*m(?!\s*s)/)
+    if (minutesMatch) {
+      const minutes = Number.parseFloat(minutesMatch[1])
+      if (!Number.isNaN(minutes)) {
+        totalSeconds += minutes * 60
+      }
+    }
+
+    return totalSeconds
+  }
 
   // Support h:mm:ss, h:mm, mm:ss
   if (trimmed.includes(":")) {
@@ -71,11 +96,11 @@ export function parseDuration(input: string): number {
     if (parts.length === 2) {
       const [a, b] = parts.map((p) => Number.parseInt(p, 10))
       if ([a, b].some((n) => Number.isNaN(n))) return 0
-      // Interpret as h:mm if a >= 10? Prefer h:mm semantics if a < 10 and b < 60
-      if (b < 60 && a < 24) {
-        return a * 3600 + b * 60 // h:mm
+      // Interpret as mm:ss (since h:mm:ss is rare in time tracking)
+      if (b < 60) {
+        return a * 60 + b // mm:ss
       }
-      return a * 60 + b // mm:ss fallback
+      return 0
     }
   }
 

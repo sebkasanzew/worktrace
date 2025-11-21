@@ -62,6 +62,54 @@ export const commands = {
       else return { status: "error", error: e as any }
     }
   },
+  async jiraUpdateWorklog(
+    url: string,
+    username: string,
+    password: string,
+    issueKey: string,
+    worklogId: string,
+    payload: WorklogPayload
+  ): Promise<Result<WorklogResponse, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("jira_update_worklog", {
+          url,
+          username,
+          password,
+          issueKey,
+          worklogId,
+          payload,
+        }),
+      }
+    } catch (e) {
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
+    }
+  },
+  async jiraDeleteWorklog(
+    url: string,
+    username: string,
+    password: string,
+    issueKey: string,
+    worklogId: string
+  ): Promise<Result<null, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("jira_delete_worklog", {
+          url,
+          username,
+          password,
+          issueKey,
+          worklogId,
+        }),
+      }
+    } catch (e) {
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
+    }
+  },
   async jiraGetWorklogs(
     url: string,
     username: string,

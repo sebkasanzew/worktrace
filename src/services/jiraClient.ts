@@ -194,6 +194,58 @@ export function createJiraClient(config: JiraConfig) {
         throw mapJiraError(error, config)
       }
     },
+
+    /**
+     * Updates a worklog
+     */
+    async updateWorklog(
+      issueKey: string,
+      worklogId: string,
+      payload: WorklogPayload
+    ): Promise<WorklogResponse> {
+      info(`[JIRA Client] Updating worklog ${worklogId} for ${issueKey}`)
+      debug(
+        `[JIRA Client] Payload: ${payload.timeSpentSeconds}s, comment: "${payload.comment}", started: ${payload.started}`
+      )
+      const schema = z.object({ id: z.string() })
+      try {
+        const result = await invoke("jira_update_worklog", {
+          url: normalizedUrl,
+          username,
+          password,
+          issueKey,
+          worklogId,
+          payload,
+        })
+        const validated = schema.parse(result)
+        debug(`[JIRA Client] Worklog updated: ${validated.id}`)
+        return validated
+      } catch (error) {
+        logError(`[JIRA Client] Failed to update worklog: ${error}`)
+        throw mapJiraError(error, config)
+      }
+    },
+
+    /**
+     * Deletes a worklog
+     */
+    async deleteWorklog(issueKey: string, worklogId: string): Promise<void> {
+      info(`[JIRA Client] Deleting worklog ${worklogId} from ${issueKey}`)
+
+      try {
+        await invoke("jira_delete_worklog", {
+          url: normalizedUrl,
+          username,
+          password,
+          issueKey,
+          worklogId,
+        })
+        debug(`[JIRA Client] Worklog deleted: ${worklogId}`)
+      } catch (error) {
+        logError(`[JIRA Client] Failed to delete worklog: ${error}`)
+        throw mapJiraError(error, config)
+      }
+    },
   }
 }
 

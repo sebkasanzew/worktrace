@@ -25,11 +25,9 @@ test.describe("Updater", () => {
     await mockJiraConfig({ page })
 
     // Add mocks: updater check returns an available update
-    await page.addInitScript(
-      setupTauriMocks({
-        "plugin:updater|check": updateMetadata,
-      })
-    )
+    await setupTauriMocks(page, {
+      "plugin:updater|check": updateMetadata,
+    })
 
     await triggerUpdateCheck(page)
 

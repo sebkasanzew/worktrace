@@ -41,6 +41,8 @@ pub fn run() {
             jira_api_request,
             jira_get_current_user,
             jira_add_worklog,
+            jira_update_worklog,
+            jira_delete_worklog,
             jira_get_worklogs
         ])
         .run(tauri::generate_context!())

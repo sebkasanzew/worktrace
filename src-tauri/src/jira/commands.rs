@@ -198,6 +198,119 @@ pub fn jira_add_worklog(
 
 #[tauri::command]
 #[specta::specta]
+pub fn jira_update_worklog(
+    url: String,
+    username: String,
+    password: String,
+    issue_key: String,
+    worklog_id: String,
+    payload: WorklogPayload,
+) -> Result<WorklogResponse, String> {
+    log::info!(target: "jira", "Updating worklog {} for {}", worklog_id, issue_key);
+    
+    // Parse and format started time
+    let mut started_str = payload.started.clone();
+    if let Some(sign_idx) = started_str.rfind(['+', '-']) {
+        if started_str.len() >= sign_idx + 5
+            && started_str.chars().nth(sign_idx + 3) != Some(':')
+        {
+            started_str.insert(sign_idx + 3, ':');
+        }
+    }
+
+    let started: OffsetDateTime = OffsetDateTime::parse(&started_str, &Rfc3339)
+        .map_err(|e| format!("Invalid 'started' timestamp: {}", e))?;
+    
+    let time_format = time::format_description::parse(
+        "[year]-[month]-[day]T[hour]:[minute]:[second].[subsecond digits:3][offset_hour sign:mandatory][offset_minute]"
+    ).map_err(|e| format!("Failed to create time format: {}", e))?;
+    let started_formatted = started.format(&time_format)
+        .map_err(|e| format!("Failed to format started time: {}", e))?;
+
+    // Create ADF comment
+    let comment_adf = json!({
+        "version": 1,
+        "type": "doc",
+        "content": [
+            {
+                "type": "paragraph",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": payload.comment
+                    }
+                ]
+            }
+        ]
+    });
+
+    let worklog_payload = json!({
+        "timeSpentSeconds": payload.time_spent_seconds,
+        "started": started_formatted,
+        "comment": comment_adf
+    });
+
+    let client = reqwest::blocking::Client::new();
+    let auth_string = format!("{}:{}", username, password);
+    let auth_header = format!(
+        "Basic {}",
+        base64::Engine::encode(&base64::engine::general_purpose::STANDARD, auth_string.as_bytes())
+    );
+    
+    let response = client
+        .put(format!("{}/rest/api/3/issue/{}/worklog/{}", url, issue_key, worklog_id))
+        .header("Authorization", auth_header)
+        .header("Content-Type", "application/json")
+        .json(&worklog_payload)
+        .send()
+        .map_err(|e| format!("Failed to send request to JIRA: {}", e))?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_text = response.text().unwrap_or_else(|_| "Unknown error".to_string());
+        return Err(format!("JIRA API error {}: {}", status, error_text));
+    }
+
+    log::debug!(target: "jira", "Worklog {} updated successfully", worklog_id);
+    Ok(WorklogResponse { id: worklog_id })
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn jira_delete_worklog(
+    url: String,
+    username: String,
+    password: String,
+    issue_key: String,
+    worklog_id: String,
+) -> Result<(), String> {
+    log::info!(target: "jira", "Deleting worklog {} from {}", worklog_id, issue_key);
+
+    let client = reqwest::blocking::Client::new();
+    let auth_string = format!("{}:{}", username, password);
+    let auth_header = format!(
+        "Basic {}",
+        base64::Engine::encode(&base64::engine::general_purpose::STANDARD, auth_string.as_bytes())
+    );
+    
+    let response = client
+        .delete(format!("{}/rest/api/3/issue/{}/worklog/{}", url, issue_key, worklog_id))
+        .header("Authorization", auth_header)
+        .send()
+        .map_err(|e| format!("Failed to send request to JIRA: {}", e))?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_text = response.text().unwrap_or_else(|_| "Unknown error".to_string());
+        return Err(format!("JIRA API error {}: {}", status, error_text));
+    }
+
+    log::debug!(target: "jira", "Worklog {} deleted successfully", worklog_id);
+    Ok(())
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn jira_get_worklogs(
     url: String,
     username: String,
