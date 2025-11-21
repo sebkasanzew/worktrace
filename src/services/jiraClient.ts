@@ -2,8 +2,17 @@ import { invoke } from "@tauri-apps/api/core"
 import { debug, info, error as logError } from "@tauri-apps/plugin-log"
 import { z } from "zod"
 import { redactSensitive } from "@/lib/utils"
-import { commands, type JiraSearchResponse, type JiraUserSession } from "@/types/bindings"
-import { jiraSearchResponseSchema, jiraUserSessionSchema } from "@/types/bindings.zod"
+import {
+  commands,
+  type JiraSearchResponse,
+  type JiraUserSession,
+  type JiraWorklogListResponse,
+} from "@/types/bindings"
+import {
+  jiraSearchResponseSchema,
+  jiraUserSessionSchema,
+  jiraWorklogListResponseSchema,
+} from "@/types/bindings.zod"
 import type { JiraConfig, WorklogPayload, WorklogResponse } from "@/types/jira"
 
 /**
@@ -141,6 +150,9 @@ export function createJiraClient(config: JiraConfig) {
      */
     async addWorklog(issueKey: string, payload: WorklogPayload): Promise<WorklogResponse> {
       info(`[JIRA Client] Adding worklog to ${issueKey}`)
+      debug(
+        `[JIRA Client] Payload: ${payload.timeSpentSeconds}s, comment: "${payload.comment}", started: ${payload.started}`
+      )
       const schema = z.object({ id: z.string() })
       try {
         const result = await invoke("jira_add_worklog", {
@@ -155,6 +167,30 @@ export function createJiraClient(config: JiraConfig) {
         return validated
       } catch (error) {
         logError(`[JIRA Client] Failed to add worklog: ${error}`)
+        throw mapJiraError(error, config)
+      }
+    },
+
+    /**
+     * Gets worklogs for a specific issue
+     */
+    async getWorklogs(issueKey: string): Promise<JiraWorklogListResponse> {
+      info(`[JIRA Client] Fetching worklogs for ${issueKey}`)
+
+      try {
+        const result = await commands.jiraGetWorklogs(normalizedUrl, username, password, issueKey)
+
+        if (result.status === "error") {
+          throw new Error(result.error)
+        }
+
+        // Validate response with Zod
+        const validated = jiraWorklogListResponseSchema.parse(result.data)
+        debug(`[JIRA Client] Found ${validated.worklogs.length} worklogs`)
+
+        return validated
+      } catch (error) {
+        logError(`[JIRA Client] Failed to get worklogs: ${error}`)
         throw mapJiraError(error, config)
       }
     },

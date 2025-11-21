@@ -62,6 +62,22 @@ export const commands = {
       else return { status: "error", error: e as any }
     }
   },
+  async jiraGetWorklogs(
+    url: string,
+    username: string,
+    password: string,
+    issueKey: string
+  ): Promise<Result<JiraWorklogListResponse, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("jira_get_worklogs", { url, username, password, issueKey }),
+      }
+    } catch (e) {
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
+    }
+  },
   async saveJiraConfig(
     url: string,
     username: string,
@@ -141,6 +157,37 @@ export type JiraStatus = { name: string }
  * JIRA current user session info
  */
 export type JiraUserSession = { name: string }
+/**
+ * JIRA worklog
+ */
+export type JiraWorklog = {
+  id: string
+  author: JiraWorklogAuthor | null
+  updateAuthor: JiraWorklogAuthor | null
+  comment: string | null
+  created: string
+  updated: string
+  started: string
+  timeSpent: string
+  timeSpentSeconds: number
+}
+/**
+ * JIRA worklog author
+ */
+export type JiraWorklogAuthor = {
+  displayName: string
+  emailAddress: string | null
+  avatarUrls: [string, string][] | null
+}
+/**
+ * JIRA worklog list response
+ */
+export type JiraWorklogListResponse = {
+  worklogs: JiraWorklog[]
+  total: number
+  maxResults: number
+  startAt: number
+}
 /**
  * Worklog payload for creating a worklog in JIRA
  */

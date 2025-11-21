@@ -4,7 +4,7 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query"
-import type { JiraSearchResponse, JiraUserSession } from "@/types/bindings"
+import type { JiraSearchResponse, JiraUserSession, JiraWorklogListResponse } from "@/types/bindings"
 import type { WorklogPayload, WorklogResponse } from "@/types/jira"
 import { configService } from "./jira"
 import { jiraKeys } from "./jira.keys"
@@ -76,5 +76,23 @@ export function useAddWorklog(): UseMutationResult<
       const client = createJiraClient(config)
       return client.addWorklog(issueKey, payload)
     },
+  })
+}
+
+/**
+ * Hook to fetch worklogs for a specific issue
+ * Requires valid JIRA configuration
+ */
+export function useIssueWorklogs(issueKey: string): UseQueryResult<JiraWorklogListResponse, Error> {
+  return useQuery({
+    queryKey: jiraKeys.issueWorklogs(issueKey),
+    queryFn: async () => {
+      const config = await configService.get()
+      const client = createJiraClient(config)
+      return client.getWorklogs(issueKey)
+    },
+    enabled: !!issueKey,
+    retry: 1,
+    staleTime: 30 * 1000, // 30 seconds
   })
 }

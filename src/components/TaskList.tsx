@@ -1,9 +1,11 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { info, info as logInfo } from "@tauri-apps/plugin-log"
-import { LogOut, Play, RefreshCw, Square } from "lucide-react"
+import { ChevronDown, ChevronUp, LogOut, Play, RefreshCw, Square } from "lucide-react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { WorklogDialog } from "@/components/WorklogDialog"
+import { WorklogHistory } from "@/components/WorklogHistory"
 import { formatDuration } from "@/lib/utils"
 import { configService } from "@/services/jira"
 import { useAddWorklog, useMyIssues } from "@/services/jira.hooks"
@@ -16,6 +18,9 @@ interface TaskListProps {
 }
 
 export function TaskList({ onLogout }: TaskListProps) {
+  const [expandedIssue, setExpandedIssue] = useState<string | null>(null)
+  const queryClient = useQueryClient()
+
   const { data: config } = useQuery<JiraConfig>({
     queryKey: jiraKeys.config(),
     queryFn: () => configService.get(),
@@ -147,9 +152,32 @@ export function TaskList({ onLogout }: TaskListProps) {
                           <span>Assigned to: {issue.fields.assignee.displayName}</span>
                         )}
                       </div>
-                      <div>Updated: {new Date(issue.fields.updated).toLocaleDateString()}</div>
+                      <div className="flex items-center gap-4">
+                        <div>Updated: {new Date(issue.fields.updated).toLocaleDateString()}</div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            setExpandedIssue(expandedIssue === issue.key ? null : issue.key)
+                          }
+                          className="h-7 px-2"
+                        >
+                          {expandedIssue === issue.key ? (
+                            <>
+                              <ChevronUp className="h-4 w-4" />
+                              <span className="ml-1">Hide History</span>
+                            </>
+                          ) : (
+                            <>
+                              <ChevronDown className="h-4 w-4" />
+                              <span className="ml-1">Show History</span>
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
+                  {expandedIssue === issue.key && <WorklogHistory issueKey={issue.key} />}
                 </Card>
               ))}
             </div>
@@ -177,13 +205,17 @@ export function TaskList({ onLogout }: TaskListProps) {
         }}
         onSubmit={({ timeSpentSeconds, comment, started }) => {
           if (!activeIssueKey) return
-          logInfo(`[TaskList] Submitting worklog for ${activeIssueKey}`)
+          logInfo(
+            `[TaskList] Submitting worklog for ${activeIssueKey}: ${timeSpentSeconds}s, comment: "${comment}"`
+          )
           addWorklog.mutate(
             { issueKey: activeIssueKey, payload: { timeSpentSeconds, comment, started } },
             {
               onSuccess: () => {
                 clearAfterLogged()
                 refetch()
+                // Invalidate worklogs for this issue
+                queryClient.invalidateQueries({ queryKey: jiraKeys.issueWorklogs(activeIssueKey) })
               },
             }
           )

@@ -7,6 +7,7 @@ pub fn export_bindings() {
         crate::jira::commands::jira_api_request,
         crate::jira::commands::jira_get_current_user,
         crate::jira::commands::jira_add_worklog,
+        crate::jira::commands::jira_get_worklogs,
         crate::jira::config::save_jira_config,
         crate::jira::config::get_jira_config,
         crate::jira::config::clear_jira_config,

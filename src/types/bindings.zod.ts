@@ -34,6 +34,24 @@ export const jiraUserSessionSchema = z.object({
   name: z.string(),
 })
 
+export const jiraWorklogAuthorSchema = z.object({
+  displayName: z.string(),
+  emailAddress: z.string().nullable(),
+  avatarUrls: z.array(z.tuple([z.string(), z.string()])).nullable(),
+})
+
+export const jiraWorklogSchema = z.object({
+  id: z.string(),
+  author: jiraWorklogAuthorSchema.nullable(),
+  updateAuthor: jiraWorklogAuthorSchema.nullable(),
+  comment: z.string().nullable(),
+  created: z.string(),
+  updated: z.string(),
+  started: z.string(),
+  timeSpent: z.string(),
+  timeSpentSeconds: z.number(),
+})
+
 export const worklogPayloadSchema = z.object({
   timeSpentSeconds: z.number(),
   started: z.string(),
@@ -48,4 +66,11 @@ export const jiraSearchResponseSchema = z.object({
   issues: z.array(jiraIssueSchema),
   total: z.number(),
   isLast: z.boolean(),
+})
+
+export const jiraWorklogListResponseSchema = z.object({
+  worklogs: z.array(jiraWorklogSchema),
+  total: z.number(),
+  maxResults: z.number(),
+  startAt: z.number(),
 })
