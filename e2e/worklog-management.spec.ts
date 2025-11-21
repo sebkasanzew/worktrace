@@ -1,0 +1,137 @@
+import { expect, test } from "@playwright/test"
+import {
+  mockJiraConfig,
+  mockJiraSearchResponse,
+  mockJiraUserSession,
+  setupWorklogMocks,
+} from "./mocks/jira"
+
+test.describe("Worklog Management", () => {
+  test.beforeEach(async ({ page }) => {
+    // Setup JIRA config
+    await mockJiraConfig({ page })
+
+    // Setup user session
+    await mockJiraUserSession({ page })
+
+    // Setup search response with a single issue
+    await mockJiraSearchResponse({
+      page,
+      override: {
+        total: 1,
+        isLast: true,
+        issues: [
+          {
+            id: "10001",
+            key: "KAN-1",
+            fields: {
+              summary: "Test Issue",
+              status: { name: "In Progress" },
+              assignee: {
+                displayName: "Test User",
+                emailAddress: "test@example.com",
+              },
+              created: Date.parse("2025-11-20T10:00:00.000Z"),
+              updated: Date.parse("2025-11-21T14:30:00.000Z"),
+            },
+          },
+        ],
+      },
+    })
+
+    // Setup worklog mocks with stateful data
+    await setupWorklogMocks({ page })
+
+    await page.goto("/")
+  })
+
+  test("should display worklogs in reverse chronological order", async ({ page }) => {
+    await page.waitForSelector('text="KAN-1"')
+    await page.click('button:has-text("Show History")')
+    await page.waitForSelector('text="Work Log History (2)"')
+
+    // Get all worklog comments
+    const comments = await page.locator(".text-xs.text-muted-foreground.mt-2").allTextContents()
+
+    // Most recent should be first
+    expect(comments[0]).toBe("Second worklog")
+    expect(comments[1]).toBe("First worklog")
+  })
+
+  test("should open edit dialog and pre-fill data", async ({ page }) => {
+    await page.waitForSelector('text="KAN-1"')
+    await page.click('button:has-text("Show History")')
+
+    // Click first (most recent) worklog edit button
+    await page.locator('button[aria-label="Edit worklog"]').first().click()
+
+    // Dialog should be visible
+    await expect(page.locator('text="Edit Worklog"')).toBeVisible()
+
+    // Time should be pre-filled (7200 seconds = 2:00:00)
+    const timeInput = page.locator("input#time")
+    await expect(timeInput).toHaveValue("2:00:00")
+
+    // Comment should be pre-filled
+    const commentInput = page.locator("input#comment")
+    await expect(commentInput).toHaveValue("Second worklog")
+  })
+
+  test("should update worklog when saved", async ({ page }) => {
+    await page.waitForSelector('text="KAN-1"')
+    await page.click('button:has-text("Show History")')
+    await page.locator('button[aria-label="Edit worklog"]').first().click()
+
+    // Change the comment
+    await page.fill("input#comment", "Updated comment")
+    await page.fill("input#time", "3h")
+
+    // Save
+    await page.click('button:has-text("Save Changes")')
+
+    // Dialog should close
+    await expect(page.locator('text="Edit Worklog"')).not.toBeVisible({ timeout: 5000 })
+  })
+
+  test("should show delete confirmation on first click", async ({ page }) => {
+    await page.waitForSelector('text="KAN-1"')
+    await page.click('button:has-text("Show History")')
+    await page.locator('button[aria-label="Edit worklog"]').first().click()
+
+    // Click delete button
+    await page.click('button:has-text("Delete Worklog")')
+
+    // Should show confirmation
+    await expect(page.locator('button:has-text("Click again to confirm delete")')).toBeVisible()
+  })
+
+  test("should delete worklog on second confirmation click", async ({ page }) => {
+    await page.waitForSelector('text="KAN-1"')
+    await page.click('button:has-text("Show History")')
+
+    // Verify we have 2 worklogs initially
+    await page.waitForSelector('text="Work Log History (2)"')
+
+    await page.locator('button[aria-label="Edit worklog"]').first().click()
+
+    // Double click to delete
+    await page.click('button:has-text("Delete Worklog")')
+    await page.click('button:has-text("Click again to confirm delete")')
+
+    // Dialog should close and count should decrease
+    await expect(page.locator('text="Edit Worklog"')).not.toBeVisible()
+    await page.waitForSelector('text="Work Log History (1)"')
+  })
+
+  test("should close dialog when clicking Cancel", async ({ page }) => {
+    await page.waitForSelector('text="KAN-1"')
+    await page.click('button:has-text("Show History")')
+    await page.locator('button[aria-label="Edit worklog"]').first().click()
+
+    await expect(page.locator('text="Edit Worklog"')).toBeVisible()
+
+    await page.click('button:has-text("Cancel")')
+
+    await expect(page.locator('text="Edit Worklog"')).not.toBeVisible()
+  })
+})

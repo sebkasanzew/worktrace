@@ -10,6 +10,9 @@ export type TauriCommand =
   | "jira_api_request"
   | "jira_get_current_user"
   | "jira_add_worklog"
+  | "jira_get_worklogs"
+  | "jira_update_worklog"
+  | "jira_delete_worklog"
   | "save_jira_config"
   | "get_jira_config"
   | "clear_jira_config"
@@ -49,6 +52,24 @@ export const mockJiraData = {
   config: getDefaultMockConfig(),
   currentUser: getDefaultMockUserSession(),
   searchResponse: getDefaultMockSearchResponse(),
+  worklogsResponse: {
+    status: "ok",
+    data: {
+      worklogs: [
+        {
+          id: "10001",
+          timeSpentSeconds: 3600,
+          timeSpent: "1h",
+          started: "2025-11-21T10:00:00.000+0100",
+          comment: "Test worklog",
+          author: {
+            displayName: "Test User",
+            avatarUrls: [],
+          },
+        },
+      ],
+    },
+  },
 }
 
 /**
@@ -109,64 +130,46 @@ export async function injectCommandErrors(
 }
 
 /**
- * Creates the mock invoke handler function
- * Separated for clarity and easier maintenance
- */
-function createMockInvokeHandler(responses: Record<string, unknown>) {
-  return async (cmd: TauriCommand, _args?: unknown) => {
-    // Simple call log for debugging
-    window.__TAURI_INVOKE_LOG = window.__TAURI_INVOKE_LOG || []
-    window.__TAURI_INVOKE_LOG.push(cmd)
-
-    // Return mocked response if available
-    if (responses[cmd]) {
-      return responses[cmd]
-    }
-
-    // Updater plugin mock: return no update by default
-    if (cmd === "plugin:updater|check") {
-      return null
-    }
-
-    // Store plugin minimal mocks
-    if (cmd === "plugin:store|load") return null
-    if (cmd === "plugin:store|set") return null
-    if (cmd === "plugin:store|save") return null
-    if (cmd === "plugin:store|get") return null
-
-    // Default responses for common commands
-    switch (cmd) {
-      case "get_jira_config":
-        return mockJiraData.config
-
-      case "save_jira_config":
-        return null
-
-      case "clear_jira_config":
-        return null
-
-      case "jira_get_current_user":
-        return mockJiraData.currentUser
-
-      case "jira_api_request":
-        return mockJiraData.searchResponse
-
-      case "jira_add_worklog":
-        return { id: "1" }
-
-      default:
-        throw new Error(`Unhandled Tauri command: ${cmd}`)
-    }
-  }
-}
-
-/**
  * Sets up Tauri IPC mocks for e2e tests
  * Call this in page.addInitScript() before navigating
  */
-export function setupTauriMocks(responses: Record<string, unknown> = {}) {
-  // Use proper function instead of string template
-  return () => {
+export async function setupTauriMocks(
+  page: Page,
+  responses: Record<string, unknown> = {}
+): Promise<void> {
+  await page.addInitScript((responses) => {
+    const createMockInvokeHandler = (responses: Record<string, unknown>) => {
+      return async (cmd: string, args?: unknown) => {
+        // Simple call log for debugging
+        window.__TAURI_INVOKE_LOG = window.__TAURI_INVOKE_LOG || []
+        window.__TAURI_INVOKE_LOG.push(cmd)
+
+        // Return mocked response if available
+        if (responses[cmd]) {
+          const response = responses[cmd]
+          // If it's a function, call it with args
+          if (typeof response === "function") {
+            return response(args)
+          }
+          return response
+        }
+
+        // Updater plugin mock: return no update by default
+        if (cmd === "plugin:updater|check") {
+          return null
+        }
+
+        // Store plugin minimal mocks
+        if (cmd === "plugin:store|load") return null
+        if (cmd === "plugin:store|set") return null
+        if (cmd === "plugin:store|save") return null
+        if (cmd === "plugin:store|get") return null
+
+        // Default: return null for unknown commands
+        return null
+      }
+    }
+
     const mockInvoke = createMockInvokeHandler(responses)
 
     window.__TAURI_INTERNALS__ = window.__TAURI_INTERNALS__ || {}
@@ -202,7 +205,7 @@ export function setupTauriMocks(responses: Record<string, unknown> = {}) {
       const list = listeners.get(event) || []
       for (const cb of list) cb({ event, payload })
     }
-  }
+  }, responses)
 }
 
 /**
@@ -212,5 +215,15 @@ export async function mockTauriInvoke(
   page: Page,
   responses: Record<string, unknown> = {}
 ): Promise<void> {
-  await page.addInitScript(setupTauriMocks(responses))
+  await setupTauriMocks(page, responses)
+}
+
+/**
+ * Helper to mock JIRA config in store
+ */
+export async function mockJiraConfig(page: Page): Promise<void> {
+  await setupTauriMocks(page, {
+    get_jira_config: mockJiraData.config,
+    "plugin:store|get": mockJiraData.config,
+  })
 }

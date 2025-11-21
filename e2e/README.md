@@ -47,6 +47,23 @@ test("my test", async ({ page }) => {
 });
 ```
 
+## Test Files
+
+### Worklog Management
+- **`worklog-edit.spec.ts`** - Tests for editing existing worklogs (form pre-fill, update API, state management)
+- **`worklog-delete.spec.ts`** - Tests for deleting worklogs (two-click confirmation, API calls, error handling)
+- **`worklog-sort.spec.ts`** - Tests for worklog sorting (reverse chronological order, refresh behavior)
+- **`duration-parsing.spec.ts`** - Tests for time duration parsing (2h, 1.5h, 90m, 2h 30m, 1:30, etc.)
+
+### Authentication & Tasks
+- **`login.spec.ts`** - JIRA authentication flow
+- **`task-list.spec.ts`** - Task list display and management
+- **`jira-integration.spec.ts`** - JIRA API integration
+
+### Application Updates
+- **`updater.spec.ts`** - Update functionality
+- **`updater-error.spec.ts`** - Update error handling
+
 ## Benefits
 
 - No real JIRA instance needed
