@@ -61,6 +61,7 @@ jobs:
             target: x86_64-pc-windows-msvc
             artifact_patterns: |
               src-tauri/target/release/bundle/msi/*.msi
+              src-tauri/target/release/bundle/nsis/*.exe
               src-tauri/target/release/bundle/nsis/*.zip*
 
     runs-on: ${{ matrix.platform }}
@@ -84,6 +85,18 @@ jobs:
 
       - name: Install frontend dependencies
         run: pnpm install
+
+      - name: Check for signing key
+        run: |
+          if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            echo "Error: TAURI_SIGNING_PRIVATE_KEY is not set. The updater artifacts will not be generated."
+            exit 1
+          else
+            echo "TAURI_SIGNING_PRIVATE_KEY is set."
+          fi
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
 
       - name: Build application
         run: pnpm build:all
