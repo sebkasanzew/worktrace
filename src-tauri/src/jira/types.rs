@@ -79,3 +79,37 @@ pub struct WorklogPayload {
 pub struct WorklogResponse {
     pub id: String,
 }
+
+/// JIRA worklog author
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct JiraWorklogAuthor {
+    pub display_name: String,
+    pub email_address: Option<String>,
+    pub avatar_urls: Option<Vec<(String, String)>>,
+}
+
+/// JIRA worklog
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct JiraWorklog {
+    pub id: String,
+    pub author: Option<JiraWorklogAuthor>,
+    pub update_author: Option<JiraWorklogAuthor>,
+    pub comment: Option<String>,
+    pub created: String,
+    pub updated: String,
+    pub started: String,
+    pub time_spent: String,
+    pub time_spent_seconds: u64,
+}
+
+/// JIRA worklog list response
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct JiraWorklogListResponse {
+    pub worklogs: Vec<JiraWorklog>,
+    pub total: u64,
+    pub max_results: u64,
+    pub start_at: u64,
+}
