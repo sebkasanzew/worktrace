@@ -275,6 +275,10 @@ export function TaskList({ onLogout }: TaskListProps) {
           logInfo("[TaskList] Worklog canceled, resuming timer")
           resume()
         }}
+        onDelete={() => {
+          logInfo("[TaskList] Worklog deleted, stopping timer")
+          clearAfterLogged()
+        }}
         onSubmit={({ timeSpentSeconds, comment, started }) => {
           if (!activeIssueKey) return
           logInfo(
