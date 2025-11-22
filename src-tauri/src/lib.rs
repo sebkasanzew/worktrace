@@ -38,6 +38,8 @@ pub fn run() {
             save_jira_config,
             get_jira_config,
             clear_jira_config,
+            get_app_settings,
+            save_app_settings,
             jira_api_request,
             jira_get_current_user,
             jira_add_worklog,

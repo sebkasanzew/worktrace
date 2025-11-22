@@ -6,9 +6,10 @@ import { updaterService } from "@/services/updater"
 
 interface UpdateCheckerProps {
   onCheckComplete?: () => void
+  silent?: boolean
 }
 
-export function UpdateChecker({ onCheckComplete }: UpdateCheckerProps) {
+export function UpdateChecker({ onCheckComplete, silent = false }: UpdateCheckerProps) {
   const [updateAvailable, setUpdateAvailable] = useState(false)
   const [updateVersion, setUpdateVersion] = useState<string>("")
   const [downloading, setDownloading] = useState(false)
@@ -54,48 +55,53 @@ export function UpdateChecker({ onCheckComplete }: UpdateCheckerProps) {
           setUpdateVersion(updateInfo.version || "")
           // Don't call onCheckComplete here - keep component mounted to show update card
         } else {
-          // Show dialog for manual checks
-          const { message } = await import("@tauri-apps/plugin-dialog")
-          await message("You're running the latest version!", {
-            title: "No Updates Available",
-            kind: "info",
-          })
+          if (!silent) {
+            // Show dialog for manual checks
+            const { message } = await import("@tauri-apps/plugin-dialog")
+            await message("You're running the latest version!", {
+              title: "No Updates Available",
+              kind: "info",
+            })
+          }
           // Call onCheckComplete to unmount after showing dialog
           onCheckComplete?.()
         }
       } catch (err) {
         logError(`Failed to check for updates: ${err}`)
-        const errorMessage = err instanceof Error ? err.message : String(err)
 
-        // Show dialog for errors
-        const { message } = await import("@tauri-apps/plugin-dialog")
+        if (!silent) {
+          const errorMessage = err instanceof Error ? err.message : String(err)
 
-        // Check if it's a network/fetch error (update endpoint doesn't exist yet)
-        if (
-          errorMessage.includes("404") ||
-          errorMessage.includes("Not Found") ||
-          errorMessage.includes("fetch")
-        ) {
-          await message(
-            "Update check is not available yet. This feature will work once the first release is published.",
-            {
-              title: "Update Check Unavailable",
-              kind: "info",
-            }
-          )
-        } else if (errorMessage.includes("was not found on the response `platforms` object")) {
-          await message(
-            "Update server configuration incomplete (missing platform). Please try again later.",
-            {
+          // Show dialog for errors
+          const { message } = await import("@tauri-apps/plugin-dialog")
+
+          // Check if it's a network/fetch error (update endpoint doesn't exist yet)
+          if (
+            errorMessage.includes("404") ||
+            errorMessage.includes("Not Found") ||
+            errorMessage.includes("fetch")
+          ) {
+            await message(
+              "Update check is not available yet. This feature will work once the first release is published.",
+              {
+                title: "Update Check Unavailable",
+                kind: "info",
+              }
+            )
+          } else if (errorMessage.includes("was not found on the response `platforms` object")) {
+            await message(
+              "Update server configuration incomplete (missing platform). Please try again later.",
+              {
+                title: "Update Check Failed",
+                kind: "error",
+              }
+            )
+          } else {
+            await message(`Failed to check for updates: ${errorMessage}`, {
               title: "Update Check Failed",
               kind: "error",
-            }
-          )
-        } else {
-          await message(`Failed to check for updates: ${errorMessage}`, {
-            title: "Update Check Failed",
-            kind: "error",
-          })
+            })
+          }
         }
         // Call onCheckComplete to unmount after showing dialog
         onCheckComplete?.()
@@ -106,7 +112,7 @@ export function UpdateChecker({ onCheckComplete }: UpdateCheckerProps) {
     if (ranOnceRef.current) return
     ranOnceRef.current = true
     void checkForUpdates()
-  }, [onCheckComplete]) // Include onCheckComplete in dependencies
+  }, [onCheckComplete, silent]) // Include onCheckComplete in dependencies
 
   const installUpdate = async () => {
     try {

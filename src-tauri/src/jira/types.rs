@@ -100,6 +100,14 @@ pub struct WorklogPayload {
     pub comment: String,
 }
 
+/// Worklog type configuration
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct WorklogType {
+    pub name: String,
+    pub short_code: String,
+}
+
 /// Minimal worklog response
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -139,4 +147,18 @@ pub struct JiraWorklogListResponse {
     pub total: u64,
     pub max_results: u64,
     pub start_at: u64,
+}
+
+/// Application settings
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct AppSettings {
+    pub jira_instance_url: String,
+    pub jira_username: String,
+    pub jira_api_token: String,
+    pub theme: String,
+    pub worklog_types: Vec<WorklogType>,
+    pub default_worklog_description: String,
+    pub enable_automatic_updates: bool,
+    pub always_on_top: bool,
 }

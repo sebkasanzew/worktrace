@@ -21,6 +21,8 @@ export type TauriCommand =
   | "plugin:store|set"
   | "plugin:store|save"
   | "plugin:store|get"
+  | "get_app_settings"
+  | "save_app_settings"
 
 // Tauri type definitions for E2E tests
 interface TauriInternals {
@@ -94,7 +96,50 @@ export async function injectCommandMock<T>(
         if (command === cmd) {
           return data
         }
-        return originalInvoke ? originalInvoke(command, args) : null
+
+        // Handle common plugins if originalInvoke is missing or returns null
+        if (!originalInvoke) {
+          if (command.startsWith("plugin:log|")) return null
+          if (command.startsWith("plugin:store|")) return null
+          if (command === "plugin:updater|check") return null
+          return null
+        }
+
+        return originalInvoke(command, args)
+      }
+
+      // Ensure basic mocks for log and event are present
+      const internals = window.__TAURI_INTERNALS__ as unknown as Record<string, unknown>
+      if (!internals.log) {
+        internals.log = {
+          log: () => Promise.resolve(),
+          info: () => Promise.resolve(),
+          warn: () => Promise.resolve(),
+          error: () => Promise.resolve(),
+          debug: () => Promise.resolve(),
+        }
+      }
+
+      if (!internals.event) {
+        const listeners = new Map<string, Array<(event: unknown) => void>>()
+        internals.event = {
+          listen: async (event: string, cb: (event: unknown) => void) => {
+            const arr = listeners.get(event) || []
+            arr.push(cb)
+            listeners.set(event, arr)
+            return () => {
+              const list = listeners.get(event) || []
+              const idx = list.indexOf(cb)
+              if (idx > -1) list.splice(idx, 1)
+              listeners.set(event, list)
+            }
+          },
+        }
+        // Helper to emit events from tests
+        window.__TAURI_MOCK_EMIT = (event: string, payload: unknown) => {
+          const list = listeners.get(event) || []
+          for (const cb of list) cb({ event, payload })
+        }
       }
     },
     [commandName, mockData]
@@ -157,6 +202,27 @@ export async function setupTauriMocks(
         // Updater plugin mock: return no update by default
         if (cmd === "plugin:updater|check") {
           return null
+        }
+
+        // App settings mock
+        if (cmd === "get_app_settings") {
+          return {
+            status: "ok",
+            data: {
+              jiraInstanceUrl: "",
+              jiraUsername: "",
+              jiraApiToken: "",
+              theme: "system",
+              worklogTypes: [],
+              defaultWorklogDescription: "",
+              enableAutomaticUpdates: false,
+              alwaysOnTop: false,
+            },
+          }
+        }
+
+        if (cmd === "save_app_settings") {
+          return { status: "ok", data: null }
         }
 
         // Store plugin minimal mocks

@@ -37,6 +37,17 @@ function generateJiraConfig(options: { override?: Partial<JiraConfig> } = {}): J
   return options.override ? mergePartially.deep(response, options.override) : response
 }
 
+const defaultAppSettings = {
+  jiraInstanceUrl: "",
+  jiraUsername: "",
+  jiraApiToken: "",
+  theme: "system",
+  worklogTypes: [],
+  defaultWorklogDescription: "",
+  enableAutomaticUpdates: false,
+  alwaysOnTop: false,
+}
+
 /**
  * Mock JIRA config as stored - main function for tests
  * Injects a mocked JIRA configuration into the page
@@ -55,6 +66,8 @@ function generateJiraConfig(options: { override?: Partial<JiraConfig> } = {}): J
 export async function mockJiraConfig(options: ConfigMockOptions): Promise<void> {
   const config = generateJiraConfig({ override: options.override })
   await injectCommandMock(options.page, "get_jira_config", config)
+  await injectCommandMock(options.page, "get_app_settings", defaultAppSettings)
+  await injectCommandMock(options.page, "save_app_settings", null)
 }
 
 /**
@@ -76,6 +89,8 @@ export async function mockNoJiraConfig(options: EmptyConfigMockOptions): Promise
   }
 
   await injectCommandMock(options.page, "get_jira_config", emptyConfig)
+  await injectCommandMock(options.page, "get_app_settings", defaultAppSettings)
+  await injectCommandMock(options.page, "save_app_settings", null)
 }
 
 /**
