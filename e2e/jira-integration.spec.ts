@@ -75,7 +75,7 @@ test.describe("JIRA Integration with Mocked Tauri APIs", () => {
     await page.getByLabel("JIRA URL").fill("http://insecure.com")
     await page.getByLabel(/email/i).fill("test@example.com")
     await page.getByLabel(/api token/i).fill("token")
-    await page.getByRole("button", { name: /save/i }).click()
+    await page.getByRole("button", { name: /connect to jira/i }).click()
 
     await expect(page.getByText(/https/i)).toBeVisible()
   })
