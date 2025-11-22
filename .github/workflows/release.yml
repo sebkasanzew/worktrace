@@ -108,6 +108,10 @@ jobs:
         run: ls -R src-tauri/target/release/bundle
         shell: bash
 
+      - name: Generate latest.json
+        run: node scripts/generate-latest-json.js
+        shell: bash
+
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
