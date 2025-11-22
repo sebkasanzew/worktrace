@@ -1,5 +1,6 @@
 import { Loader2, Plus, Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,6 +13,7 @@ interface SettingsProps {
 }
 
 export function Settings({ onClose }: SettingsProps) {
+  const { t, i18n } = useTranslation()
   const { data: settings, isLoading, error } = useAppSettings()
   const saveMutation = useSaveAppSettings()
 
@@ -60,7 +62,7 @@ export function Settings({ onClose }: SettingsProps) {
       if (!prev) return null
       const newState = {
         ...prev,
-        worklogTypes: [...prev.worklogTypes, { name: "New Type", shortCode: "" }],
+        worklogTypes: [...prev.worklogTypes, { name: t("New Type"), shortCode: "" }],
       }
       saveMutation.mutate(newState)
       return newState
@@ -92,10 +94,10 @@ export function Settings({ onClose }: SettingsProps) {
   return (
     <div className="min-h-screen bg-background">
       <ViewHeader
-        title="Settings"
+        title={t("Settings")}
         actions={
           <Button variant="outline" size="sm" onClick={onClose}>
-            Close
+            {t("Close")}
           </Button>
         }
       />
@@ -105,11 +107,11 @@ export function Settings({ onClose }: SettingsProps) {
             {/* Left Column */}
             <div className="space-y-8">
               <section>
-                <h2 className="text-xl font-semibold mb-4">JIRA Configuration</h2>
+                <h2 className="text-xl font-semibold mb-4">{t("JIRA Configuration")}</h2>
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="jiraUrl" className="block text-sm font-medium mb-1">
-                      JIRA Instance URL
+                      {t("JIRA URL")}
                     </label>
                     <Input
                       id="jiraUrl"
@@ -119,7 +121,7 @@ export function Settings({ onClose }: SettingsProps) {
                   </div>
                   <div>
                     <label htmlFor="jiraUsername" className="block text-sm font-medium mb-1">
-                      Username (Email)
+                      {t("Username")} ({t("Email Address")})
                     </label>
                     <Input
                       id="jiraUsername"
@@ -129,7 +131,7 @@ export function Settings({ onClose }: SettingsProps) {
                   </div>
                   <div>
                     <label htmlFor="jiraToken" className="block text-sm font-medium mb-1">
-                      API Token
+                      {t("API Token")}
                     </label>
                     <div className="flex gap-2">
                       <Input
@@ -144,7 +146,25 @@ export function Settings({ onClose }: SettingsProps) {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mb-4">Appearance</h2>
+                <h2 className="text-xl font-semibold mb-4">{t("Language")}</h2>
+                <div className="flex gap-4 mb-6">
+                  <Button
+                    variant={i18n.resolvedLanguage === "en" ? "default" : "outline"}
+                    onClick={() => i18n.changeLanguage("en")}
+                    size="sm"
+                  >
+                    English
+                  </Button>
+                  <Button
+                    variant={i18n.resolvedLanguage === "de" ? "default" : "outline"}
+                    onClick={() => i18n.changeLanguage("de")}
+                    size="sm"
+                  >
+                    Deutsch
+                  </Button>
+                </div>
+
+                <h2 className="text-xl font-semibold mb-4">{t("Theme")}</h2>
                 <div className="flex gap-4">
                   {["system", "dark", "light"].map((theme) => (
                     <label key={theme} className="flex items-center gap-2 cursor-pointer">
@@ -162,7 +182,7 @@ export function Settings({ onClose }: SettingsProps) {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mb-4">Other</h2>
+                <h2 className="text-xl font-semibold mb-4">{t("Other")}</h2>
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -170,7 +190,7 @@ export function Settings({ onClose }: SettingsProps) {
                       checked={formData.enableAutomaticUpdates}
                       onChange={(e) => updateField("enableAutomaticUpdates", e.target.checked)}
                     />
-                    Enable Automatic Updates
+                    {t("Enable Automatic Updates")}
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -178,7 +198,7 @@ export function Settings({ onClose }: SettingsProps) {
                       checked={formData.alwaysOnTop}
                       onChange={(e) => updateField("alwaysOnTop", e.target.checked)}
                     />
-                    Always Keep Window on Top
+                    {t("Always on Top")}
                   </label>
                 </div>
               </section>
@@ -187,11 +207,11 @@ export function Settings({ onClose }: SettingsProps) {
             {/* Right Column */}
             <div className="space-y-8">
               <section>
-                <h2 className="text-xl font-semibold mb-4">Worklog Types</h2>
+                <h2 className="text-xl font-semibold mb-4">{t("Worklog Types")}</h2>
                 <div className="space-y-4">
                   <div className="grid grid-cols-[1fr_120px_40px] gap-2 font-medium text-sm text-muted-foreground">
-                    <div>Type Name</div>
-                    <div>Comment Prefix</div>
+                    <div>{t("Type Name")}</div>
+                    <div>{t("Comment Prefix")}</div>
                     <div></div>
                   </div>
                   {formData.worklogTypes.map((type: WorklogType, index: number) => (
@@ -200,7 +220,7 @@ export function Settings({ onClose }: SettingsProps) {
                       <Input
                         value={type.name}
                         onChange={(e) => updateWorklogType(index, "name", e.target.value)}
-                        placeholder="Type Name"
+                        placeholder={t("Type Name")}
                       />
                       <Input
                         value={type.shortCode}
@@ -213,16 +233,16 @@ export function Settings({ onClose }: SettingsProps) {
                     </div>
                   ))}
                   <Button variant="outline" size="sm" onClick={addWorklogType} className="w-full">
-                    <Plus className="h-4 w-4 mr-2" /> Add Type
+                    <Plus className="h-4 w-4 mr-2" /> {t("Add")} Type
                   </Button>
                 </div>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mb-4">Work Log Preferences</h2>
+                <h2 className="text-xl font-semibold mb-4">{t("Work Log Preferences")}</h2>
                 <div>
                   <label htmlFor="defaultDesc" className="block text-sm font-medium mb-1">
-                    Default Work Log Description
+                    {t("Default Worklog Description")}
                   </label>
                   <Input
                     id="defaultDesc"
@@ -239,7 +259,7 @@ export function Settings({ onClose }: SettingsProps) {
           {saveMutation.isPending ? (
             <div className="flex items-center text-muted-foreground">
               <Loader2 className="animate-spin mr-2 h-4 w-4" />
-              Saving...
+              {t("Save")}...
             </div>
           ) : null}
         </div>

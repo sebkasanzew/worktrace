@@ -1,6 +1,7 @@
 import { format } from "date-fns"
 import { Calendar as CalendarIcon, Trash2 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
@@ -31,11 +32,12 @@ export function WorklogForm({
   onSubmit,
   onCancel,
   isSubmitting = false,
-  submitLabel = "Submit",
+  submitLabel,
   showDelete = false,
   onDelete,
   isDeleting = false,
 }: WorklogFormProps) {
+  const { t } = useTranslation()
   const { data: settings } = useAppSettings()
 
   const [timeInput, setTimeInput] = useState(initialValues.timeSpent)
@@ -56,8 +58,8 @@ export function WorklogForm({
 
   const timeError = useMemo(() => {
     const seconds = parseDuration(timeInput)
-    return seconds <= 0 ? "Enter a valid duration" : ""
-  }, [timeInput])
+    return seconds <= 0 ? t("Enter a valid duration") : ""
+  }, [timeInput, t])
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault()
@@ -83,7 +85,7 @@ export function WorklogForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-4">
         <div className="grid gap-2">
-          <span className="text-sm font-medium">Started</span>
+          <span className="text-sm font-medium">{t("Started")}</span>
           <div className="flex gap-2">
             <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
               <PopoverTrigger asChild>
@@ -95,7 +97,7 @@ export function WorklogForm({
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startedDate ? format(startedDate, "PPP") : <span>Pick a date</span>}
+                  {startedDate ? format(startedDate, "PPP") : <span>{t("Pick a date")}</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -134,21 +136,21 @@ export function WorklogForm({
 
         <div className="grid gap-2">
           <label className="text-sm font-medium" htmlFor="wl-time">
-            Time Tracked
+            {t("Time Tracked")}
           </label>
           <Input
             id="wl-time"
-            placeholder="e.g. 1h 30m"
+            placeholder={t("e.g. 1h 30m")}
             value={timeInput}
             onChange={(e) => setTimeInput(e.target.value)}
           />
           {timeError && <p className="text-xs text-destructive">{timeError}</p>}
-          <p className="text-xs text-muted-foreground">Format: 2h 30m, 1.5h, 90m</p>
+          <p className="text-xs text-muted-foreground">{t("Format: 2h 30m, 1.5h, 90m")}</p>
         </div>
 
         <div className="grid gap-2">
           <label className="text-sm font-medium" htmlFor="wl-type">
-            Work Type
+            {t("Work Type")}
           </label>
           <select
             id="wl-type"
@@ -169,13 +171,14 @@ export function WorklogForm({
 
         <div className="grid gap-2">
           <label className="text-sm font-medium" htmlFor="wl-comment">
-            Comment
+            {t("Comment")}
           </label>
           <textarea
             id="wl-comment"
             className="flex min-h-20 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            placeholder="Add a comment (optional)"
+            placeholder={t("Add a comment (optional)")}
             onChange={(e) => setComment(e.target.value)}
+            value={comment}
           />
         </div>
 
@@ -188,10 +191,10 @@ export function WorklogForm({
               className="flex-1"
               disabled={isSubmitting}
             >
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button type="submit" disabled={!!timeError || isSubmitting} className="flex-1">
-              {isSubmitting ? "Saving..." : submitLabel}
+              {isSubmitting ? t("Saving...") : submitLabel || t("Submit")}
             </Button>
           </div>
           {showDelete && onDelete && (
@@ -199,15 +202,15 @@ export function WorklogForm({
               type="button"
               variant="destructive"
               onClick={handleDelete}
-              className="w-full"
+              className="w-full h-auto whitespace-normal text-center"
               disabled={isDeleting}
             >
-              <Trash2 className="mr-2 h-4 w-4" />
+              <Trash2 className="mr-2 h-4 w-4 shrink-0" />
               {isDeleting
-                ? "Deleting..."
+                ? t("Deleting...")
                 : showDeleteConfirm
-                  ? "Click again to confirm delete"
-                  : "Delete Worklog"}
+                  ? t("Click again to confirm delete")
+                  : t("Delete Worklog")}
             </Button>
           )}
         </div>

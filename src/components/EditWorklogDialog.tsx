@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import {
   Dialog,
   DialogContent,
@@ -27,6 +28,7 @@ export function EditWorklogDialog({
   onClose,
   onSuccess,
 }: EditWorklogDialogProps) {
+  const { t } = useTranslation()
   const { data: settings } = useAppSettings()
   const [initialValues, setInitialValues] = useState<WorklogFormData | null>(null)
 
@@ -73,7 +75,7 @@ export function EditWorklogDialog({
     const { timeSpent, comment, workType, started } = data
     const timeSpentSeconds = parseDuration(timeSpent)
     if (timeSpentSeconds === 0) {
-      alert("Please enter a valid time duration (e.g., 1h 30m)")
+      alert(t("Please enter a valid time duration (e.g., 1h 30m)"))
       return
     }
 
@@ -97,7 +99,7 @@ export function EditWorklogDialog({
         },
         onError: (error: Error) => {
           console.error("Failed to update worklog:", error)
-          alert(`Failed to update worklog: ${error.message}`)
+          alert(t("Failed to update worklog: {{error}}", { error: error.message }))
         },
       }
     )
@@ -117,7 +119,7 @@ export function EditWorklogDialog({
         },
         onError: (error: Error) => {
           console.error("Failed to delete worklog:", error)
-          alert(`Failed to delete worklog: ${error.message}`)
+          alert(t("Failed to delete worklog: {{error}}", { error: error.message }))
         },
       }
     )
@@ -129,16 +131,16 @@ export function EditWorklogDialog({
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Worklog for {issueKey}</DialogTitle>
+          <DialogTitle>{t("Edit Worklog for {{issueKey}}", { issueKey })}</DialogTitle>
           <DialogDescription>
-            Modify the time spent and comment for this worklog entry.
+            {t("Modify the time spent and comment for this worklog entry.")}
           </DialogDescription>
         </DialogHeader>
         <WorklogForm
           initialValues={initialValues}
           onSubmit={handleSubmit}
           onCancel={onClose}
-          submitLabel="Save Changes"
+          submitLabel={t("Save Changes")}
           isSubmitting={updateMutation.isPending}
           showDelete={true}
           onDelete={handleDelete}

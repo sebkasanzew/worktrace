@@ -1,6 +1,7 @@
 import { debug } from "@tauri-apps/plugin-log"
 import { Loader2, Plus, Search, Trash2 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -26,6 +27,7 @@ export function CustomIssuesDialog({
   onOpenChange,
   onIssuesChanged,
 }: CustomIssuesDialogProps) {
+  const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedQuery, setDebouncedQuery] = useState("")
   const { data: settings } = useAppSettings()
@@ -100,9 +102,9 @@ export function CustomIssuesDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Manage Custom Issues</DialogTitle>
+          <DialogTitle>{t("Manage Custom Issues")}</DialogTitle>
           <DialogDescription>
-            Add issues that are not assigned to you but you want to track.
+            {t("Add issues that are not assigned to you but you want to track.")}
           </DialogDescription>
         </DialogHeader>
 
@@ -110,7 +112,7 @@ export function CustomIssuesDialog({
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by issue key or summary..."
+              placeholder={t("Search by issue key or summary...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8"
@@ -122,7 +124,7 @@ export function CustomIssuesDialog({
             <Card className="flex flex-col overflow-hidden">
               <CardHeader className="p-4 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Search Results
+                  {t("Search Results")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto p-2 pt-0">
@@ -156,7 +158,7 @@ export function CustomIssuesDialog({
                             disabled={isAdded}
                           >
                             {isAdded ? (
-                              <span className="text-xs text-muted-foreground">Added</span>
+                              <span className="text-xs text-muted-foreground">{t("Added")}</span>
                             ) : (
                               <Plus className="h-4 w-4" />
                             )}
@@ -167,11 +169,11 @@ export function CustomIssuesDialog({
                   </div>
                 ) : debouncedQuery ? (
                   <div className="text-center text-sm text-muted-foreground p-4">
-                    No issues found
+                    {t("No issues found")}
                   </div>
                 ) : (
                   <div className="text-center text-sm text-muted-foreground p-4">
-                    Type to search...
+                    {t("Type to search...")}
                   </div>
                 )}
               </CardContent>
@@ -181,7 +183,7 @@ export function CustomIssuesDialog({
             <Card className="flex flex-col overflow-hidden">
               <CardHeader className="p-4 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
-                  Selected Issues ({customIssueKeys.length})
+                  {t("Selected Issues ({{count}})", { count: customIssueKeys.length })}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto p-2 pt-0">
@@ -206,7 +208,7 @@ export function CustomIssuesDialog({
                   </div>
                 ) : (
                   <div className="text-center text-sm text-muted-foreground p-4">
-                    No custom issues added
+                    {t("No custom issues added")}
                   </div>
                 )}
               </CardContent>

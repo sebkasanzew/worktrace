@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { formatDurationHuman, formatJiraStarted, parseDuration } from "@/lib/utils"
 import { useAppSettings } from "@/services/settings.hooks"
@@ -27,6 +28,7 @@ export function WorklogDialog({
   onSubmit,
   onDelete,
 }: Props) {
+  const { t } = useTranslation()
   const { data: settings } = useAppSettings()
 
   const handleSubmit = (data: WorklogFormData) => {
@@ -60,13 +62,13 @@ export function WorklogDialog({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Log Work for {issueKey}</DialogTitle>
+          <DialogTitle>{t("Log Work for {{issueKey}}", { issueKey })}</DialogTitle>
         </DialogHeader>
         <WorklogForm
           initialValues={initialValues}
           onSubmit={handleSubmit}
           onCancel={onCancel}
-          submitLabel="Submit"
+          submitLabel={t("Submit")}
           showDelete={!!onDelete}
           onDelete={onDelete}
         />
