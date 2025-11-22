@@ -40,8 +40,13 @@ function mockJiraAssignee(): JiraAssignee {
  * Generate a mock JIRA status
  */
 function mockJiraStatus(): JiraStatus {
+  const name = faker.helpers.arrayElement(["To Do", "In Progress", "Done", "Blocked", "In Review"])
   return {
-    name: faker.helpers.arrayElement(["To Do", "In Progress", "Done", "Blocked", "In Review"]),
+    name,
+    statusCategory: {
+      key: "indeterminate",
+      name,
+    },
   }
 }
 
@@ -58,6 +63,7 @@ function mockJiraIssue(): JiraIssue {
     assignee: faker.datatype.boolean() ? mockJiraAssignee() : null,
     created: faker.date.past().getTime(),
     updated: faker.date.recent().getTime(),
+    subtasks: [],
   }
 
   return {

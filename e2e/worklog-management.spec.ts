@@ -26,13 +26,17 @@ test.describe("Worklog Management", () => {
             key: "KAN-1",
             fields: {
               summary: "Test Issue",
-              status: { name: "In Progress" },
+              status: {
+                name: "In Progress",
+                statusCategory: { key: "indeterminate", name: "In Progress" },
+              },
               assignee: {
                 displayName: "Test User",
                 emailAddress: "test@example.com",
               },
               created: Date.parse("2025-11-20T10:00:00.000Z"),
               updated: Date.parse("2025-11-21T14:30:00.000Z"),
+              subtasks: [],
             },
           },
         ],
@@ -47,7 +51,7 @@ test.describe("Worklog Management", () => {
 
   test("should display worklogs in reverse chronological order", async ({ page }) => {
     await page.waitForSelector('text="KAN-1"')
-    await page.click('button:has-text("Show History")')
+    await page.click('text="KAN-1"')
     await page.waitForSelector('text="Work Log History (2)"')
 
     // Get all worklog comments
@@ -60,7 +64,7 @@ test.describe("Worklog Management", () => {
 
   test("should open edit dialog and pre-fill data", async ({ page }) => {
     await page.waitForSelector('text="KAN-1"')
-    await page.click('button:has-text("Show History")')
+    await page.click('text="KAN-1"')
 
     // Click first (most recent) worklog edit button
     await page.locator('button[aria-label="Edit worklog"]').first().click()
@@ -68,9 +72,9 @@ test.describe("Worklog Management", () => {
     // Dialog should be visible
     await expect(page.locator('text="Edit Worklog"')).toBeVisible()
 
-    // Time should be pre-filled (7200 seconds = 2:00:00)
+    // Time should be pre-filled (7200 seconds = 2h 0m)
     const timeInput = page.locator("input#time")
-    await expect(timeInput).toHaveValue("2:00:00")
+    await expect(timeInput).toHaveValue("2h 0m")
 
     // Comment should be pre-filled
     const commentInput = page.locator("input#comment")
@@ -79,7 +83,7 @@ test.describe("Worklog Management", () => {
 
   test("should update worklog when saved", async ({ page }) => {
     await page.waitForSelector('text="KAN-1"')
-    await page.click('button:has-text("Show History")')
+    await page.click('text="KAN-1"')
     await page.locator('button[aria-label="Edit worklog"]').first().click()
 
     // Change the comment
@@ -95,7 +99,7 @@ test.describe("Worklog Management", () => {
 
   test("should show delete confirmation on first click", async ({ page }) => {
     await page.waitForSelector('text="KAN-1"')
-    await page.click('button:has-text("Show History")')
+    await page.click('text="KAN-1"')
     await page.locator('button[aria-label="Edit worklog"]').first().click()
 
     // Click delete button
@@ -107,7 +111,7 @@ test.describe("Worklog Management", () => {
 
   test("should delete worklog on second confirmation click", async ({ page }) => {
     await page.waitForSelector('text="KAN-1"')
-    await page.click('button:has-text("Show History")')
+    await page.click('text="KAN-1"')
 
     // Verify we have 2 worklogs initially
     await page.waitForSelector('text="Work Log History (2)"')
@@ -125,13 +129,29 @@ test.describe("Worklog Management", () => {
 
   test("should close dialog when clicking Cancel", async ({ page }) => {
     await page.waitForSelector('text="KAN-1"')
-    await page.click('button:has-text("Show History")')
+    await page.click('text="KAN-1"')
     await page.locator('button[aria-label="Edit worklog"]').first().click()
 
     await expect(page.locator('text="Edit Worklog"')).toBeVisible()
 
     await page.click('button:has-text("Cancel")')
 
+    await expect(page.locator('text="Edit Worklog"')).not.toBeVisible()
+  })
+
+  test("should allow changing start time in edit dialog", async ({ page }) => {
+    await page.waitForSelector('text="KAN-1"')
+    await page.click('text="KAN-1"')
+    await page.locator('button[aria-label="Edit worklog"]').first().click()
+
+    // Change start time
+    const specificTime = "2025-11-22T09:00"
+    await page.fill('input[type="datetime-local"]', specificTime)
+
+    // Save
+    await page.click('button:has-text("Save Changes")')
+
+    // Dialog should close
     await expect(page.locator('text="Edit Worklog"')).not.toBeVisible()
   })
 })

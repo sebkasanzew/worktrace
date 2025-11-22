@@ -159,6 +159,35 @@ export async function setupWorklogMocks(options: { page: Page }): Promise<void> 
         return null
       }
 
+      if (cmd === "jira_add_worklog") {
+        const payload = (args as Record<string, unknown> | undefined)?.payload as
+          | { timeSpentSeconds: number; comment: string; started: string }
+          | undefined
+        if (payload) {
+          const newWorklog = {
+            id: String(Date.now()),
+            timeSpentSeconds: payload.timeSpentSeconds,
+            timeSpent: "1h", // Simplified
+            started: payload.started,
+            comment: payload.comment,
+            created: new Date().toISOString(),
+            updated: new Date().toISOString(),
+            author: {
+              displayName: "Test User",
+              emailAddress: "test@example.com",
+              avatarUrls: null,
+            },
+            updateAuthor: {
+              displayName: "Test User",
+              emailAddress: "test@example.com",
+              avatarUrls: null,
+            },
+          }
+          worklogData.unshift(newWorklog)
+          return { id: newWorklog.id }
+        }
+      }
+
       // Call previous invoke for other commands
       return previousInvoke(cmd as never, args)
     }

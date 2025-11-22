@@ -33,13 +33,14 @@ test.describe("JIRA Integration with Mocked Tauri APIs", () => {
                   key: "TEST-1",
                   fields: {
                     summary: "Test issue",
-                    status: { name: "In Progress" },
+                    status: { name: "In Progress", statusCategory: null },
                     assignee: {
                       displayName: "Test User",
                       emailAddress: "test@example.com",
                     },
                     created: Date.now(),
                     updated: Date.now(),
+                    subtasks: [],
                   },
                 },
               ],

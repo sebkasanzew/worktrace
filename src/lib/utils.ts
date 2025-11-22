@@ -154,3 +154,16 @@ export function formatJiraStarted(date: Date): string {
   const tzm = pad(abs % 60)
   return `${y}-${mo}-${d}T${h}:${mi}:${s}.${ms}${sign}${tzh}${tzm}`
 }
+
+/**
+ * Formats a Date into `YYYY-MM-DDTHH:mm` for datetime-local input
+ */
+export function formatDateTimeLocal(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0")
+  const y = date.getFullYear()
+  const mo = pad(date.getMonth() + 1)
+  const d = pad(date.getDate())
+  const h = pad(date.getHours())
+  const mi = pad(date.getMinutes())
+  return `${y}-${mo}-${d}T${h}:${mi}`
+}

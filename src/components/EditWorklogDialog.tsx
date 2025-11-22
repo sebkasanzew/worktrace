@@ -10,7 +10,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { formatDurationHuman, parseDuration } from "@/lib/utils"
+import {
+  formatDateTimeLocal,
+  formatDurationHuman,
+  formatJiraStarted,
+  parseDuration,
+} from "@/lib/utils"
 import { useDeleteWorklog, useUpdateWorklog } from "@/services/jira.hooks"
 import type { JiraWorklog } from "@/types/bindings"
 
@@ -31,6 +36,7 @@ export function EditWorklogDialog({
 }: EditWorklogDialogProps) {
   const [timeInput, setTimeInput] = useState("")
   const [comment, setComment] = useState("")
+  const [startedInput, setStartedInput] = useState("")
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const updateMutation = useUpdateWorklog()
@@ -41,6 +47,7 @@ export function EditWorklogDialog({
     if (worklog && isOpen) {
       setTimeInput(formatDurationHuman(worklog.timeSpentSeconds))
       setComment(worklog.comment || "")
+      setStartedInput(formatDateTimeLocal(new Date(worklog.started)))
       setShowDeleteConfirm(false)
     }
   }, [worklog, isOpen])
@@ -61,13 +68,15 @@ export function EditWorklogDialog({
       return
     }
 
+    const startedDate = new Date(startedInput)
+
     updateMutation.mutate(
       {
         issueKey,
         worklogId: worklog.id,
         timeSpentSeconds,
         comment,
-        started: worklog.started,
+        started: formatJiraStarted(startedDate),
       },
       {
         onSuccess: () => {
@@ -117,6 +126,18 @@ export function EditWorklogDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="started" className="text-sm font-medium">
+                Started
+              </label>
+              <Input
+                id="started"
+                type="datetime-local"
+                value={startedInput}
+                onChange={(e) => setStartedInput(e.target.value)}
+                required
+              />
+            </div>
             <div className="space-y-2">
               <label htmlFor="time" className="text-sm font-medium">
                 Time Spent

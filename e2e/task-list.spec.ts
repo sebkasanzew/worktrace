@@ -33,13 +33,17 @@ test.describe("Task List UI", () => {
                   key: "TEST-123",
                   fields: {
                     summary: "Implement user authentication",
-                    status: { name: "In Progress" },
+                    status: {
+                      name: "In Progress",
+                      statusCategory: { key: "indeterminate", name: "In Progress" },
+                    },
                     assignee: {
                       displayName: "Test User",
                       emailAddress: "test@example.com",
                     },
                     created: Date.parse("2025-11-09T10:00:00.000Z"),
                     updated: Date.parse("2025-11-10T14:30:00.000Z"),
+                    subtasks: [],
                   },
                 },
                 {
@@ -47,13 +51,17 @@ test.describe("Task List UI", () => {
                   key: "TEST-456",
                   fields: {
                     summary: "Fix login bug",
-                    status: { name: "To Do" },
+                    status: {
+                      name: "To Do",
+                      statusCategory: { key: "new", name: "To Do" },
+                    },
                     assignee: {
                       displayName: "Test User",
                       emailAddress: "test@example.com",
                     },
                     created: Date.parse("2025-11-11T08:00:00.000Z"),
                     updated: Date.parse("2025-11-12T09:15:00.000Z"),
+                    subtasks: [],
                   },
                 },
                 {
@@ -61,13 +69,17 @@ test.describe("Task List UI", () => {
                   key: "PROJ-789",
                   fields: {
                     summary: "Update documentation",
-                    status: { name: "Done" },
+                    status: {
+                      name: "Done",
+                      statusCategory: { key: "done", name: "Done" },
+                    },
                     assignee: {
                       displayName: "Test User",
                       emailAddress: "test@example.com",
                     },
                     created: Date.parse("2025-11-07T12:00:00.000Z"),
                     updated: Date.parse("2025-11-08T16:45:00.000Z"),
+                    subtasks: [],
                   },
                 },
               ],
