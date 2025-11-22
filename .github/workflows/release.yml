@@ -108,7 +108,10 @@ jobs:
         shell: bash
 
       - name: Generate latest.json
-        run: node scripts/generate-latest-json.mts
+        run: |
+          node scripts/generate-latest-json.mts
+          # Rename latest.json to include target to avoid collisions
+          find src-tauri/target/release/bundle -name "latest.json" -exec mv {} {}-${{ matrix.target }}.json \;
         shell: bash
 
       - name: Upload release assets
@@ -116,13 +119,45 @@ jobs:
         with:
           files: |
             ${{ matrix.artifact_patterns }}
-            src-tauri/target/release/bundle/**/latest.json
+            src-tauri/target/release/bundle/**/latest.json-*.json
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  merge-manifests:
+    needs: build-tauri
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Download partial manifests
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p partials
+          gh release download ${{ github.ref_name }} -p "latest.json-*" -D partials
+
+      - name: Merge manifests
+        run: |
+          node scripts/merge-latest-json.mts partials/*
+        shell: bash
+
+      - name: Upload merged latest.json
+        uses: softprops/action-gh-release@v2
+        with:
+          files: latest.json
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   finalize-release:
-    needs: [create-release, build-tauri]
+    needs: [create-release, build-tauri, merge-manifests]
     runs-on: ubuntu-latest
     steps:
       - name: Release complete
