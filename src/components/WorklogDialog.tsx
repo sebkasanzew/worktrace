@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { formatDurationHuman, formatJiraStarted, parseDuration } from "@/lib/utils"
 import { useAppSettings } from "@/services/settings.hooks"
@@ -45,12 +46,15 @@ export function WorklogDialog({
     onSubmit(payload)
   }
 
-  const initialValues: WorklogFormData = {
-    timeSpent: initialSeconds > 0 ? formatDurationHuman(initialSeconds) : "",
-    comment: settings?.defaultWorklogDescription || "",
-    workType: settings?.worklogTypes?.[0]?.name || "",
-    started: new Date(),
-  }
+  const initialValues: WorklogFormData = useMemo(
+    () => ({
+      timeSpent: initialSeconds > 0 ? formatDurationHuman(initialSeconds) : "",
+      comment: settings?.defaultWorklogDescription || "",
+      workType: settings?.worklogTypes?.[0]?.name || "",
+      started: new Date(),
+    }),
+    [initialSeconds, settings]
+  )
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>

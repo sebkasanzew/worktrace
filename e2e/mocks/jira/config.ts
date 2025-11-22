@@ -50,6 +50,7 @@ const defaultAppSettings: AppSettings = {
   defaultWorklogDescription: "",
   enableAutomaticUpdates: false,
   alwaysOnTop: false,
+  customIssueKeys: [],
 }
 
 /**

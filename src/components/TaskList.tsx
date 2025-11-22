@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { info, info as logInfo } from "@tauri-apps/plugin-log"
 import { openUrl } from "@tauri-apps/plugin-opener"
 import { ChevronDown, ExternalLink, LogOut, Play, RefreshCw, Settings, Square } from "lucide-react"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { CustomIssuesDialog } from "@/components/CustomIssuesDialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { ViewHeader } from "@/components/ViewHeader"
 import { WorklogDialog } from "@/components/WorklogDialog"
 import { WorklogHistory } from "@/components/WorklogHistory"
 import { formatDuration } from "@/lib/utils"
@@ -32,6 +33,7 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
   const [expandedIssue, setExpandedIssue] = useState<string | null>(null)
   const [customIssuesDialogOpen, setCustomIssuesDialogOpen] = useState(false)
   const [filterMode, setFilterMode] = useState<"assigned" | "all">("assigned")
+  const customIssuesChangedRef = useRef(false)
   const queryClient = useQueryClient()
 
   const { data: config } = useQuery<JiraConfig>({
@@ -67,6 +69,21 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
   } = useTimeTracker()
   const addWorklog = useAddWorklog()
 
+  const handleCustomIssuesOpenChange = (open: boolean) => {
+    if (open) {
+      customIssuesChangedRef.current = false
+    } else {
+      if (customIssuesChangedRef.current) {
+        setFilterMode("all")
+      }
+    }
+    setCustomIssuesDialogOpen(open)
+  }
+
+  const handleIssuesChanged = () => {
+    customIssuesChangedRef.current = true
+  }
+
   const handleRefresh = async () => {
     info("[TaskList] Manual refresh triggered")
     await refetch()
@@ -92,13 +109,10 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header with drag region for window controls */}
-      <div
-        data-tauri-drag-region
-        className="sticky top-0 z-100 bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60 border-b shadow-sm"
-      >
-        <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">My JIRA Issues</h1>
-          <div className="flex gap-2">
+      <ViewHeader
+        title="My JIRA Issues"
+        actions={
+          <>
             <Button
               variant="outline"
               size="sm"
@@ -115,9 +129,9 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
               <LogOut className="h-4 w-4" />
               Logout
             </Button>
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Scrollable Content */}
       <div className="max-w-4xl mx-auto p-6">
@@ -346,7 +360,11 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
           )
         }}
       />
-      <CustomIssuesDialog open={customIssuesDialogOpen} onOpenChange={setCustomIssuesDialogOpen} />
+      <CustomIssuesDialog
+        open={customIssuesDialogOpen}
+        onOpenChange={handleCustomIssuesOpenChange}
+        onIssuesChanged={handleIssuesChanged}
+      />
     </div>
   )
 }
