@@ -82,7 +82,7 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
               <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
               {isFetching ? "Refreshing..." : "Refresh"}
             </Button>
-            <Button variant="outline" size="sm" onClick={onOpenSettings}>
+            <Button variant="outline" size="sm" onClick={onOpenSettings} aria-label="Settings">
               <Settings className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="sm" onClick={handleLogout}>

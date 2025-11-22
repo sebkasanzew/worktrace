@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker"
 import type { Page } from "@playwright/test"
 import { mergePartially } from "merge-partially"
-import type { JiraConfig } from "@/types/bindings"
+import type { AppSettings, JiraConfig } from "@/types/bindings"
 import { injectCommandMock } from "../../utils/tauri"
 
 interface ConfigMockOptions {
@@ -13,6 +13,10 @@ interface ConfigMockOptions {
    * Partial config to override default values
    */
   override?: Partial<JiraConfig>
+  /**
+   * Partial app settings to override default values
+   */
+  appSettings?: Partial<AppSettings>
 }
 
 interface EmptyConfigMockOptions {
@@ -37,7 +41,7 @@ function generateJiraConfig(options: { override?: Partial<JiraConfig> } = {}): J
   return options.override ? mergePartially.deep(response, options.override) : response
 }
 
-const defaultAppSettings = {
+const defaultAppSettings: AppSettings = {
   jiraInstanceUrl: "",
   jiraUsername: "",
   jiraApiToken: "",
@@ -65,8 +69,12 @@ const defaultAppSettings = {
  */
 export async function mockJiraConfig(options: ConfigMockOptions): Promise<void> {
   const config = generateJiraConfig({ override: options.override })
+  const appSettings = options.appSettings
+    ? mergePartially.deep(defaultAppSettings, options.appSettings)
+    : defaultAppSettings
+
   await injectCommandMock(options.page, "get_jira_config", config)
-  await injectCommandMock(options.page, "get_app_settings", defaultAppSettings)
+  await injectCommandMock(options.page, "get_app_settings", appSettings)
   await injectCommandMock(options.page, "save_app_settings", null)
 }
 
