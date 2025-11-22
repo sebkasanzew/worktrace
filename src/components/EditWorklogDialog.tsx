@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { formatDuration, parseDuration } from "@/lib/utils"
+import { formatDurationHuman, parseDuration } from "@/lib/utils"
 import { useDeleteWorklog, useUpdateWorklog } from "@/services/jira.hooks"
 import type { JiraWorklog } from "@/types/bindings"
 
@@ -39,7 +39,7 @@ export function EditWorklogDialog({
   // Update form fields when worklog changes
   useEffect(() => {
     if (worklog && isOpen) {
-      setTimeInput(formatDuration(worklog.timeSpentSeconds))
+      setTimeInput(formatDurationHuman(worklog.timeSpentSeconds))
       setComment(worklog.comment || "")
       setShowDeleteConfirm(false)
     }

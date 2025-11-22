@@ -2,7 +2,7 @@ import { Pencil, RefreshCw } from "lucide-react"
 import { useState } from "react"
 import { EditWorklogDialog } from "@/components/EditWorklogDialog"
 import { Button } from "@/components/ui/button"
-import { formatDuration } from "@/lib/utils"
+import { formatDurationHuman } from "@/lib/utils"
 import { useIssueWorklogs } from "@/services/jira.hooks"
 import type { JiraWorklog } from "@/types/bindings"
 
@@ -34,57 +34,54 @@ export function WorklogHistory({ issueKey }: WorklogHistoryProps) {
   })
 
   return (
-    <div className="border-t">
-      <div className="p-4 space-y-3">
-        <div className="flex justify-between items-center mb-2">
-          <h4 className="text-sm font-semibold">Work Log History ({data.worklogs.length})</h4>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => refetch()}
-            disabled={isFetching}
-            className="h-7 px-2"
+    <div className="space-y-3">
+      <div className="flex justify-between items-center mb-2">
+        <h4 className="text-sm font-semibold">Work Log History ({data.worklogs.length})</h4>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="h-7 px-2"
+        >
+          <RefreshCw className={`h-3 w-3 ${isFetching ? "animate-spin" : ""}`} />
+        </Button>
+      </div>
+      <div className="space-y-2">
+        {sortedWorklogs.map((worklog) => (
+          <div
+            key={worklog.id}
+            className="text-sm border rounded-md p-4 bg-card hover:bg-accent/50 transition-colors group"
           >
-            <RefreshCw className={`h-3 w-3 ${isFetching ? "animate-spin" : ""}`} />
-          </Button>
-        </div>
-        <div className="space-y-2 max-h-60 overflow-y-auto">
-          {sortedWorklogs.map((worklog) => (
-            <div
-              key={worklog.id}
-              className="text-sm border rounded-md p-3 bg-muted/30 hover:bg-muted/50 transition-colors"
-            >
-              <div className="flex justify-between items-start mb-1">
-                <div className="font-medium">{worklog.author?.displayName || "Unknown"}</div>
-                <div className="flex items-center gap-2">
-                  <div className="text-xs text-muted-foreground">
-                    {new Date(worklog.started).toLocaleString()}
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setEditingWorklog(worklog)}
-                    className="h-6 w-6 p-0"
-                    aria-label="Edit worklog"
-                  >
-                    <Pencil className="h-3 w-3" />
-                  </Button>
+            <div className="flex justify-between items-start mb-2">
+              <div className="font-medium">{worklog.author?.displayName || "Unknown"}</div>
+              <div className="flex items-center gap-2">
+                <div className="text-xs text-muted-foreground">
+                  {new Date(worklog.started).toLocaleString()}
                 </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditingWorklog(worklog)}
+                  className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="Edit worklog"
+                >
+                  <Pencil className="h-3 w-3" />
+                </Button>
               </div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-semibold text-primary">
-                  {formatDuration(worklog.timeSpentSeconds)}
-                </span>
-                <span className="text-xs text-muted-foreground">({worklog.timeSpent})</span>
-              </div>
-              {worklog.comment && (
-                <div className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap">
-                  {worklog.comment}
-                </div>
-              )}
             </div>
-          ))}
-        </div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-base">
+                {formatDurationHuman(worklog.timeSpentSeconds)}
+              </span>
+            </div>
+            {worklog.comment && (
+              <div className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap border-t pt-2">
+                {worklog.comment}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
 
       <EditWorklogDialog

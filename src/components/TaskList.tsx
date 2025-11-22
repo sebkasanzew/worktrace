@@ -1,9 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { info, info as logInfo } from "@tauri-apps/plugin-log"
-import { ChevronDown, ChevronUp, LogOut, Play, RefreshCw, Square } from "lucide-react"
+import { openUrl } from "@tauri-apps/plugin-opener"
+import { ChevronDown, ExternalLink, LogOut, Play, RefreshCw, Square } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { WorklogDialog } from "@/components/WorklogDialog"
 import { WorklogHistory } from "@/components/WorklogHistory"
 import { formatDuration } from "@/lib/utils"
@@ -49,11 +50,27 @@ export function TaskList({ onLogout }: TaskListProps) {
     onLogout()
   }
 
+  const toggleExpand = (issueKey: string) => {
+    setExpandedIssue(expandedIssue === issueKey ? null : issueKey)
+  }
+
+  const openJiraIssue = async (e: React.MouseEvent, issueKey: string) => {
+    e.stopPropagation()
+    if (config?.url) {
+      const url = config.url.endsWith("/") ? config.url : `${config.url}/`
+      await openUrl(`${url}browse/${issueKey}`)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">My JIRA Issues</h1>
+    <div className="min-h-screen bg-background">
+      {/* Header with drag region for window controls */}
+      <div
+        data-tauri-drag-region
+        className="sticky top-0 z-100 bg-background/95 backdrop-blur-md supports-backdrop-filter:bg-background/60 border-b shadow-sm"
+      >
+        <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold">My JIRA Issues</h1>
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -70,7 +87,10 @@ export function TaskList({ onLogout }: TaskListProps) {
             </Button>
           </div>
         </div>
+      </div>
 
+      {/* Scrollable Content */}
+      <div className="max-w-4xl mx-auto p-6">
         {error && (
           <Card className="mb-4 border-destructive">
             <CardHeader>
@@ -107,46 +127,102 @@ export function TaskList({ onLogout }: TaskListProps) {
             </div>
             <div className="space-y-4">
               {issues.issues?.map((issue) => (
-                <Card key={issue.id}>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{issue.key}</CardTitle>
-                        <CardDescription className="mt-1">{issue.fields.summary}</CardDescription>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        {activeIssueKey === issue.key ? (
-                          <>
-                            <div className="text-sm text-muted-foreground min-w-16 text-right">
-                              {formatDuration(Math.floor(getElapsedFor(issue.key) / 1000))}
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={stopAndOpenDialog}
-                              aria-label={`Stop timer for ${issue.key}`}
-                            >
-                              <Square className="h-4 w-4" /> Stop
-                            </Button>
-                          </>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => requestStart(issue.key)}
-                            aria-label={`Start timer for ${issue.key}`}
-                          >
-                            <Play className="h-4 w-4" /> Start
-                          </Button>
-                        )}
-                        <div className="text-sm font-medium px-3 py-1 bg-secondary rounded-md">
+                <Card
+                  key={issue.id}
+                  className="cursor-pointer hover:shadow-md transition-shadow"
+                  onClick={() => toggleExpand(issue.key)}
+                >
+                  <CardContent className="p-6">
+                    {/* Top Row: Key, Link, Status, Timer Button */}
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-lg">{issue.key}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => openJiraIssue(e, issue.key)}
+                          className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                          title="Open in JIRA"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </button>
+                        <div className="text-xs font-medium px-2.5 py-0.5 bg-blue-500 text-white rounded-full">
                           {issue.fields.status.name}
                         </div>
                       </div>
+                      {/* biome-ignore lint/a11y/useKeyWithClickEvents: Stop propagation for nested interactive elements */}
+                      {/* biome-ignore lint/a11y/noStaticElementInteractions: Stop propagation for nested interactive elements */}
+                      <div onClick={(e) => e.stopPropagation()}>
+                        {activeIssueKey === issue.key ? (
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm font-mono text-muted-foreground min-w-16 text-right">
+                              {formatDuration(Math.floor(getElapsedFor(issue.key) / 1000))}
+                            </div>
+                            <Button
+                              size="sm"
+                              onClick={stopAndOpenDialog}
+                              aria-label={`Stop timer for ${issue.key}`}
+                              className="bg-destructive hover:bg-destructive/90 text-white"
+                            >
+                              <Square className="h-4 w-4 mr-1" /> Stop
+                            </Button>
+                          </div>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => requestStart(issue.key)}
+                            aria-label={`Start timer for ${issue.key}`}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            <Play className="h-4 w-4 mr-1" /> Start
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex justify-between text-sm text-muted-foreground">
+
+                    {/* Second Row: Summary */}
+                    <div className="mb-4">
+                      <h3 className="font-medium text-base">{issue.fields.summary}</h3>
+                    </div>
+
+                    {/* Third Row: Progress Bar */}
+                    <div className="mb-4">
+                      {(() => {
+                        const subtasks = issue.fields.subtasks || []
+                        const total = subtasks.length
+                        const completed = subtasks.filter((t) => {
+                          // Use statusCategory if available (key is usually 'done')
+                          if (t.fields.status.statusCategory?.key === "done") {
+                            return true
+                          }
+                          // Fallback to name matching for older JIRA instances or if category is missing
+                          const name = t.fields.status.name.toLowerCase()
+                          return ["done", "closed", "resolved", "complete", "finished"].includes(
+                            name
+                          )
+                        }).length
+                        const progress = total > 0 ? Math.round((completed / total) * 100) : 0
+
+                        return (
+                          <>
+                            <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-blue-600 transition-all duration-500 ease-in-out"
+                                style={{ width: `${progress}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                              <span>
+                                {total > 0 ? `${completed}/${total} subtasks` : "No subtasks"}
+                              </span>
+                              <span>{progress}%</span>
+                            </div>
+                          </>
+                        )
+                      })()}
+                    </div>
+
+                    {/* Fourth Row: Assignee, Updated, Expand Indicator */}
+                    <div className="flex justify-between items-center text-sm text-muted-foreground">
                       <div>
                         {issue.fields.assignee && (
                           <span>Assigned to: {issue.fields.assignee.displayName}</span>
@@ -154,30 +230,26 @@ export function TaskList({ onLogout }: TaskListProps) {
                       </div>
                       <div className="flex items-center gap-4">
                         <div>Updated: {new Date(issue.fields.updated).toLocaleDateString()}</div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            setExpandedIssue(expandedIssue === issue.key ? null : issue.key)
-                          }
-                          className="h-7 px-2"
-                        >
-                          {expandedIssue === issue.key ? (
-                            <>
-                              <ChevronUp className="h-4 w-4" />
-                              <span className="ml-1">Hide History</span>
-                            </>
-                          ) : (
-                            <>
-                              <ChevronDown className="h-4 w-4" />
-                              <span className="ml-1">Show History</span>
-                            </>
-                          )}
-                        </Button>
+                        <ChevronDown
+                          className={`h-5 w-5 transition-transform duration-200 ${
+                            expandedIssue === issue.key ? "rotate-180" : ""
+                          }`}
+                        />
                       </div>
                     </div>
+
+                    {/* Expanded Content */}
+                    {expandedIssue === issue.key && (
+                      // biome-ignore lint/a11y/useKeyWithClickEvents: Stop propagation for nested interactive elements
+                      // biome-ignore lint/a11y/noStaticElementInteractions: Stop propagation for nested interactive elements
+                      <div
+                        className="mt-6 pt-6 border-t cursor-default"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <WorklogHistory issueKey={issue.key} />
+                      </div>
+                    )}
                   </CardContent>
-                  {expandedIssue === issue.key && <WorklogHistory issueKey={issue.key} />}
                 </Card>
               ))}
             </div>

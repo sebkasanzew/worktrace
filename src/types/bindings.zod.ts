@@ -12,22 +12,14 @@ export const jiraConfigSchema = z.object({
   password: z.string().nullable(),
 })
 
-export const jiraStatusSchema = z.object({
+export const jiraStatusCategorySchema = z.object({
+  key: z.string(),
   name: z.string(),
 })
 
-export const jiraFieldsSchema = z.object({
-  summary: z.string(),
-  status: jiraStatusSchema,
-  assignee: jiraAssigneeSchema.nullable(),
-  created: z.number(),
-  updated: z.number(),
-})
-
-export const jiraIssueSchema = z.object({
-  id: z.string(),
-  key: z.string(),
-  fields: jiraFieldsSchema,
+export const jiraStatusSchema = z.object({
+  name: z.string(),
+  statusCategory: jiraStatusCategorySchema.nullable(),
 })
 
 export const jiraUserSessionSchema = z.object({
@@ -62,10 +54,9 @@ export const worklogResponseSchema = z.object({
   id: z.string(),
 })
 
-export const jiraSearchResponseSchema = z.object({
-  issues: z.array(jiraIssueSchema),
-  total: z.number(),
-  isLast: z.boolean(),
+export const jiraSubtaskFieldsSchema = z.object({
+  summary: z.string(),
+  status: jiraStatusSchema,
 })
 
 export const jiraWorklogListResponseSchema = z.object({
@@ -73,4 +64,31 @@ export const jiraWorklogListResponseSchema = z.object({
   total: z.number(),
   maxResults: z.number(),
   startAt: z.number(),
+})
+
+export const jiraSubtaskSchema = z.object({
+  id: z.string(),
+  key: z.string(),
+  fields: jiraSubtaskFieldsSchema,
+})
+
+export const jiraFieldsSchema = z.object({
+  summary: z.string(),
+  status: jiraStatusSchema,
+  assignee: jiraAssigneeSchema.nullable(),
+  created: z.number(),
+  updated: z.number(),
+  subtasks: z.array(jiraSubtaskSchema),
+})
+
+export const jiraIssueSchema = z.object({
+  id: z.string(),
+  key: z.string(),
+  fields: jiraFieldsSchema,
+})
+
+export const jiraSearchResponseSchema = z.object({
+  issues: z.array(jiraIssueSchema),
+  total: z.number(),
+  isLast: z.boolean(),
 })
