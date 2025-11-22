@@ -1,23 +1,16 @@
-import { Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import {
-  formatDateTimeLocal,
-  formatDurationHuman,
-  formatJiraStarted,
-  parseDuration,
-} from "@/lib/utils"
+import { formatDurationHuman, formatJiraStarted, parseDuration } from "@/lib/utils"
 import { useDeleteWorklog, useUpdateWorklog } from "@/services/jira.hooks"
+import { useAppSettings } from "@/services/settings.hooks"
 import type { JiraWorklog } from "@/types/bindings"
+import { WorklogForm, type WorklogFormData } from "./WorklogForm"
 
 interface EditWorklogDialogProps {
   isOpen: boolean
@@ -34,10 +27,8 @@ export function EditWorklogDialog({
   onClose,
   onSuccess,
 }: EditWorklogDialogProps) {
-  const [timeInput, setTimeInput] = useState("")
-  const [comment, setComment] = useState("")
-  const [startedInput, setStartedInput] = useState("")
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const { data: settings } = useAppSettings()
+  const [initialValues, setInitialValues] = useState<WorklogFormData | null>(null)
 
   const updateMutation = useUpdateWorklog()
   const deleteMutation = useDeleteWorklog()
@@ -45,12 +36,30 @@ export function EditWorklogDialog({
   // Update form fields when worklog changes
   useEffect(() => {
     if (worklog && isOpen) {
-      setTimeInput(formatDurationHuman(worklog.timeSpentSeconds))
-      setComment(worklog.comment || "")
-      setStartedInput(formatDateTimeLocal(new Date(worklog.started)))
-      setShowDeleteConfirm(false)
+      let currentComment = worklog.comment || ""
+      let foundType = ""
+
+      if (settings?.worklogTypes) {
+        for (const type of settings.worklogTypes) {
+          if (type.shortCode && currentComment.startsWith(type.shortCode)) {
+            foundType = type.name
+            currentComment = currentComment.substring(type.shortCode.length).trim()
+            break
+          }
+        }
+        if (!foundType && settings.worklogTypes.length > 0) {
+          foundType = settings.worklogTypes[0].name
+        }
+      }
+
+      setInitialValues({
+        timeSpent: formatDurationHuman(worklog.timeSpentSeconds),
+        comment: currentComment,
+        workType: foundType,
+        started: new Date(worklog.started),
+      })
     }
-  }, [worklog, isOpen])
+  }, [worklog, isOpen, settings])
 
   const handleOpenChange = (open: boolean) => {
     if (!open) {
@@ -58,25 +67,29 @@ export function EditWorklogDialog({
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (data: WorklogFormData) => {
     if (!worklog) return
 
-    const timeSpentSeconds = parseDuration(timeInput)
+    const { timeSpent, comment, workType, started } = data
+    const timeSpentSeconds = parseDuration(timeSpent)
     if (timeSpentSeconds === 0) {
       alert("Please enter a valid time duration (e.g., 1h 30m)")
       return
     }
 
-    const startedDate = new Date(startedInput)
+    const selectedType = settings?.worklogTypes.find(
+      (t: { name: string; shortCode: string }) => t.name === workType
+    )
+    const prefix = selectedType?.shortCode ? selectedType.shortCode : ""
+    const fullComment = `${prefix} ${comment}`.trim()
 
     updateMutation.mutate(
       {
         issueKey,
         worklogId: worklog.id,
         timeSpentSeconds,
-        comment,
-        started: formatJiraStarted(startedDate),
+        comment: fullComment,
+        started: formatJiraStarted(started),
       },
       {
         onSuccess: () => {
@@ -91,10 +104,7 @@ export function EditWorklogDialog({
   }
 
   const handleDelete = async () => {
-    if (!worklog || !showDeleteConfirm) {
-      setShowDeleteConfirm(true)
-      return
-    }
+    if (!worklog) return
 
     deleteMutation.mutate(
       {
@@ -113,91 +123,27 @@ export function EditWorklogDialog({
     )
   }
 
-  if (!worklog) return null
+  if (!worklog || !initialValues) return null
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Worklog</DialogTitle>
+          <DialogTitle>Edit Worklog for {issueKey}</DialogTitle>
           <DialogDescription>
             Modify the time spent and comment for this worklog entry.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="started" className="text-sm font-medium">
-                Started
-              </label>
-              <Input
-                id="started"
-                type="datetime-local"
-                value={startedInput}
-                onChange={(e) => setStartedInput(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="time" className="text-sm font-medium">
-                Time Spent
-              </label>
-              <Input
-                id="time"
-                type="text"
-                placeholder="e.g., 2h 30m or 1:30"
-                value={timeInput}
-                onChange={(e) => setTimeInput(e.target.value)}
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                Format: 2h 30m, 1.5h, 90m, or 1:30 (mm:ss)
-              </p>
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="comment" className="text-sm font-medium">
-                Comment
-              </label>
-              <Input
-                id="comment"
-                type="text"
-                placeholder="What did you work on?"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter className="flex-col-reverse sm:flex-col gap-2 sm:gap-2">
-            <div className="flex gap-2 w-full">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={updateMutation.isPending}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={updateMutation.isPending} className="flex-1">
-                {updateMutation.isPending ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={deleteMutation.isPending}
-              className="w-full"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              {deleteMutation.isPending
-                ? "Deleting..."
-                : showDeleteConfirm
-                  ? "Click again to confirm delete"
-                  : "Delete Worklog"}
-            </Button>
-          </DialogFooter>
-        </form>
+        <WorklogForm
+          initialValues={initialValues}
+          onSubmit={handleSubmit}
+          onCancel={onClose}
+          submitLabel="Save Changes"
+          isSubmitting={updateMutation.isPending}
+          showDelete={true}
+          onDelete={handleDelete}
+          isDeleting={deleteMutation.isPending}
+        />
       </DialogContent>
     </Dialog>
   )

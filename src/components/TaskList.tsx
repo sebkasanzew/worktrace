@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { info, info as logInfo } from "@tauri-apps/plugin-log"
 import { openUrl } from "@tauri-apps/plugin-opener"
-import { ChevronDown, ExternalLink, LogOut, Play, RefreshCw, Square } from "lucide-react"
+import { ChevronDown, ExternalLink, LogOut, Play, RefreshCw, Settings, Square } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,9 +16,10 @@ import type { JiraConfig } from "@/types/jira"
 
 interface TaskListProps {
   onLogout: () => void
+  onOpenSettings: () => void
 }
 
-export function TaskList({ onLogout }: TaskListProps) {
+export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
   const [expandedIssue, setExpandedIssue] = useState<string | null>(null)
   const queryClient = useQueryClient()
 
@@ -80,6 +81,9 @@ export function TaskList({ onLogout }: TaskListProps) {
             >
               <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
               {isFetching ? "Refreshing..." : "Refresh"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={onOpenSettings}>
+              <Settings className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4" />

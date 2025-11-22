@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Border radius */
   --radius: 0.5rem;
@@ -7,26 +11,40 @@
   --radius-md: calc(0.5rem - 2px);
   --radius-sm: calc(0.5rem - 4px);
 
-  /* Light mode colors */
-  --color-background: oklch(100% 0 0);
-  --color-foreground: oklch(25.59% 0.013 285.885);
-  --color-card: oklch(100% 0 0);
-  --color-card-foreground: oklch(25.59% 0.013 285.885);
-  --color-popover: oklch(100% 0 0);
-  --color-popover-foreground: oklch(25.59% 0.013 285.885);
-  --color-primary: oklch(28.66% 0.014 285.82);
-  --color-primary-foreground: oklch(98% 0 0);
-  --color-secondary: oklch(96.48% 0.003 286.375);
-  --color-secondary-foreground: oklch(28.66% 0.014 285.82);
-  --color-muted: oklch(96.48% 0.003 286.375);
-  --color-muted-foreground: oklch(58.8% 0.023 285.938);
-  --color-accent: oklch(96.48% 0.003 286.375);
-  --color-accent-foreground: oklch(28.66% 0.014 285.82);
-  --color-destructive: oklch(62.8% 0.257 29.234);
-  --color-destructive-foreground: oklch(98% 0 0);
-  --color-border: oklch(91.42% 0.004 286.32);
-  --color-input: oklch(91.42% 0.004 286.32);
-  --color-ring: oklch(28.66% 0.014 285.82);
+  /* Colors */
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
 }
 
 /* Custom Scrollbar */
@@ -70,6 +88,11 @@
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
     --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
   }
 
 
@@ -93,6 +116,11 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
@@ -102,6 +130,10 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow: hidden; /* Prevent scrolling on body */
+  }
+  html {
+    overflow: hidden; /* Prevent scrolling on html */
   }
   button {
     cursor: pointer;

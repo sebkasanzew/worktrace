@@ -53,10 +53,10 @@ test.describe("Worklog Dialog", () => {
     await expect(page.locator('text="Log Work for KAN-1"')).toBeVisible()
 
     // Click Delete & Stop Timer
-    await page.click('button:has-text("Delete & Stop Timer")')
+    await page.click('button:has-text("Delete")')
 
     // Confirm delete
-    await page.click('button:has-text("Click again to confirm delete")')
+    await page.click('button:has-text("Click again")')
 
     // Dialog should close and timer should be stopped (Start button visible)
     await expect(page.locator('text="Log Work for KAN-1"')).not.toBeVisible()
@@ -74,8 +74,8 @@ test.describe("Worklog Dialog", () => {
     await page.click('button:has-text("Stop")')
 
     // Change start time
-    const specificTime = "2025-11-22T08:00"
-    await page.fill('input[type="datetime-local"]', specificTime)
+    const specificTime = "08:00"
+    await page.fill('input[type="time"]', specificTime)
 
     // Submit
     await page.click('button:has-text("Submit")')

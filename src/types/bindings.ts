@@ -157,6 +157,22 @@ export const commands = {
       else return { status: "error", error: e as any }
     }
   },
+  async getAppSettings(): Promise<Result<AppSettings, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("get_app_settings") }
+    } catch (e) {
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
+    }
+  },
+  async saveAppSettings(settings: AppSettings): Promise<Result<null, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("save_app_settings", { settings }) }
+    } catch (e) {
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
+    }
+  },
 }
 
 /** user-defined events **/
@@ -165,6 +181,19 @@ export const commands = {
 
 /** user-defined types **/
 
+/**
+ * Application settings
+ */
+export type AppSettings = {
+  jiraInstanceUrl: string
+  jiraUsername: string
+  jiraApiToken: string
+  theme: string
+  worklogTypes: WorklogType[]
+  defaultWorklogDescription: string
+  enableAutomaticUpdates: boolean
+  alwaysOnTop: boolean
+}
 /**
  * JIRA issue assignee
  */
@@ -257,6 +286,10 @@ export type WorklogPayload = { timeSpentSeconds: number; started: string; commen
  * Minimal worklog response
  */
 export type WorklogResponse = { id: string }
+/**
+ * Worklog type configuration
+ */
+export type WorklogType = { name: string; shortCode: string }
 
 /** tauri-specta globals **/
 
