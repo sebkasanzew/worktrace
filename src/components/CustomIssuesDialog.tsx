@@ -1,0 +1,204 @@
+import { debug } from "@tauri-apps/plugin-log"
+import { Loader2, Plus, Search, Trash2 } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { useIssuesByJql } from "@/services/jira.hooks"
+import { useAppSettings, useSaveAppSettings } from "@/services/settings.hooks"
+import type { JiraIssue } from "@/types/bindings"
+
+interface CustomIssuesDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function CustomIssuesDialog({ open, onOpenChange }: CustomIssuesDialogProps) {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedQuery, setDebouncedQuery] = useState("")
+  const { data: settings } = useAppSettings()
+  const { mutate: saveSettings } = useSaveAppSettings()
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery)
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
+
+  // JQL for search: search by key or summary
+  const searchJql = useMemo(() => {
+    const trimmedQuery = debouncedQuery.trim()
+    if (!trimmedQuery) return ""
+
+    const parts = [`key = "${trimmedQuery}"`, `summary ~ "${trimmedQuery}*"`]
+
+    // If query looks like a project key (letters, optionally ending with hyphen), try to match as project key prefix
+    // This allows "KAN" to find "KAN-1", "KAN-5", etc.
+    if (/^[a-zA-Z]+-?$/.test(trimmedQuery)) {
+      const projectKey = trimmedQuery.replace(/-$/, "").toUpperCase()
+
+      // Use the CONTAINS (~) operator for fuzzy search on issue key
+      // This is the standard way to find issues by partial key in JQL
+      // e.g. issueKey ~ "KAN*" finds "KAN-1", "KAN-5", etc.
+      parts.push(`issueKey ~ "${projectKey}*"`)
+      debug(`Detected project key search: ${projectKey} -> issueKey ~ "${projectKey}*"`)
+    }
+
+    const jql = `(${parts.join(" OR ")}) ORDER BY updated DESC`
+    debug(`Generated JQL: ${jql}`)
+    return jql
+  }, [debouncedQuery])
+
+  const { data: searchResults, isLoading: isSearching } = useIssuesByJql(searchJql)
+
+  const customIssueKeys = settings?.customIssueKeys || []
+
+  const handleAddIssue = (issue: JiraIssue) => {
+    if (!settings) return
+    if (customIssueKeys.includes(issue.key)) return
+
+    const newKeys = [...customIssueKeys, issue.key]
+    saveSettings({
+      ...settings,
+      customIssueKeys: newKeys,
+    })
+  }
+
+  const handleRemoveIssue = (key: string) => {
+    if (!settings) return
+    const newKeys = customIssueKeys.filter((k) => k !== key)
+    saveSettings({
+      ...settings,
+      customIssueKeys: newKeys,
+    })
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[600px] max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle>Manage Custom Issues</DialogTitle>
+          <DialogDescription>
+            Add issues that are not assigned to you but you want to track.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col gap-4 flex-1 overflow-hidden">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by issue key or summary..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 flex-1 overflow-hidden min-h-[300px]">
+            {/* Search Results */}
+            <Card className="flex flex-col overflow-hidden">
+              <CardHeader className="p-4 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Search Results
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-y-auto p-2 pt-0">
+                {isSearching ? (
+                  <div className="flex justify-center p-4">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : searchResults?.issues?.length ? (
+                  <div className="flex flex-col gap-2">
+                    {searchResults.issues.map((issue) => {
+                      const isAdded = customIssueKeys.includes(issue.key)
+                      return (
+                        <div
+                          key={issue.id}
+                          className="flex items-center justify-between p-2 rounded-md border bg-card hover:bg-accent/50 transition-colors"
+                        >
+                          <div className="flex flex-col overflow-hidden">
+                            <span className="font-medium text-sm">{issue.key}</span>
+                            <span
+                              className="text-xs text-muted-foreground truncate"
+                              title={issue.fields.summary}
+                            >
+                              {issue.fields.summary}
+                            </span>
+                          </div>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 shrink-0"
+                            onClick={() => handleAddIssue(issue)}
+                            disabled={isAdded}
+                          >
+                            {isAdded ? (
+                              <span className="text-xs text-muted-foreground">Added</span>
+                            ) : (
+                              <Plus className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : debouncedQuery ? (
+                  <div className="text-center text-sm text-muted-foreground p-4">
+                    No issues found
+                  </div>
+                ) : (
+                  <div className="text-center text-sm text-muted-foreground p-4">
+                    Type to search...
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Selected Issues */}
+            <Card className="flex flex-col overflow-hidden">
+              <CardHeader className="p-4 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Selected Issues ({customIssueKeys.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-y-auto p-2 pt-0">
+                {customIssueKeys.length > 0 ? (
+                  <div className="flex flex-col gap-2">
+                    {customIssueKeys.map((key) => (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between p-2 rounded-md border bg-card"
+                      >
+                        <span className="font-medium text-sm">{key}</span>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleRemoveIssue(key)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-sm text-muted-foreground p-4">
+                    No custom issues added
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}

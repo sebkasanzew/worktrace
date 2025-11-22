@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { formatDurationHuman, formatJiraStarted, parseDuration } from "@/lib/utils"
 import { useAppSettings } from "@/services/settings.hooks"
 import { WorklogForm, type WorklogFormData } from "./WorklogForm"
@@ -28,8 +28,6 @@ export function WorklogDialog({
 }: Props) {
   const { data: settings } = useAppSettings()
 
-  if (!isOpen) return null
-
   const handleSubmit = (data: WorklogFormData) => {
     const { timeSpent, comment, workType, started } = data
     const seconds = parseDuration(timeSpent)
@@ -55,22 +53,20 @@ export function WorklogDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-200 flex items-center justify-center bg-black/50">
-      <Card className="w-full max-w-md max-h-screen overflow-y-auto">
-        <CardHeader>
-          <CardTitle>Log Work for {issueKey}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <WorklogForm
-            initialValues={initialValues}
-            onSubmit={handleSubmit}
-            onCancel={onCancel}
-            submitLabel="Submit"
-            showDelete={!!onDelete}
-            onDelete={onDelete}
-          />
-        </CardContent>
-      </Card>
-    </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Log Work for {issueKey}</DialogTitle>
+        </DialogHeader>
+        <WorklogForm
+          initialValues={initialValues}
+          onSubmit={handleSubmit}
+          onCancel={onCancel}
+          submitLabel="Submit"
+          showDelete={!!onDelete}
+          onDelete={onDelete}
+        />
+      </DialogContent>
+    </Dialog>
   )
 }

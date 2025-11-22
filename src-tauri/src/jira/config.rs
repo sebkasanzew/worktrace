@@ -86,6 +86,10 @@ pub async fn get_app_settings(app: tauri::AppHandle) -> Result<AppSettings, Stri
         .and_then(|v| v.as_bool())
         .unwrap_or(false);
 
+    let custom_issue_keys = store.get("custom_issue_keys")
+        .and_then(|v| serde_json::from_value(v.clone()).ok())
+        .unwrap_or_default();
+
     Ok(AppSettings {
         jira_instance_url,
         jira_username,
@@ -95,6 +99,7 @@ pub async fn get_app_settings(app: tauri::AppHandle) -> Result<AppSettings, Stri
         default_worklog_description,
         enable_automatic_updates,
         always_on_top,
+        custom_issue_keys,
     })
 }
 
@@ -111,6 +116,7 @@ pub async fn save_app_settings(app: tauri::AppHandle, settings: AppSettings) -> 
     store.set("default_worklog_description", serde_json::json!(settings.default_worklog_description));
     store.set("enable_automatic_updates", serde_json::json!(settings.enable_automatic_updates));
     store.set("always_on_top", serde_json::json!(settings.always_on_top));
+    store.set("custom_issue_keys", serde_json::json!(settings.custom_issue_keys));
 
     store.save().map_err(|e| e.to_string())?;
 
