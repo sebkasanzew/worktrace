@@ -50,7 +50,7 @@ pub fn jira_api_request(
     // Use gouqi's search functionality
     let search_options = gouqi::SearchOptions::builder()
         .fields(vec![
-            "summary", "status", "assignee", "updated", "created", "key",
+            "summary", "status", "assignee", "updated", "created", "key", "subtasks",
         ])
         .build();
     let results = jira
@@ -68,6 +68,53 @@ pub fn jira_api_request(
             let updated = issue.updated().map(|dt| dt.unix_timestamp()).unwrap_or(0);
             let created = issue.created().map(|dt| dt.unix_timestamp()).unwrap_or(0);
 
+            let subtasks = issue
+                .fields
+                .get("subtasks")
+                .and_then(|v| v.as_array())
+                .map(|arr| {
+                    arr.iter()
+                        .filter_map(|val| {
+                            let id = val.get("id")?.as_str()?.to_string();
+                            let key = val.get("key")?.as_str()?.to_string();
+                            let fields = val.get("fields")?;
+                            let summary = fields.get("summary")?.as_str()?.to_string();
+                            
+                            let status_obj = fields.get("status")?;
+                            let status_name = status_obj.get("name")?.as_str()?.to_string();
+                            
+                            let status_category = status_obj.get("statusCategory").and_then(|sc| {
+                                Some(JiraStatusCategory {
+                                    key: sc.get("key")?.as_str()?.to_string(),
+                                    name: sc.get("name")?.as_str()?.to_string(),
+                                })
+                            });
+
+                            Some(JiraSubtask {
+                                id,
+                                key,
+                                fields: JiraSubtaskFields {
+                                    summary,
+                                    status: JiraStatus { 
+                                        name: status_name,
+                                        status_category,
+                                    },
+                                },
+                            })
+                        })
+                        .collect()
+                })
+                .unwrap_or_default();
+
+            let status_category = issue.fields.get("status")
+                .and_then(|s| s.get("statusCategory"))
+                .and_then(|sc| {
+                     Some(JiraStatusCategory {
+                        key: sc.get("key")?.as_str()?.to_string(),
+                        name: sc.get("name")?.as_str()?.to_string(),
+                    })
+                });
+
             JiraIssue {
                 id: issue.id.clone(),
                 key: issue.key.clone(),
@@ -75,6 +122,7 @@ pub fn jira_api_request(
                     summary: issue.summary().unwrap_or_default().to_string(),
                     status: JiraStatus {
                         name: issue.status().map(|s| s.name.clone()).unwrap_or_default(),
+                        status_category,
                     },
                     assignee: issue.assignee().map(|a| JiraAssignee {
                         display_name: a.display_name.clone(),
@@ -82,6 +130,7 @@ pub fn jira_api_request(
                     }),
                     updated: updated * 1000, // Convert to milliseconds for JavaScript Date
                     created: created * 1000, // Convert to milliseconds for JavaScript Date
+                    subtasks,
                 },
             }
         })

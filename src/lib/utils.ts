@@ -110,6 +110,20 @@ export function parseDuration(input: string): number {
   return 0
 }
 
+/**
+ * Formats seconds into "5h 30m" or "30m" format
+ */
+export function formatDurationHuman(seconds: number): string {
+  const totalMinutes = Math.ceil(seconds / 60)
+  const h = Math.floor(totalMinutes / 60)
+  const m = totalMinutes % 60
+
+  if (h > 0) {
+    return `${h}h ${m}m`
+  }
+  return `${m}m`
+}
+
 /** Formats seconds into h:mm:ss or m:ss */
 export function formatDuration(seconds: number): string {
   const s = Math.max(0, Math.floor(seconds))

@@ -1,11 +1,20 @@
 use serde::{Deserialize, Serialize};
 use specta::Type;
 
+/// JIRA status category
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct JiraStatusCategory {
+    pub key: String,
+    pub name: String,
+}
+
 /// JIRA issue status
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct JiraStatus {
     pub name: String,
+    pub status_category: Option<JiraStatusCategory>,
 }
 
 /// JIRA issue assignee
@@ -14,6 +23,23 @@ pub struct JiraStatus {
 pub struct JiraAssignee {
     pub display_name: String,
     pub email_address: String,
+}
+
+/// JIRA subtask fields
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct JiraSubtaskFields {
+    pub summary: String,
+    pub status: JiraStatus,
+}
+
+/// JIRA subtask
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct JiraSubtask {
+    pub id: String,
+    pub key: String,
+    pub fields: JiraSubtaskFields,
 }
 
 /// JIRA issue fields
@@ -27,6 +53,7 @@ pub struct JiraFields {
     pub created: i64,
     /// Unix timestamp in milliseconds (for JavaScript Date compatibility)
     pub updated: i64,
+    pub subtasks: Vec<JiraSubtask>,
 }
 
 /// JIRA issue

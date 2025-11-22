@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatDuration, formatJiraStarted, parseDuration } from "@/lib/utils"
+import { formatDurationHuman, formatJiraStarted, parseDuration } from "@/lib/utils"
 
 type WorkType = "Development" | "Concept" | "Testing"
 
@@ -32,7 +32,8 @@ export function WorklogDialog({ isOpen, issueKey, initialSeconds, onCancel, onSu
 
   useEffect(() => {
     if (isOpen) {
-      setTimeInput(formatDuration(initialSeconds))
+      const formatted = formatDurationHuman(initialSeconds)
+      setTimeInput(formatted === "0m" ? "" : formatted)
       setComment("")
       setWorkType("Development")
     }
@@ -72,7 +73,7 @@ export function WorklogDialog({ isOpen, issueKey, initialSeconds, onCancel, onSu
               <input
                 id="wl-time"
                 className="border rounded-md px-3 py-2 bg-background"
-                placeholder="h:mm or mm:ss"
+                placeholder="e.g. 1h 30m"
                 value={timeInput}
                 onChange={(e) => setTimeInput(e.target.value)}
               />

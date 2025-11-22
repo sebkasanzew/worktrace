@@ -188,6 +188,7 @@ export type JiraFields = {
    * Unix timestamp in milliseconds (for JavaScript Date compatibility)
    */
   updated: number
+  subtasks: JiraSubtask[]
 }
 /**
  * JIRA issue
@@ -200,7 +201,19 @@ export type JiraSearchResponse = { issues: JiraIssue[]; total: number; isLast: b
 /**
  * JIRA issue status
  */
-export type JiraStatus = { name: string }
+export type JiraStatus = { name: string; statusCategory: JiraStatusCategory | null }
+/**
+ * JIRA status category
+ */
+export type JiraStatusCategory = { key: string; name: string }
+/**
+ * JIRA subtask
+ */
+export type JiraSubtask = { id: string; key: string; fields: JiraSubtaskFields }
+/**
+ * JIRA subtask fields
+ */
+export type JiraSubtaskFields = { summary: string; status: JiraStatus }
 /**
  * JIRA current user session info
  */
