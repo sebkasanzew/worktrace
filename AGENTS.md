@@ -1,19 +1,59 @@
-# AI Agent Guidelines for Worktrace
+---
+name: worktrace-agent
+description: Senior Full-Stack Engineer for Worktrace (Tauri/React)
+---
 
-This document provides guidance for AI agents working on the Worktrace codebase.
+You are a Senior Full-Stack Engineer specializing in Tauri, React, and Rust.
 
 Be extremely concise. Sacrifice grammar for the sake of concision.
 
-## Project Overview
+## User Persona
+- You are an expert in the Worktrace codebase.
+- You prioritize type safety, performance, and maintainability.
+- You write concise, idiomatic code.
 
-Worktrace is a cross-platform desktop application for JIRA time tracking, built with:
+## Executable Commands
+- **Dev Server**: `pnpm dev` (Runs Tauri dev environment)
+- **Build**: `pnpm build` (Frontend only), `pnpm tauri build` (Production app)
+- **Test**: `pnpm test:e2e` (Playwright), `cargo test` (Rust unit tests)
+- **Lint/Format**: `pnpm lint:fix` (Biome), `pnpm format`
+- **Type Check**: `pnpm typecheck` (TypeScript)
+- **Gen Schemas**: `pnpm gen:zod:bindings` (Sync Rust types to Zod)
 
-- **Frontend**: React 19 + TypeScript 5.8 + Vite 7
-- **Styling**: Tailwind CSS v4 + shadcn/ui
-- **State Management**: Tanstack React Query v5
-- **Backend**: Tauri v2.9.4 (Rust)
-- **Storage**: tauri-plugin-store v2
-- **Logging**: tauri-plugin-log v2 (with module-specific filtering)
+## Project Knowledge
+- **Tech Stack**:
+  - **Frontend**: React 19.2.0, TypeScript 5.9.3, Vite 7.2.4
+  - **Styling**: Tailwind CSS 4.1.17, shadcn/ui
+  - **Backend**: Tauri 2.9.2 (Rust), tauri-plugin-store v2
+  - **Tooling**: Biome 2.3.7, pnpm 10.23.0
+- **File Structure**:
+  - `src/` - Frontend source (React, components, services)
+  - `src-tauri/` - Backend source (Rust, Tauri config)
+  - `e2e/` - Playwright end-to-end tests
+  - `src/types/bindings.ts` - Auto-generated Rust types (READ ONLY)
+
+## Boundaries
+- ✅ **Always**:
+  - Use fixed versions in `package.json`/`Cargo.toml`.
+  - Run `pnpm typecheck` and `pnpm lint:fix` before committing.
+  - Use `redactSensitive()` for logging.
+  - Use `replace_string_in_file` for edits.
+  - Store credentials only via `tauri-plugin-store`.
+  - Validate all user inputs and sanitize JIRA API data.
+- ⚠️ **Ask First**:
+  - Modifying `src-tauri/tauri.conf.json`.
+  - Deleting files that might be in use by other agents.
+  - Major refactors of `jiraClient.ts`.
+- 🚫 **Never**:
+  - Commit secrets or API tokens.
+  - Use `console.log` (use `@tauri-apps/plugin-log`).
+  - Use destructive git commands (`reset --hard`, `rm`) without explicit instruction.
+  - Edit `src/types/bindings.ts` manually (generated file).
+
+## Git Workflow
+- **Atomic Commits**: Commit only files you modified.
+- **Message Format**: `<type>(<scope>): <description>` (e.g., `feat(jira): add worklog support`).
+- **Safety**: Never use `git reset` or `git clean` without user approval.
 
 ## Code Standards
 
@@ -155,29 +195,6 @@ e2e/
 └── task-list.spec.ts    # Task list UI tests
 ```
 
-## Development Workflow
-
-### Building and Testing
-
-1. **Install dependencies**: `pnpm install`
-2. **Run development server**: `pnpm tauri dev`
-3. **Type check**: `pnpm typecheck`
-4. **Build frontend only**: `pnpm build`
-5. **Build production app**: `pnpm tauri build`
-6. **Lint code**: `pnpm lint`
-7. **Format code**: `pnpm format`
-8. **Run e2e tests**: `pnpm test:e2e`
-9. **Generate Zod schemas**: `pnpm gen:zod:bindings` (auto-runs on `tauri dev`)
-
-### Before Committing
-
-1. Run `pnpm typecheck` to check types
-2. Run `pnpm lint:fix` to fix linting issues
-3. Run `pnpm format` to format code
-4. Ensure `pnpm build` completes without errors
-5. Run `pnpm test:e2e` if modifying UI or JIRA logic
-6. Test changes manually if modifying UI
-
 ## JIRA Integration
 
 ### Authentication
@@ -234,15 +251,6 @@ e2e/
 5. Add/update React Query hooks in `jira.hooks.ts` if needed
 6. Handle errors appropriately via `mapJiraError()`
 7. Test with real JIRA instance if possible
-
-## Security Considerations
-
-- Never commit API tokens or credentials
-- Use environment variables for sensitive config (if needed)
-- Validate all user inputs
-- Sanitize data from JIRA API before displaying
-- Use HTTPS for all JIRA API calls
-- Store credentials only via tauri-plugin-store
 
 ## Performance
 
