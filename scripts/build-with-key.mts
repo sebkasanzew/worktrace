@@ -2,11 +2,16 @@ import { readFileSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 
 // Read the key
-let privateKey = '';
+let privateKey = process.env.TAURI_SIGNING_PRIVATE_KEY || '';
 try {
-  privateKey = readFileSync('app.key', 'utf-8');
+  const fileKey = readFileSync('app.key', 'utf-8');
+  if (fileKey) {
+    privateKey = fileKey;
+  }
 } catch (e) {
-  console.warn('Warning: app.key not found. Build might fail if signing is required.');
+  if (!privateKey) {
+    console.warn('Warning: app.key not found and TAURI_SIGNING_PRIVATE_KEY not set. Build might fail if signing is required.');
+  }
 }
 
 // Get arguments passed to the script
