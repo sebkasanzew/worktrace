@@ -221,4 +221,26 @@ test.describe("Custom Issues", () => {
     await expect(page.getByText("KAN-5")).toBeVisible()
     await expect(page.getByText("Project Issue")).toBeVisible()
   })
+
+  test("should automatically switch filter to 'Assigned + Custom' when custom issues change", async ({
+    page,
+  }) => {
+    await page.getByRole("button", { name: "More issues" }).click()
+
+    // Search and add an issue
+    await page.getByPlaceholder("Search by issue key or summary...").fill("CUSTOM-1")
+    await page.waitForTimeout(600)
+    await page
+      .locator("button")
+      .filter({ has: page.locator("svg.lucide-plus") })
+      .click()
+
+    // Close dialog by clicking outside or pressing escape
+    await page.keyboard.press("Escape")
+
+    // Check if filter switched automatically
+    await expect(page.getByText("Showing 2 issues")).toBeVisible()
+    await expect(page.getByText("CUSTOM-1")).toBeVisible()
+    await expect(page.getByRole("combobox")).toHaveText("Assigned + Custom")
+  })
 })

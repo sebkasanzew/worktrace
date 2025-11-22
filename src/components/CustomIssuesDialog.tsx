@@ -18,9 +18,14 @@ import type { JiraIssue } from "@/types/bindings"
 interface CustomIssuesDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onIssuesChanged?: () => void
 }
 
-export function CustomIssuesDialog({ open, onOpenChange }: CustomIssuesDialogProps) {
+export function CustomIssuesDialog({
+  open,
+  onOpenChange,
+  onIssuesChanged,
+}: CustomIssuesDialogProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedQuery, setDebouncedQuery] = useState("")
   const { data: settings } = useAppSettings()
@@ -52,7 +57,7 @@ export function CustomIssuesDialog({ open, onOpenChange }: CustomIssuesDialogPro
       debug(`Detected project key search: ${projectKey} -> issueKey ~ "${projectKey}*"`)
     }
 
-    const jql = `(${parts.join(" OR ")}) ORDER BY updated DESC`
+    const jql = `(${parts.join(" OR ")}) AND issuetype not in subTaskIssueTypes() ORDER BY updated DESC`
     debug(`Generated JQL: ${jql}`)
     return jql
   }, [debouncedQuery])
@@ -66,19 +71,29 @@ export function CustomIssuesDialog({ open, onOpenChange }: CustomIssuesDialogPro
     if (customIssueKeys.includes(issue.key)) return
 
     const newKeys = [...customIssueKeys, issue.key]
-    saveSettings({
-      ...settings,
-      customIssueKeys: newKeys,
-    })
+    saveSettings(
+      {
+        ...settings,
+        customIssueKeys: newKeys,
+      },
+      {
+        onSuccess: () => onIssuesChanged?.(),
+      }
+    )
   }
 
   const handleRemoveIssue = (key: string) => {
     if (!settings) return
     const newKeys = customIssueKeys.filter((k) => k !== key)
-    saveSettings({
-      ...settings,
-      customIssueKeys: newKeys,
-    })
+    saveSettings(
+      {
+        ...settings,
+        customIssueKeys: newKeys,
+      },
+      {
+        onSuccess: () => onIssuesChanged?.(),
+      }
+    )
   }
 
   return (
@@ -91,7 +106,7 @@ export function CustomIssuesDialog({ open, onOpenChange }: CustomIssuesDialogPro
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 flex-1 overflow-hidden">
+        <div className="flex flex-col gap-4 flex-1">
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
