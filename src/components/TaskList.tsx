@@ -3,6 +3,7 @@ import { info, info as logInfo } from "@tauri-apps/plugin-log"
 import { openUrl } from "@tauri-apps/plugin-opener"
 import { ChevronDown, ExternalLink, LogOut, Play, RefreshCw, Settings, Square } from "lucide-react"
 import { useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { CustomIssuesDialog } from "@/components/CustomIssuesDialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,6 +31,7 @@ interface TaskListProps {
 }
 
 export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
+  const { t } = useTranslation()
   const [expandedIssue, setExpandedIssue] = useState<string | null>(null)
   const [customIssuesDialogOpen, setCustomIssuesDialogOpen] = useState(false)
   const [filterMode, setFilterMode] = useState<"assigned" | "all">("assigned")
@@ -110,7 +112,7 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
     <div className="min-h-screen bg-background">
       {/* Header with drag region for window controls */}
       <ViewHeader
-        title="My JIRA Issues"
+        title={t("My JIRA Issues")}
         actions={
           <>
             <Button
@@ -120,14 +122,14 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
               disabled={isLoading || isFetching}
             >
               <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-              {isFetching ? "Refreshing..." : "Refresh"}
+              {isFetching ? t("Refreshing...") : t("Refresh")}
             </Button>
-            <Button variant="outline" size="sm" onClick={onOpenSettings} aria-label="Settings">
+            <Button variant="outline" size="sm" onClick={onOpenSettings} aria-label={t("Settings")}>
               <Settings className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4" />
-              Logout
+              {t("Logout")}
             </Button>
           </>
         }
@@ -138,11 +140,11 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
         {error && (
           <Card className="mb-4 border-destructive">
             <CardHeader>
-              <CardTitle className="text-destructive">Error Loading Issues</CardTitle>
+              <CardTitle className="text-destructive">{t("Error Loading Issues")}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-destructive font-medium mb-2">
-                {error instanceof Error ? error.message : "Unknown error"}
+                {error instanceof Error ? error.message : t("Unknown error")}
               </p>
               <p className="text-sm text-muted-foreground">
                 Check the developer console (View → Developer → Toggle Developer Tools) for more
@@ -150,8 +152,12 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
               </p>
               {config && (
                 <div className="mt-3 text-xs text-muted-foreground">
-                  <p>JIRA URL: {config.url}</p>
-                  <p>Username: {config.username}</p>
+                  <p>
+                    {t("JIRA URL")}: {config.url}
+                  </p>
+                  <p>
+                    {t("Username")}: {config.username}
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -160,7 +166,7 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
 
         {isLoading && (
           <div className="flex justify-center items-center py-12">
-            <p className="text-muted-foreground">Loading issues...</p>
+            <p className="text-muted-foreground">{t("Loading issues...")}</p>
           </div>
         )}
 
@@ -169,23 +175,23 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="text-sm text-muted-foreground">
-                  Showing {displayedIssues.length} issues
+                  {t("Showing {{count}} issues", { count: displayedIssues.length })}
                 </div>
                 <Select
                   value={filterMode}
                   onValueChange={(value: "assigned" | "all") => setFilterMode(value)}
                 >
                   <SelectTrigger className="w-[200px] h-8">
-                    <SelectValue placeholder="Filter issues" />
+                    <SelectValue placeholder={t("Filter issues")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="assigned">Only assigned to me</SelectItem>
-                    <SelectItem value="all">Assigned + Custom</SelectItem>
+                    <SelectItem value="assigned">{t("Only assigned to me")}</SelectItem>
+                    <SelectItem value="all">{t("Assigned + Custom")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <Button variant="outline" size="sm" onClick={() => setCustomIssuesDialogOpen(true)}>
-                More issues
+                {t("More issues")}
               </Button>
             </div>
             <div className="space-y-4">
@@ -204,7 +210,7 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
                           type="button"
                           onClick={(e) => openJiraIssue(e, issue.key)}
                           className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-                          title="Open in JIRA"
+                          title={t("Open in JIRA")}
                         >
                           <ExternalLink className="h-4 w-4" />
                         </button>
@@ -226,7 +232,7 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
                               aria-label={`Stop timer for ${issue.key}`}
                               className="bg-destructive hover:bg-destructive/90 text-white"
                             >
-                              <Square className="h-4 w-4 mr-1" /> Stop
+                              <Square className="h-4 w-4 mr-1" /> {t("Stop")}
                             </Button>
                           </div>
                         ) : (
@@ -236,7 +242,7 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
                             aria-label={`Start timer for ${issue.key}`}
                             className="bg-blue-600 hover:bg-blue-700 text-white"
                           >
-                            <Play className="h-4 w-4 mr-1" /> Start
+                            <Play className="h-4 w-4 mr-1" /> {t("Start")}
                           </Button>
                         )}
                       </div>
@@ -275,7 +281,9 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
                             </div>
                             <div className="flex justify-between text-xs text-muted-foreground mt-1">
                               <span>
-                                {total > 0 ? `${completed}/${total} subtasks` : "No subtasks"}
+                                {total > 0
+                                  ? `${completed}/${total} ${t("subtasks")}`
+                                  : t("No subtasks")}
                               </span>
                               <span>{progress}%</span>
                             </div>
@@ -288,11 +296,15 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
                     <div className="flex justify-between items-center text-sm text-muted-foreground">
                       <div>
                         {issue.fields.assignee && (
-                          <span>Assigned to: {issue.fields.assignee.displayName}</span>
+                          <span>
+                            {t("Assigned to")}: {issue.fields.assignee.displayName}
+                          </span>
                         )}
                       </div>
                       <div className="flex items-center gap-4">
-                        <div>Updated: {new Date(issue.fields.updated).toLocaleDateString()}</div>
+                        <div>
+                          {t("Updated")}: {new Date(issue.fields.updated).toLocaleDateString()}
+                        </div>
                         <ChevronDown
                           className={`h-5 w-5 transition-transform duration-200 ${
                             expandedIssue === issue.key ? "rotate-180" : ""

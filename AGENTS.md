@@ -78,6 +78,13 @@ Worktrace is a cross-platform desktop application for JIRA time tracking, built 
 - Use the existing color scheme defined in `src/index.css`
 - Maintain responsive design principles
 
+### Internationalization & UI Layout
+
+- **Design for Flexibility**: Avoid fixed widths/heights. Use `min-w`, `max-w`, `h-auto` to accommodate varying text lengths (e.g., German is often 30% longer).
+- **Enable Text Wrapping**: Use `whitespace-normal` and `break-words` for buttons and labels that might expand.
+- **Concise Translations**: Prefer shorter, punchier translations over literal ones to save space.
+- **Natural Keys**: Use English text as keys in `t()` calls for readability.
+
 ### State Management
 
 - Use Tanstack React Query for server state

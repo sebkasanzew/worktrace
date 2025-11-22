@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { AppMenu } from "@/components/AppMenu"
 import { Login } from "@/components/Login"
 import { Settings } from "@/components/Settings"
@@ -12,6 +13,7 @@ import { useUpdateChecker } from "@/services/updater.hooks"
 const queryClient = new QueryClient()
 
 function AppContent() {
+  const { t } = useTranslation()
   const { showUpdateChecker, openUpdateChecker, handleUpdateCheckComplete, isSilentCheck } =
     useUpdateChecker()
   const { isLoggedIn, isLoading, handleLoginSuccess, logout } = useLoginStatus()
@@ -22,7 +24,7 @@ function AppContent() {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center min-h-screen">
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t("Loading...")}</p>
         </div>
       )
     }

@@ -1,5 +1,6 @@
 import { error as logError } from "@tauri-apps/plugin-log"
 import { useEffect, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { updaterService } from "@/services/updater"
@@ -10,6 +11,7 @@ interface UpdateCheckerProps {
 }
 
 export function UpdateChecker({ onCheckComplete, silent = false }: UpdateCheckerProps) {
+  const { t } = useTranslation()
   const [updateAvailable, setUpdateAvailable] = useState(false)
   const [updateVersion, setUpdateVersion] = useState<string>("")
   const [downloading, setDownloading] = useState(false)
@@ -32,13 +34,17 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
           const { message } = await import("@tauri-apps/plugin-dialog")
           await message(
             params.get("mockUpdateError") === "fetch"
-              ? "Update check is not available yet. This feature will work once the first release is published."
-              : `Failed to check for updates: ${params.get("mockUpdateError")}`,
+              ? t(
+                  "Update check is not available yet. This feature will work once the first release is published."
+                )
+              : t("Failed to check for updates: {{error}}", {
+                  error: params.get("mockUpdateError"),
+                }),
             {
               title:
                 params.get("mockUpdateError") === "fetch"
-                  ? "Update Check Unavailable"
-                  : "Update Check Failed",
+                  ? t("Update Check Unavailable")
+                  : t("Update Check Failed"),
               kind: params.get("mockUpdateError") === "fetch" ? "info" : "error",
             }
           )
@@ -58,8 +64,8 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
           if (!silent) {
             // Show dialog for manual checks
             const { message } = await import("@tauri-apps/plugin-dialog")
-            await message("You're running the latest version!", {
-              title: "No Updates Available",
+            await message(t("You're running the latest version!"), {
+              title: t("No Updates Available"),
               kind: "info",
             })
           }
@@ -82,23 +88,27 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
             errorMessage.includes("fetch")
           ) {
             await message(
-              "Update check is not available yet. This feature will work once the first release is published.",
+              t(
+                "Update check is not available yet. This feature will work once the first release is published."
+              ),
               {
-                title: "Update Check Unavailable",
+                title: t("Update Check Unavailable"),
                 kind: "info",
               }
             )
           } else if (errorMessage.includes("was not found on the response `platforms` object")) {
             await message(
-              "Update server configuration incomplete (missing platform). Please try again later.",
+              t(
+                "Update server configuration incomplete (missing platform). Please try again later."
+              ),
               {
-                title: "Update Check Failed",
+                title: t("Update Check Failed"),
                 kind: "error",
               }
             )
           } else {
-            await message(`Failed to check for updates: ${errorMessage}`, {
-              title: "Update Check Failed",
+            await message(t("Failed to check for updates: {{error}}", { error: errorMessage }), {
+              title: t("Update Check Failed"),
               kind: "error",
             })
           }
@@ -112,7 +122,7 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
     if (ranOnceRef.current) return
     ranOnceRef.current = true
     void checkForUpdates()
-  }, [onCheckComplete, silent]) // Include onCheckComplete in dependencies
+  }, [onCheckComplete, silent, t]) // Include onCheckComplete in dependencies
 
   const installUpdate = async () => {
     try {
@@ -124,7 +134,7 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
       })
     } catch (err) {
       logError(`Failed to install update: ${err}`)
-      setError(err instanceof Error ? err.message : "Failed to install update")
+      setError(err instanceof Error ? err.message : t("Failed to install update"))
     } finally {
       setDownloading(false)
     }
@@ -138,8 +148,10 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
     <div className="fixed top-4 right-4 z-50 max-w-md">
       <Card>
         <CardHeader>
-          <CardTitle>Update Available</CardTitle>
-          <CardDescription>Version {updateVersion} is now available</CardDescription>
+          <CardTitle>{t("Update Available")}</CardTitle>
+          <CardDescription>
+            {t("Version {{version}} is now available", { version: updateVersion })}
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {error && <div className="text-sm text-destructive">{error}</div>}
@@ -147,7 +159,9 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
           {downloading && (
             <div className="space-y-2">
               <div className="text-sm text-muted-foreground">
-                Downloading update... {downloadProgress.toFixed(0)}%
+                {t("Downloading update... {{progress}}%", {
+                  progress: downloadProgress.toFixed(0),
+                })}
               </div>
               <div className="w-full bg-secondary rounded-full h-2">
                 <div
@@ -160,14 +174,14 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
 
           <div className="flex gap-2">
             <Button onClick={installUpdate} disabled={downloading} className="flex-1">
-              {downloading ? "Installing..." : "Install Update"}
+              {downloading ? t("Installing...") : t("Install Update")}
             </Button>
             <Button
               variant="outline"
               onClick={() => setUpdateAvailable(false)}
               disabled={downloading}
             >
-              Later
+              {t("Later")}
             </Button>
           </div>
         </CardContent>
