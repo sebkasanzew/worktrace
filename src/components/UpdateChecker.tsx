@@ -83,6 +83,14 @@ export function UpdateChecker({ onCheckComplete }: UpdateCheckerProps) {
               kind: "info",
             }
           )
+        } else if (errorMessage.includes("was not found on the response `platforms` object")) {
+          await message(
+            "Update server configuration incomplete (missing platform). Please try again later.",
+            {
+              title: "Update Check Failed",
+              kind: "error",
+            }
+          )
         } else {
           await message(`Failed to check for updates: ${errorMessage}`, {
             title: "Update Check Failed",

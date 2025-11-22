@@ -62,19 +62,36 @@ async function generateLatestJson() {
     const baseUrl = 'https://github.com/sebkasanzew/worktrace/releases/latest/download';
     const downloadUrl = `${baseUrl}/${appFile}`;
 
+    const outputPath = path.join(bundlePath, 'latest.json');
+
+    // Try to read existing latest.json to merge platforms
+    let existingData: any = null;
+    try {
+      if (await fs.stat(outputPath).catch(() => false)) {
+        const content = await fs.readFile(outputPath, 'utf-8');
+        existingData = JSON.parse(content);
+        console.log(`Found existing latest.json at ${outputPath}, merging...`);
+      }
+    } catch (e) {
+      console.warn('Failed to read existing latest.json, starting fresh.');
+    }
+
+    const platforms = (existingData && existingData.version === version) 
+      ? { ...existingData.platforms } 
+      : {};
+
+    platforms[target] = {
+      signature: sigContent,
+      url: downloadUrl
+    };
+
     const updateData = {
       version,
       notes: `Update to version ${version}`,
       pub_date: new Date().toISOString(),
-      platforms: {
-        [target]: {
-          signature: sigContent,
-          url: downloadUrl
-        }
-      }
+      platforms
     };
 
-    const outputPath = path.join(bundlePath, 'latest.json');
     await fs.writeFile(outputPath, JSON.stringify(updateData, null, 2));
     
     console.log(`Generated latest.json at ${outputPath}`);
