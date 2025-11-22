@@ -193,6 +193,7 @@ export type AppSettings = {
   defaultWorklogDescription: string
   enableAutomaticUpdates: boolean
   alwaysOnTop: boolean
+  customIssueKeys: string[]
 }
 /**
  * JIRA issue assignee

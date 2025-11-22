@@ -3,14 +3,23 @@ import { info, info as logInfo } from "@tauri-apps/plugin-log"
 import { openUrl } from "@tauri-apps/plugin-opener"
 import { ChevronDown, ExternalLink, LogOut, Play, RefreshCw, Settings, Square } from "lucide-react"
 import { useState } from "react"
+import { CustomIssuesDialog } from "@/components/CustomIssuesDialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { WorklogDialog } from "@/components/WorklogDialog"
 import { WorklogHistory } from "@/components/WorklogHistory"
 import { formatDuration } from "@/lib/utils"
 import { configService } from "@/services/jira"
-import { useAddWorklog, useMyIssues } from "@/services/jira.hooks"
+import { useAddWorklog, useIssuesByJql, useMyIssues } from "@/services/jira.hooks"
 import { jiraKeys } from "@/services/jira.keys"
+import { useAppSettings } from "@/services/settings.hooks"
 import { useTimeTracker } from "@/services/time-tracker.hooks"
 import type { JiraConfig } from "@/types/jira"
 
@@ -21,6 +30,8 @@ interface TaskListProps {
 
 export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
   const [expandedIssue, setExpandedIssue] = useState<string | null>(null)
+  const [customIssuesDialogOpen, setCustomIssuesDialogOpen] = useState(false)
+  const [filterMode, setFilterMode] = useState<"assigned" | "all">("assigned")
   const queryClient = useQueryClient()
 
   const { data: config } = useQuery<JiraConfig>({
@@ -28,7 +39,22 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
     queryFn: () => configService.get(),
   })
 
+  const { data: settings } = useAppSettings()
+  const customIssueKeys = settings?.customIssueKeys || []
+  const customIssuesJql = customIssueKeys.length > 0 ? `key in (${customIssueKeys.join(",")})` : ""
+
+  const { data: customIssues } = useIssuesByJql(customIssuesJql)
+
   const { data: issues, isLoading, error, refetch, isFetching } = useMyIssues()
+
+  const displayedIssues =
+    filterMode === "all" && customIssues?.issues
+      ? [
+          ...(issues?.issues || []),
+          ...customIssues.issues.filter((i) => !issues?.issues.some((my) => my.key === i.key)),
+        ]
+      : issues?.issues || []
+
   const {
     activeIssueKey,
     dialogOpen,
@@ -126,11 +152,30 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
 
         {!isLoading && issues && (
           <>
-            <div className="mb-4 text-sm text-muted-foreground">
-              Showing {issues.issues?.length || 0} issues
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-muted-foreground">
+                  Showing {displayedIssues.length} issues
+                </div>
+                <Select
+                  value={filterMode}
+                  onValueChange={(value: "assigned" | "all") => setFilterMode(value)}
+                >
+                  <SelectTrigger className="w-[200px] h-8">
+                    <SelectValue placeholder="Filter issues" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="assigned">Only assigned to me</SelectItem>
+                    <SelectItem value="all">Assigned + Custom</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setCustomIssuesDialogOpen(true)}>
+                More issues
+              </Button>
             </div>
             <div className="space-y-4">
-              {issues.issues?.map((issue) => (
+              {displayedIssues.map((issue) => (
                 <Card
                   key={issue.id}
                   className="cursor-pointer hover:shadow-md transition-shadow"
@@ -301,6 +346,7 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
           )
         }}
       />
+      <CustomIssuesDialog open={customIssuesDialogOpen} onOpenChange={setCustomIssuesDialogOpen} />
     </div>
   )
 }

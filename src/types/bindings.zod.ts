@@ -68,6 +68,7 @@ export const appSettingsSchema = z.object({
   defaultWorklogDescription: z.string(),
   enableAutomaticUpdates: z.boolean(),
   alwaysOnTop: z.boolean(),
+  customIssueKeys: z.array(z.string()),
 })
 
 export const jiraSubtaskFieldsSchema = z.object({

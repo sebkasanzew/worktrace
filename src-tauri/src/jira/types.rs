@@ -161,4 +161,5 @@ pub struct AppSettings {
     pub default_worklog_description: String,
     pub enable_automatic_updates: bool,
     pub always_on_top: bool,
+    pub custom_issue_keys: Vec<String>,
 }
