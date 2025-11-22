@@ -1,7 +1,7 @@
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import os from 'os';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import os from 'node:os';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, '..');
@@ -15,11 +15,10 @@ async function generateLatestJson() {
     const tauriConfig = JSON.parse(tauriConfigContent);
 
     const version = tauriConfig.version;
-    const productName = tauriConfig.productName;
     
     // Determine platform and arch
     const platform = os.platform();
-    let arch = os.arch();
+    let arch: string = os.arch();
     
     if (arch === 'x64') {
       arch = 'x86_64';
@@ -38,13 +37,10 @@ async function generateLatestJson() {
     } else if (platform === 'win32') {
       target = `windows-${arch}`;
       bundlePath = path.join(tauriDir, 'target/release/bundle/nsis');
-      ext = 'setup.exe'; // Or msi, depending on config. Assuming nsis/setup.exe for now or checking file existence
-      // Check for msi if setup.exe not found? 
-      // Tauri v2 default might be msi or nsis.
-      // User said .tar.gz and .sig are generated, implying macOS context or Linux.
+      ext = 'setup.exe'; 
     } else if (platform === 'linux') {
       target = `linux-${arch}`;
-      bundlePath = path.join(tauriDir, 'target/release/bundle/appimage'); // or deb
+      bundlePath = path.join(tauriDir, 'target/release/bundle/appimage'); 
       ext = 'AppImage.tar.gz';
     }
 

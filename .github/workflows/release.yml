@@ -109,7 +109,7 @@ jobs:
         shell: bash
 
       - name: Generate latest.json
-        run: node scripts/generate-latest-json.js
+        run: node scripts/generate-latest-json.mts
         shell: bash
 
       - name: Upload release assets
