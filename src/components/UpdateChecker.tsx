@@ -1,8 +1,10 @@
+import { message } from "@tauri-apps/plugin-dialog"
 import { error as logError } from "@tauri-apps/plugin-log"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { handleMockUpdate } from "@/lib/mock-updater"
 import { updaterService } from "@/services/updater"
 
 interface UpdateCheckerProps {
@@ -23,39 +25,24 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
     // Check for updates when component mounts
     const checkForUpdates = async () => {
       // Test hooks: allow forcing outcomes via URL flags in e2e
-      const params = new URLSearchParams(window.location.search)
-      if (params.get("mockUpdate") === "1") {
-        setUpdateAvailable(true)
-        setUpdateVersion(params.get("mockVersion") || "0.2.0")
-        return
-      }
-      if (params.get("mockUpdateError")) {
-        try {
-          const { message } = await import("@tauri-apps/plugin-dialog")
-          await message(
-            params.get("mockUpdateError") === "fetch"
-              ? t(
-                  "Update check is not available yet. This feature will work once the first release is published."
-                )
-              : t("Failed to check for updates: {{error}}", {
-                  error: params.get("mockUpdateError"),
-                }),
-            {
-              title:
-                params.get("mockUpdateError") === "fetch"
-                  ? t("Update Check Unavailable")
-                  : t("Update Check Failed"),
-              kind: params.get("mockUpdateError") === "fetch" ? "info" : "error",
-            }
-          )
-        } finally {
-          onCheckComplete?.()
-        }
-        return
-      }
-      try {
-        const updateInfo = await updaterService.checkForUpdates()
+      const handled = await handleMockUpdate({
+        t,
+        setUpdateAvailable,
+        setUpdateVersion,
+        onCheckComplete,
+      })
+      if (handled) return
 
+      let updateInfo = null
+      let checkError = null
+
+      try {
+        updateInfo = await updaterService.checkForUpdates()
+      } catch (err) {
+        checkError = err
+      }
+
+      if (updateInfo) {
         if (updateInfo.available) {
           setUpdateAvailable(true)
           setUpdateVersion(updateInfo.version || "")
@@ -63,7 +50,6 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
         } else {
           if (!silent) {
             // Show dialog for manual checks
-            const { message } = await import("@tauri-apps/plugin-dialog")
             await message(t("You're running the latest version!"), {
               title: t("No Updates Available"),
               kind: "info",
@@ -72,14 +58,15 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
           // Call onCheckComplete to unmount after showing dialog
           onCheckComplete?.()
         }
-      } catch (err) {
-        logError(`Failed to check for updates: ${err}`)
+      }
+
+      if (checkError) {
+        logError(`Failed to check for updates: ${checkError}`)
 
         if (!silent) {
-          const errorMessage = err instanceof Error ? err.message : String(err)
+          const errorMessage = checkError instanceof Error ? checkError.message : String(checkError)
 
           // Show dialog for errors
-          const { message } = await import("@tauri-apps/plugin-dialog")
 
           // Check if it's a network/fetch error (update endpoint doesn't exist yet)
           if (
@@ -135,9 +122,8 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
     } catch (err) {
       logError(`Failed to install update: ${err}`)
       setError(err instanceof Error ? err.message : t("Failed to install update"))
-    } finally {
-      setDownloading(false)
     }
+    setDownloading(false)
   }
 
   if (!updateAvailable) {
