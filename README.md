@@ -33,23 +33,23 @@ scoop install worktrace
 ## Tech Stack
 
 ### Frontend
-- **React 19** - UI framework
+- **React** - UI framework
 - **TypeScript** - Type safety
 - **Vite** - Fast build tool
-- **Tailwind CSS v3** - Utility-first CSS
+- **Tailwind CSS** - Utility-first CSS
 - **shadcn/ui** - High-quality UI components
 - **Tanstack React Query** - Data fetching and caching
 
 ### Backend
-- **Tauri v2** - Rust-based desktop app framework
+- **Tauri** - Rust-based desktop app framework
 - **tauri-plugin-store** - Persistent configuration storage
 
 ## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
-- **Node.js** (v20 or later)
-- **pnpm** (v10 or later)
+- **Node.js** (v24 or later)
+- **corepack** enabled by running `corepack enable`
 - **Rust** (latest stable)
 - **Tauri Prerequisites**: Follow the [Tauri Prerequisites Guide](https://tauri.app/start/prerequisites/) for your OS:
   - **Windows**: Microsoft Visual Studio C++ Build Tools

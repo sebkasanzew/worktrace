@@ -22,6 +22,7 @@ Be extremely concise. Sacrifice grammar for the sake of concision.
 
 ## Project Knowledge
 - **Tech Stack**:
+  - **Runtime**: Node.js v24+
   - **Frontend**: React 19.2.0, TypeScript 5.9.3, Vite 7.2.4
   - **Styling**: Tailwind CSS 4.1.17, shadcn/ui
   - **Backend**: Tauri 2.9.2 (Rust), tauri-plugin-store v2
@@ -30,6 +31,7 @@ Be extremely concise. Sacrifice grammar for the sake of concision.
   - `src/` - Frontend source (React, components, services)
   - `src-tauri/` - Backend source (Rust, Tauri config)
   - `e2e/` - Playwright end-to-end tests
+  - `scripts/` - Build and maintenance scripts
   - `src/types/bindings.ts` - Auto-generated Rust types (READ ONLY)
 
 ## Boundaries
@@ -160,12 +162,16 @@ src/
 ├── components/
 │   ├── ui/              # shadcn/ui components (Button, Input, Card, etc.)
 │   ├── Login.tsx        # JIRA credentials configuration
-│   └── TaskList.tsx     # Issue list view
+│   ├── TaskList.tsx     # Issue list view
+│   ├── WorklogDialog.tsx # Worklog management
+│   └── Settings.tsx     # App settings
 ├── services/
 │   ├── jira.ts          # JIRA config service + legacy API wrapper
 │   ├── jiraClient.ts    # Typed JIRA client with validation & Zod
 │   ├── jira.hooks.ts    # React Query hooks for JIRA data
-│   └── jira.keys.ts     # Centralized query keys
+│   ├── jira.keys.ts     # Centralized query keys
+│   ├── updater.ts       # Auto-update logic
+│   └── settings.hooks.ts # Settings management hooks
 ├── types/
 │   ├── bindings.ts      # Auto-generated from Rust (Specta)
 │   ├── bindings.zod.ts  # Auto-generated Zod schemas (ts-to-zod)
@@ -222,7 +228,10 @@ e2e/
 
 ### Supported Features
 
-- Current: View unresolved issues assigned to current user
+- **Issue Tracking**: View unresolved issues assigned to current user
+- **Worklogs**: Add, update, and delete worklogs
+- **Auto-Updates**: Automatic update checking and installation
+- **Configuration**: Secure storage of JIRA credentials and app settings
 - Future roadmap in README.md
 
 ## Common Tasks
