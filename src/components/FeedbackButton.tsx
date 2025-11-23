@@ -10,18 +10,16 @@ export function FeedbackButton() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" title={t("Feedback & Features")}>
+        <Button variant="ghost" size="icon" title={t("Bug Report & Feature Request")}>
           <MessageSquarePlus className="h-5 w-5" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="grid gap-4">
           <div className="space-y-2">
-            <h4 className="font-medium leading-none">{t("Feedback & Features")}</h4>
+            <h4 className="font-medium leading-none">{t("Bug Report & Feature Request")}</h4>
             <p className="text-sm text-muted-foreground">
-              {t(
-                "Have a suggestion or found a bug? You can give feedback and request features through our GitHub issues."
-              )}
+              {t("Found a bug or have a feature request? Please report it on our GitHub issues.")}
             </p>
           </div>
           <Button
