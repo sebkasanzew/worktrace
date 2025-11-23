@@ -115,5 +115,9 @@
   "Later": "Later",
   "Feedback & Features": "Feedback & Features",
   "Have a suggestion or found a bug? You can give feedback and request features through our GitHub issues.": "Have a suggestion or found a bug? You can give feedback and request features through our GitHub issues.",
-  "Open GitHub Issues": "Open GitHub Issues"
+  "Open GitHub Issues": "Open GitHub Issues",
+  "Assigned": "Assigned",
+  "Custom": "Custom",
+  "Assigned to me": "Assigned to me",
+  "Custom issues": "Custom issues"
 }

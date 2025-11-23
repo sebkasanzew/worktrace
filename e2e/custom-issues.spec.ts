@@ -170,12 +170,14 @@ test.describe("Custom Issues", () => {
     await page.locator("button:has(svg.lucide-plus)").click()
 
     await expect(page.getByText("Selected Issues (1)")).toBeVisible()
-    // Check if it appears in the selected list (second occurrence of CUSTOM-1)
+    // Check if it appears in the selected list (look for item with Minus icon)
+    // We use .last() because the item appears in both Search Results (as added) and Selected Issues
     await expect(
       page
-        .locator("div")
-        .filter({ hasText: /^CUSTOM-1$/ })
-        .nth(1)
+        .locator("div.rounded-md.border.bg-card")
+        .filter({ hasText: "CUSTOM-1" })
+        .filter({ has: page.locator("svg.lucide-minus") })
+        .last()
     ).toBeVisible()
   })
 
@@ -200,12 +202,20 @@ test.describe("Custom Issues", () => {
     // Reload to pick up settings
     await page.reload()
 
+    // Default: Assigned only
     await expect(page.getByText("Showing 1 issues")).toBeVisible()
     await expect(page.getByText("TEST-1")).toBeVisible()
     await expect(page.getByText("CUSTOM-1")).not.toBeVisible()
 
-    await page.getByRole("combobox").click()
-    await page.getByRole("option", { name: "Assigned + Custom" }).click()
+    // Open filter popover
+    // The button contains badges, so we find it by the "Assigned" badge text initially
+    await page.getByRole("button").filter({ hasText: "Assigned" }).click()
+
+    // Enable "Custom issues"
+    await page.getByLabel("Custom issues").check()
+
+    // Close popover (click outside or press escape)
+    await page.keyboard.press("Escape")
 
     await expect(page.getByText("Showing 2 issues")).toBeVisible()
     await expect(page.getByText("TEST-1")).toBeVisible()
@@ -241,6 +251,10 @@ test.describe("Custom Issues", () => {
     // Check if filter switched automatically
     await expect(page.getByText("Showing 2 issues")).toBeVisible()
     await expect(page.getByText("CUSTOM-1")).toBeVisible()
-    await expect(page.getByRole("combobox")).toHaveText("Assigned + Custom")
+
+    // Verify badges are present in the filter button
+    const filterBtn = page.locator("button").filter({ hasText: "Assigned" })
+    await expect(filterBtn).toContainText("Assigned")
+    await expect(filterBtn).toContainText("Custom")
   })
 })
