@@ -114,12 +114,20 @@ jobs:
           find src-tauri/target/release/bundle -name "latest.json" -exec mv {} {}-${{ matrix.target }}.json \;
         shell: bash
 
+      - name: Generate hashes
+        run: |
+          node scripts/hash-artifacts.mts
+          # Rename hashes.json to include target to avoid collisions
+          find src-tauri/target/release/bundle -name "hashes.json" -exec mv {} {}-${{ matrix.target }}.json \;
+        shell: bash
+
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
           files: |
             ${{ matrix.artifact_patterns }}
             src-tauri/target/release/bundle/**/latest.json-*.json
+            src-tauri/target/release/bundle/**/hashes.json-*.json
           fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -156,8 +164,75 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  publish-packages:
+    needs: build-tauri
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Download hashes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p hashes
+          gh release download ${{ github.ref_name }} -p "hashes.json-*" -D hashes
+
+      - name: Generate package manifests
+        run: |
+          node scripts/generate-package-manifests.mts hashes/*
+        shell: bash
+
+      - name: Update Homebrew Tap
+        env:
+          HOMEBREW_TAP_REPO: ${{ secrets.HOMEBREW_TAP_REPO }}
+          GH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+        run: |
+          if [ -z "$HOMEBREW_TAP_REPO" ] || [ -z "$GH_TOKEN" ]; then
+            echo "Skipping Homebrew update: HOMEBREW_TAP_REPO or TAP_GITHUB_TOKEN not set"
+            exit 0
+          fi
+          
+          echo "Updating Homebrew Tap: $HOMEBREW_TAP_REPO"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git clone https://x-access-token:${GH_TOKEN}@github.com/${HOMEBREW_TAP_REPO}.git tap
+          cd tap
+          mkdir -p Casks
+          cp ../worktrace.rb Casks/
+          git add Casks/worktrace.rb
+          git commit -m "Update worktrace to ${{ github.ref_name }}" || echo "No changes to commit"
+          git push
+
+      - name: Update Scoop Bucket
+        env:
+          SCOOP_BUCKET_REPO: ${{ secrets.SCOOP_BUCKET_REPO }}
+          GH_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+        run: |
+          if [ -z "$SCOOP_BUCKET_REPO" ] || [ -z "$GH_TOKEN" ]; then
+            echo "Skipping Scoop update: SCOOP_BUCKET_REPO or TAP_GITHUB_TOKEN not set"
+            exit 0
+          fi
+          
+          echo "Updating Scoop Bucket: $SCOOP_BUCKET_REPO"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          git clone https://x-access-token:${GH_TOKEN}@github.com/${SCOOP_BUCKET_REPO}.git bucket
+          cd bucket
+          cp ../worktrace.json .
+          git add worktrace.json
+          git commit -m "Update worktrace to ${{ github.ref_name }}" || echo "No changes to commit"
+          git push
+
   finalize-release:
-    needs: [create-release, build-tauri, merge-manifests]
+    needs: [create-release, build-tauri, merge-manifests, publish-packages]
     runs-on: ubuntu-latest
     steps:
       - name: Release complete

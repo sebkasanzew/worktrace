@@ -27,6 +27,8 @@
     "version:bump": "node scripts/bump-version.mts",
     "updater:generate-json": "node scripts/generate-latest-json.mts",
     "updater:merge-json": "node scripts/merge-latest-json.mts",
+    "release:hash": "node scripts/hash-artifacts.mts",
+    "release:manifests": "node scripts/generate-package-manifests.mts",
     "gen:zod:bindings": "ts-to-zod --config bindings && biome check --write src/types/bindings.zod.ts",
     "i18n:extract": "i18next"
   },
