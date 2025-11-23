@@ -189,7 +189,7 @@ The app stores your JIRA configuration securely using Tauri's store plugin. The 
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to report issues and contribute code.
 
 ## Roadmap
 

@@ -1,7 +1,8 @@
 import { debug } from "@tauri-apps/plugin-log"
-import { Loader2, Plus, Search, Trash2 } from "lucide-react"
+import { Loader2, Minus, Plus, Search } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { IssueListItem } from "@/components/IssueListItem"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -67,6 +68,11 @@ export function CustomIssuesDialog({
   const { data: searchResults, isLoading: isSearching } = useIssuesByJql(searchJql)
 
   const customIssueKeys = settings?.customIssueKeys || []
+
+  // Fetch details for selected issues
+  const selectedIssuesJql =
+    customIssueKeys.length > 0 ? `key in (${customIssueKeys.join(",")})` : ""
+  const { data: selectedIssuesData } = useIssuesByJql(selectedIssuesJql)
 
   const handleAddIssue = (issue: JiraIssue) => {
     if (!settings) return
@@ -137,33 +143,31 @@ export function CustomIssuesDialog({
                     {searchResults.issues.map((issue) => {
                       const isAdded = customIssueKeys.includes(issue.key)
                       return (
-                        <div
+                        <IssueListItem
                           key={issue.id}
-                          className="flex items-center justify-between p-2 rounded-md border bg-card hover:bg-accent/50 transition-colors"
-                        >
-                          <div className="flex flex-col overflow-hidden">
-                            <span className="font-medium text-sm">{issue.key}</span>
-                            <span
-                              className="text-xs text-muted-foreground truncate"
-                              title={issue.fields.summary}
+                          issueKey={issue.key}
+                          summary={issue.fields.summary}
+                          action={
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className={`h-8 w-8 shrink-0 ${
+                                isAdded
+                                  ? "text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  : ""
+                              }`}
+                              onClick={() =>
+                                isAdded ? handleRemoveIssue(issue.key) : handleAddIssue(issue)
+                              }
                             >
-                              {issue.fields.summary}
-                            </span>
-                          </div>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-8 w-8 shrink-0"
-                            onClick={() => handleAddIssue(issue)}
-                            disabled={isAdded}
-                          >
-                            {isAdded ? (
-                              <span className="text-xs text-muted-foreground">{t("Added")}</span>
-                            ) : (
-                              <Plus className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
+                              {isAdded ? (
+                                <Minus className="h-4 w-4" />
+                              ) : (
+                                <Plus className="h-4 w-4" />
+                              )}
+                            </Button>
+                          }
+                        />
                       )
                     })}
                   </div>
@@ -189,22 +193,26 @@ export function CustomIssuesDialog({
               <CardContent className="flex-1 overflow-y-auto p-2 pt-0">
                 {customIssueKeys.length > 0 ? (
                   <div className="flex flex-col gap-2">
-                    {customIssueKeys.map((key) => (
-                      <div
-                        key={key}
-                        className="flex items-center justify-between p-2 rounded-md border bg-card"
-                      >
-                        <span className="font-medium text-sm">{key}</span>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleRemoveIssue(key)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
+                    {customIssueKeys.map((key) => {
+                      const issue = selectedIssuesData?.issues?.find((i) => i.key === key)
+                      return (
+                        <IssueListItem
+                          key={key}
+                          issueKey={key}
+                          summary={issue?.fields.summary}
+                          action={
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => handleRemoveIssue(key)}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                          }
+                        />
+                      )
+                    })}
                   </div>
                 ) : (
                   <div className="text-center text-sm text-muted-foreground p-4">

@@ -120,6 +120,7 @@ Be extremely concise. Sacrifice grammar for the sake of concision.
 
 ### Internationalization & UI Layout
 
+- **Always use `react-i18next`**: All user-facing text must be wrapped in `t()` calls.
 - **Design for Flexibility**: Avoid fixed widths/heights. Use `min-w`, `max-w`, `h-auto` to accommodate varying text lengths (e.g., German is often 30% longer).
 - **Enable Text Wrapping**: Use `whitespace-normal` and `break-words` for buttons and labels that might expand.
 - **Concise Translations**: Prefer shorter, punchier translations over literal ones to save space.
