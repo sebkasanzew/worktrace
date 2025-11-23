@@ -203,7 +203,7 @@ test.describe("Custom Issues", () => {
     await page.reload()
 
     // Default: Assigned only
-    await expect(page.getByText("Showing 1 issues")).toBeVisible()
+    await expect(page.getByText("Showing 1 issue")).toBeVisible()
     await expect(page.getByText("TEST-1")).toBeVisible()
     await expect(page.getByText("CUSTOM-1")).not.toBeVisible()
 
