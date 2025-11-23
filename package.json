@@ -27,7 +27,8 @@
     "version:bump": "node scripts/bump-version.mts",
     "updater:generate-json": "node scripts/generate-latest-json.mts",
     "updater:merge-json": "node scripts/merge-latest-json.mts",
-    "gen:zod:bindings": "ts-to-zod --config bindings && biome check --write src/types/bindings.zod.ts"
+    "gen:zod:bindings": "ts-to-zod --config bindings && biome check --write src/types/bindings.zod.ts",
+    "i18n:extract": "i18next"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",
@@ -67,6 +68,7 @@
     "@types/react": "19.2.6",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
+    "i18next-parser": "9.3.0",
     "merge-partially": "2.0.2",
     "tailwindcss": "4.1.17",
     "tailwindcss-animate": "1.0.7",
