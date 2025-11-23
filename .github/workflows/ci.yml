@@ -131,3 +131,31 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+  i18n-check:
+    name: I18n Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      
+      - uses: pnpm/action-setup@v4
+      
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+      
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      
+      - name: Extract i18n keys
+        run: pnpm i18n:extract
+      
+      - name: Check for changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Localization files are not in sync. Please run 'pnpm i18n:extract' and commit the changes."
+            git status
+            git diff
+            exit 1
+          fi
