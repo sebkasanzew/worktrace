@@ -6,7 +6,7 @@
   "packageManager": "pnpm@10.23.0",
   "scripts": {
     "dev": "tauri dev",
-    "dev:vite": "vite",
+    "dev:vite": "vite --host",
     "build": "tsc && vite build",
     "typecheck": "tsc",
     "preview": "vite preview",

@@ -37,6 +37,13 @@ Please include the following information:
 
 See the [README.md](README.md) for instructions on how to set up the development environment.
 
+We recommend using **Dev Containers** for:
+- Frontend development (using `pnpm dev:vite` with mocks)
+- Running E2E tests (`pnpm test:e2e`)
+- Ensuring consistent tooling versions
+
+For full application development involving the Rust backend, we recommend setting up the environment **natively** on your host machine to avoid GUI/GTK issues.
+
 ## Code Standards
 
 - **Frontend**: React, TypeScript, Tailwind CSS, shadcn/ui.
