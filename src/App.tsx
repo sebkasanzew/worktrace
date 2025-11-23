@@ -1,13 +1,16 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { useState } from "react"
+import { invoke } from "@tauri-apps/api/core"
+import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AppMenu } from "@/components/AppMenu"
 import { Login } from "@/components/Login"
+import { MinimalView } from "@/components/MinimalView"
 import { Settings } from "@/components/Settings"
 import { TaskList } from "@/components/TaskList"
 import { UpdateChecker } from "@/components/UpdateChecker"
 import { useTheme } from "@/hooks/useTheme"
 import { useLoginStatus } from "@/services/auth.hooks"
+import { useTimeTracker } from "@/services/time-tracker.hooks"
 import { useUpdateChecker } from "@/services/updater.hooks"
 
 const queryClient = new QueryClient()
@@ -17,8 +20,25 @@ function AppContent() {
   const { showUpdateChecker, openUpdateChecker, handleUpdateCheckComplete, isSilentCheck } =
     useUpdateChecker()
   const { isLoggedIn, isLoading, handleLoginSuccess, logout } = useLoginStatus()
-  const [view, setView] = useState<"tasks" | "settings">("tasks")
+  const [view, setView] = useState<"tasks" | "settings" | "minimal">("tasks")
+  const timeTracker = useTimeTracker()
+  const { dialogOpen } = timeTracker
   useTheme()
+
+  const setMiniMode = useCallback(async (enable: boolean) => {
+    try {
+      await invoke("set_mini_mode", { enable })
+      setView(enable ? "minimal" : "tasks")
+    } catch (error) {
+      console.error("Failed to toggle mini mode:", error)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (dialogOpen && view === "minimal") {
+      setMiniMode(false)
+    }
+  }, [dialogOpen, view, setMiniMode])
 
   const renderContent = () => {
     if (isLoading) {
@@ -27,6 +47,10 @@ function AppContent() {
           <p className="text-muted-foreground">{t("Loading...")}</p>
         </div>
       )
+    }
+
+    if (view === "minimal") {
+      return <MinimalView onMaximize={() => setMiniMode(false)} timeTracker={timeTracker} />
     }
 
     if (isLoggedIn && view === "settings") {
@@ -40,7 +64,12 @@ function AppContent() {
           <UpdateChecker onCheckComplete={handleUpdateCheckComplete} silent={isSilentCheck} />
         )}
         {isLoggedIn ? (
-          <TaskList onLogout={logout} onOpenSettings={() => setView("settings")} />
+          <TaskList
+            onLogout={logout}
+            onOpenSettings={() => setView("settings")}
+            onEnterMiniMode={() => setMiniMode(true)}
+            timeTracker={timeTracker}
+          />
         ) : (
           <Login onLoginSuccess={handleLoginSuccess} />
         )}
@@ -48,7 +77,13 @@ function AppContent() {
     )
   }
 
-  return <div className="h-screen w-full overflow-y-auto">{renderContent()}</div>
+  return (
+    <div
+      className={`h-screen w-full ${view === "minimal" ? "overflow-hidden" : "overflow-y-auto"}`}
+    >
+      {renderContent()}
+    </div>
+  )
 }
 
 function App() {

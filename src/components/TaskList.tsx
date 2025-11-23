@@ -1,7 +1,16 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { info, info as logInfo } from "@tauri-apps/plugin-log"
 import { openUrl } from "@tauri-apps/plugin-opener"
-import { ChevronDown, ExternalLink, LogOut, Play, RefreshCw, Settings, Square } from "lucide-react"
+import {
+  ChevronDown,
+  ExternalLink,
+  LogOut,
+  Minimize2,
+  Play,
+  RefreshCw,
+  Settings,
+  Square,
+} from "lucide-react"
 import { useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { CustomIssuesDialog } from "@/components/CustomIssuesDialog"
@@ -18,15 +27,22 @@ import { configService } from "@/services/jira"
 import { useAddWorklog, useIssuesByJql, useMyIssues } from "@/services/jira.hooks"
 import { jiraKeys } from "@/services/jira.keys"
 import { useAppSettings } from "@/services/settings.hooks"
-import { useTimeTracker } from "@/services/time-tracker.hooks"
+import type { useTimeTracker } from "@/services/time-tracker.hooks"
 import type { JiraConfig, JiraIssue } from "@/types/bindings"
 
 interface TaskListProps {
   onLogout: () => void
   onOpenSettings: () => void
+  onEnterMiniMode: () => void
+  timeTracker: ReturnType<typeof useTimeTracker>
 }
 
-export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
+export function TaskList({
+  onLogout,
+  onOpenSettings,
+  onEnterMiniMode,
+  timeTracker,
+}: TaskListProps) {
   const { t } = useTranslation()
   const [expandedIssue, setExpandedIssue] = useState<string | null>(null)
   const [customIssuesDialogOpen, setCustomIssuesDialogOpen] = useState(false)
@@ -70,7 +86,7 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
     stopAndOpenDialog,
     resume,
     clearAfterLogged,
-  } = useTimeTracker()
+  } = timeTracker
   const addWorklog = useAddWorklog()
 
   const handleCustomIssuesOpenChange = (open: boolean) => {
@@ -125,6 +141,14 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
             >
               <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
               {isFetching ? t("Refreshing...") : t("Refresh")}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onEnterMiniMode}
+              aria-label={t("Mini Mode")}
+            >
+              <Minimize2 className="h-4 w-4" />
             </Button>
             <Button variant="outline" size="sm" onClick={onOpenSettings} aria-label={t("Settings")}>
               <Settings className="h-4 w-4" />

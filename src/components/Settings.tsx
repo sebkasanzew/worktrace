@@ -166,7 +166,7 @@ export function Settings({ onClose }: SettingsProps) {
 
                 <h2 className="text-xl font-semibold mb-4">{t("Theme")}</h2>
                 <div className="flex gap-4">
-                  {["system", "dark", "light"].map((theme) => (
+                  {(["system", "dark", "light"] as const).map((theme) => (
                     <label key={theme} className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="radio"
@@ -175,7 +175,7 @@ export function Settings({ onClose }: SettingsProps) {
                         checked={formData.theme === theme}
                         onChange={() => updateField("theme", theme)}
                       />
-                      <span className="capitalize">{theme}</span>
+                      <span className="capitalize">{t(theme)}</span>
                     </label>
                   ))}
                 </div>
@@ -209,14 +209,14 @@ export function Settings({ onClose }: SettingsProps) {
               <section>
                 <h2 className="text-xl font-semibold mb-4">{t("Worklog Types")}</h2>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-[1fr_120px_40px] gap-2 font-medium text-sm text-muted-foreground">
+                  <div className="grid grid-cols-[1fr_160px_40px] gap-2 font-medium text-sm text-muted-foreground">
                     <div>{t("Type Name")}</div>
                     <div>{t("Comment Prefix")}</div>
                     <div></div>
                   </div>
                   {formData.worklogTypes.map((type: WorklogType, index: number) => (
                     // biome-ignore lint/suspicious/noArrayIndexKey: simple list
-                    <div key={index} className="grid grid-cols-[1fr_120px_40px] gap-2 items-center">
+                    <div key={index} className="grid grid-cols-[1fr_160px_40px] gap-2 items-center">
                       <Input
                         value={type.name}
                         onChange={(e) => updateWorklogType(index, "name", e.target.value)}
@@ -233,7 +233,7 @@ export function Settings({ onClose }: SettingsProps) {
                     </div>
                   ))}
                   <Button variant="outline" size="sm" onClick={addWorklogType} className="w-full">
-                    <Plus className="h-4 w-4 mr-2" /> {t("Add")} Type
+                    <Plus className="h-4 w-4 mr-2" /> {t("Add Type")}
                   </Button>
                 </div>
               </section>
