@@ -2,18 +2,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { info, info as logInfo } from "@tauri-apps/plugin-log"
 import { openUrl } from "@tauri-apps/plugin-opener"
 import { ChevronDown, ExternalLink, LogOut, Play, RefreshCw, Settings, Square } from "lucide-react"
-import { useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { CustomIssuesDialog } from "@/components/CustomIssuesDialog"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ViewHeader } from "@/components/ViewHeader"
 import { WorklogDialog } from "@/components/WorklogDialog"
 import { WorklogHistory } from "@/components/WorklogHistory"
@@ -23,7 +19,7 @@ import { useAddWorklog, useIssuesByJql, useMyIssues } from "@/services/jira.hook
 import { jiraKeys } from "@/services/jira.keys"
 import { useAppSettings } from "@/services/settings.hooks"
 import { useTimeTracker } from "@/services/time-tracker.hooks"
-import type { JiraConfig } from "@/types/jira"
+import type { JiraConfig, JiraIssue } from "@/types/bindings"
 
 interface TaskListProps {
   onLogout: () => void
@@ -34,7 +30,7 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
   const { t } = useTranslation()
   const [expandedIssue, setExpandedIssue] = useState<string | null>(null)
   const [customIssuesDialogOpen, setCustomIssuesDialogOpen] = useState(false)
-  const [filterMode, setFilterMode] = useState<"assigned" | "all">("assigned")
+  const [filters, setFilters] = useState({ assigned: true, custom: false })
   const customIssuesChangedRef = useRef(false)
   const queryClient = useQueryClient()
 
@@ -51,13 +47,19 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
 
   const { data: issues, isLoading, error, refetch, isFetching } = useMyIssues()
 
-  const displayedIssues =
-    filterMode === "all" && customIssues?.issues
-      ? [
-          ...(issues?.issues || []),
-          ...customIssues.issues.filter((i) => !issues?.issues.some((my) => my.key === i.key)),
-        ]
-      : issues?.issues || []
+  const displayedIssues = useMemo(() => {
+    const showAll = !filters.assigned && !filters.custom
+    let result: JiraIssue[] = []
+
+    if ((filters.assigned || showAll) && issues?.issues) {
+      result = [...result, ...issues.issues]
+    }
+    if ((filters.custom || showAll) && customIssues?.issues) {
+      const customToAdd = customIssues.issues.filter((i) => !result.some((r) => r.key === i.key))
+      result = [...result, ...customToAdd]
+    }
+    return result
+  }, [filters, issues, customIssues])
 
   const {
     activeIssueKey,
@@ -76,7 +78,7 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
       customIssuesChangedRef.current = false
     } else {
       if (customIssuesChangedRef.current) {
-        setFilterMode("all")
+        setFilters((prev) => ({ ...prev, custom: true }))
       }
     }
     setCustomIssuesDialogOpen(open)
@@ -177,18 +179,64 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
                 <div className="text-sm text-muted-foreground">
                   {t("Showing {{count}} issues", { count: displayedIssues.length })}
                 </div>
-                <Select
-                  value={filterMode}
-                  onValueChange={(value: "assigned" | "all") => setFilterMode(value)}
-                >
-                  <SelectTrigger className="w-auto min-w-[200px] h-8">
-                    <SelectValue placeholder={t("Filter issues")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="assigned">{t("Only assigned to me")}</SelectItem>
-                    <SelectItem value="all">{t("Assigned + Custom")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="h-auto min-h-8 w-auto min-w-[200px] justify-start p-1 font-normal"
+                    >
+                      <div className="flex flex-wrap gap-1">
+                        {filters.assigned && (
+                          <Badge variant="secondary" className="rounded-sm px-1 font-normal">
+                            {t("Assigned")}
+                          </Badge>
+                        )}
+                        {filters.custom && (
+                          <Badge variant="secondary" className="rounded-sm px-1 font-normal">
+                            {t("Custom")}
+                          </Badge>
+                        )}
+                        {!filters.assigned && !filters.custom && (
+                          <span className="text-muted-foreground px-2 text-sm">
+                            {t("Filter issues")}
+                          </span>
+                        )}
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-0" align="start">
+                    <div className="p-2 flex flex-col gap-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="assigned"
+                          checked={filters.assigned}
+                          onCheckedChange={(c) =>
+                            setFilters((prev) => ({ ...prev, assigned: !!c }))
+                          }
+                        />
+                        <label
+                          htmlFor="assigned"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {t("Assigned to me")}
+                        </label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="custom"
+                          checked={filters.custom}
+                          onCheckedChange={(c) => setFilters((prev) => ({ ...prev, custom: !!c }))}
+                        />
+                        <label
+                          htmlFor="custom"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {t("Custom issues")}
+                        </label>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
               <Button variant="outline" size="sm" onClick={() => setCustomIssuesDialogOpen(true)}>
                 {t("More issues")}

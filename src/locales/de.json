@@ -114,5 +114,9 @@
   "Downloading update... {{progress}}%": "Update wird heruntergeladen... {{progress}}%",
   "Installing...": "Installiere...",
   "Install Update": "Update installieren",
-  "Later": "Später"
+  "Later": "Später",
+  "Assigned": "Zugewiesen",
+  "Custom": "Benutzerdefiniert",
+  "Assigned to me": "Mir zugewiesen",
+  "Custom issues": "Benutzerdefiniert"
 }
