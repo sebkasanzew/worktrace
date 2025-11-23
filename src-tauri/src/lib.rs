@@ -4,6 +4,79 @@ mod jira;
 mod menu;
 
 use jira::*;
+use std::sync::Mutex;
+use tauri::{Manager, PhysicalPosition, PhysicalSize};
+
+struct WindowState {
+    prev_size: Option<PhysicalSize<u32>>,
+    prev_pos: Option<PhysicalPosition<i32>>,
+}
+
+#[tauri::command]
+#[specta::specta]
+async fn set_mini_mode(
+    app: tauri::AppHandle,
+    enable: bool,
+    state: tauri::State<'_, Mutex<WindowState>>,
+) -> Result<(), String> {
+    let window = app.get_webview_window("main").ok_or("Main window not found")?;
+    let mut state = state.lock().map_err(|_| "Failed to lock state")?;
+
+    if enable {
+        // Save current state
+        if let Ok(size) = window.inner_size() {
+            state.prev_size = Some(size);
+        }
+        if let Ok(pos) = window.outer_position() {
+            state.prev_pos = Some(pos);
+        }
+
+        // Set mini mode
+        // Clear min/max size constraints first to allow resizing to mini size if needed
+        window.set_min_size(None::<PhysicalSize<u32>>).ok();
+        window.set_max_size(None::<PhysicalSize<u32>>).ok();
+
+        window.set_resizable(false).map_err(|e| e.to_string())?;
+        window.set_decorations(false).map_err(|e| e.to_string())?;
+
+        window
+            .set_size(PhysicalSize::new(500, 280))
+            .map_err(|e| e.to_string())?;
+
+        window
+            .set_min_size(Some(PhysicalSize::new(500, 280)))
+            .map_err(|e| e.to_string())?;
+        window
+            .set_max_size(Some(PhysicalSize::new(500, 280)))
+            .map_err(|e| e.to_string())?;
+
+        window.set_maximizable(false).map_err(|e| e.to_string())?;
+    } else {
+        // Restore state
+        window.set_resizable(true).map_err(|e| e.to_string())?;
+        window.set_maximizable(true).map_err(|e| e.to_string())?;
+        window.set_decorations(true).map_err(|e| e.to_string())?;
+        window
+            .set_min_size(None::<PhysicalSize<u32>>)
+            .map_err(|e| e.to_string())?;
+        window
+            .set_max_size(None::<PhysicalSize<u32>>)
+            .map_err(|e| e.to_string())?;
+
+        if let Some(size) = state.prev_size {
+            window.set_size(size).map_err(|e| e.to_string())?;
+        } else {
+            window
+                .set_size(PhysicalSize::new(1024, 800))
+                .map_err(|e| e.to_string())?;
+        }
+
+        if let Some(pos) = state.prev_pos {
+            window.set_position(pos).map_err(|e| e.to_string())?;
+        }
+    }
+    Ok(())
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -26,6 +99,11 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
+            app.manage(Mutex::new(WindowState {
+                prev_size: None,
+                prev_pos: None,
+            }));
+
             // Setup application menu
             menu::setup_menu(app)?;
 
@@ -45,7 +123,8 @@ pub fn run() {
             jira_add_worklog,
             jira_update_worklog,
             jira_delete_worklog,
-            jira_get_worklogs
+            jira_get_worklogs,
+            set_mini_mode
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

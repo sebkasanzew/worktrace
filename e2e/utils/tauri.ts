@@ -184,10 +184,36 @@ export async function setupTauriMocks(
 ): Promise<void> {
   await page.addInitScript((responses) => {
     const createMockInvokeHandler = (responses: Record<string, unknown>) => {
+      // Initialize settings from response override or default
+      let currentAppSettings = responses.get_app_settings || {
+        jiraInstanceUrl: "",
+        jiraUsername: "",
+        jiraApiToken: "",
+        theme: "system",
+        worklogTypes: [],
+        defaultWorklogDescription: "",
+        enableAutomaticUpdates: false,
+        alwaysOnTop: false,
+        customIssueKeys: [],
+      }
+
       return async (cmd: string, args?: unknown) => {
         // Simple call log for debugging
         window.__TAURI_INVOKE_LOG = window.__TAURI_INVOKE_LOG || []
         window.__TAURI_INVOKE_LOG.push(cmd)
+
+        // Handle settings explicitly to support state updates
+        if (cmd === "get_app_settings") {
+          return currentAppSettings
+        }
+
+        if (cmd === "save_app_settings") {
+          if (args && typeof args === "object" && "settings" in args) {
+            // biome-ignore lint/suspicious/noExplicitAny: mock code
+            currentAppSettings = (args as any).settings
+          }
+          return null
+        }
 
         // Return mocked response if available
         if (responses[cmd]) {
@@ -202,27 +228,6 @@ export async function setupTauriMocks(
         // Updater plugin mock: return no update by default
         if (cmd === "plugin:updater|check") {
           return null
-        }
-
-        // App settings mock
-        if (cmd === "get_app_settings") {
-          return {
-            status: "ok",
-            data: {
-              jiraInstanceUrl: "",
-              jiraUsername: "",
-              jiraApiToken: "",
-              theme: "system",
-              worklogTypes: [],
-              defaultWorklogDescription: "",
-              enableAutomaticUpdates: false,
-              alwaysOnTop: false,
-            },
-          }
-        }
-
-        if (cmd === "save_app_settings") {
-          return { status: "ok", data: null }
         }
 
         // Store plugin minimal mocks

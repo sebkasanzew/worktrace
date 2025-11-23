@@ -15,6 +15,7 @@
     "process:default",
     "process:allow-restart",
     "dialog:default",
-    "dialog:allow-message"
+    "dialog:allow-message",
+    "core:window:allow-start-dragging"
   ]
 }
