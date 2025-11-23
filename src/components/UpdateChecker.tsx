@@ -145,7 +145,7 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
   }
 
   return (
-    <div className="fixed top-4 right-4 z-50 max-w-md">
+    <div className="fixed top-4 right-4 z-200 max-w-md">
       <Card>
         <CardHeader>
           <CardTitle>{t("Update Available")}</CardTitle>
