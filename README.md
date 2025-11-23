@@ -11,6 +11,25 @@ A minimal desktop app that makes time and work tracking with issue tracking tool
 - **Auto-Updates**: Automatic update checking and installation from GitHub Releases
 - **Modern UI**: Built with shadcn/ui components and Tailwind CSS
 
+## Installation
+
+### macOS (Homebrew)
+```bash
+brew tap sebkasanzew/tap
+brew install worktrace
+```
+
+**Note:** If you see a "Worktrace.app is damaged" error, run this command:
+```bash
+xattr -cr /Applications/Worktrace.app
+```
+
+### Windows (Scoop)
+```bash
+scoop bucket add sebkasanzew https://github.com/sebkasanzew/scoop-bucket
+scoop install worktrace
+```
+
 ## Tech Stack
 
 ### Frontend
@@ -53,7 +72,7 @@ This will install Node.js, Rust, and all system dependencies required for Linux 
 - **Testing**: E2E tests (`pnpm test:e2e`) **can** be executed in the container as they use headless browsers and mocks.
 - **Native Development**: For full integration testing with the actual Rust backend, we recommend developing natively on your host OS (macOS, Windows, or Linux).
 
-## Installation
+## Development Setup
 
 1. **Clone the repository**:
    ```bash
@@ -198,25 +217,6 @@ The app stores your JIRA configuration securely using Tauri's store plugin. The 
 - API tokens are stored locally and never transmitted except to your configured JIRA instance
 - All communication with JIRA uses HTTPS
 - Basic authentication is used with email + API token (as recommended by Atlassian)
-
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
-
-## Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to report issues and contribute code.
-
-## Roadmap
-
-Future enhancements planned:
-- [ ] Time tracking functionality
-- [ ] Worklog management
-- [ ] Issue filtering and search
-- [ ] Multiple JIRA instance support
-- [ ] Desktop notifications for issue updates
-- [ ] Keyboard shortcuts
-- [ ] Dark mode toggle
 
 ## Support
 
