@@ -1,36 +1,36 @@
-import { invoke } from "@tauri-apps/api/core"
 import { info } from "@tauri-apps/plugin-log"
-import type { JiraSearchResponse, JiraUserSession } from "@/types/bindings"
-import type { JiraConfig } from "@/types/jira"
+import {
+  commands,
+  type JiraSearchResponse,
+  type JiraSettings,
+  type JiraUserSession,
+} from "@/types/bindings"
 import { createJiraClient } from "./jiraClient"
 
 export const configService = {
-  async save(config: { url: string; username: string; password: string }): Promise<void> {
-    await invoke("save_jira_config", {
-      url: config.url,
-      username: config.username,
-      password: config.password,
-    })
+  async save(settings: JiraSettings): Promise<void> {
+    await commands.saveJiraConfig(settings)
   },
 
-  async get(): Promise<JiraConfig> {
-    const config = await invoke<JiraConfig>("get_jira_config")
-    return config
+  async get(): Promise<JiraSettings | null> {
+    const result = await commands.getJiraConfig()
+    if (result.status === "error") throw new Error(result.error)
+    return result.data
   },
 
   async clear(): Promise<void> {
-    await invoke("clear_jira_config")
+    await commands.clearJiraConfig()
   },
 }
 
 export const jiraApi = {
-  async getCurrentUser(config: JiraConfig): Promise<JiraUserSession> {
+  async getCurrentUser(config: JiraSettings): Promise<JiraUserSession> {
     info("[JIRA API] Fetching current user info")
     const client = createJiraClient(config)
     return client.getCurrentUser()
   },
 
-  async getCurrentUserIssues(config: JiraConfig): Promise<JiraSearchResponse> {
+  async getCurrentUserIssues(config: JiraSettings): Promise<JiraSearchResponse> {
     info("[JIRA API] Fetching current user issues")
     const client = createJiraClient(config)
     return client.getCurrentUserIssues()

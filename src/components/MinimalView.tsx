@@ -27,7 +27,10 @@ export function MinimalView({ onMaximize, timeTracker }: MinimalViewProps) {
 
   const toggleAlwaysOnTop = (checked: boolean) => {
     if (settings) {
-      saveMutation.mutate({ ...settings, alwaysOnTop: checked })
+      saveMutation.mutate({
+        ...settings,
+        general: { ...settings.general, alwaysOnTop: checked },
+      })
     }
   }
 
@@ -69,7 +72,7 @@ export function MinimalView({ onMaximize, timeTracker }: MinimalViewProps) {
           <div className="flex items-center space-x-2">
             <Checkbox
               id="always-on-top"
-              checked={settings?.alwaysOnTop ?? false}
+              checked={settings?.general.alwaysOnTop ?? false}
               onCheckedChange={toggleAlwaysOnTop}
             />
             <label

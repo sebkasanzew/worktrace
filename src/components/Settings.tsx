@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ViewHeader } from "@/components/ViewHeader"
 import { useAppSettings, useSaveAppSettings } from "@/services/settings.hooks"
-import type { AppSettings, WorklogType } from "@/types/bindings"
+import type { AppSettings, GeneralSettings, JiraSettings, WorklogType } from "@/types/bindings"
 
 interface SettingsProps {
   onClose: () => void
@@ -53,9 +53,31 @@ export function Settings({ onClose }: SettingsProps) {
     light: t("light"),
   }
 
-  const updateField = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
+  const updateGeneralField = <K extends keyof GeneralSettings>(
+    key: K,
+    value: GeneralSettings[K]
+  ) => {
     setFormData((prev: AppSettings | null) => {
-      const newState = prev ? { ...prev, [key]: value } : null
+      if (!prev) return null
+      const newState = {
+        ...prev,
+        general: { ...prev.general, [key]: value },
+      }
+      if (newState) {
+        saveMutation.mutate(newState)
+      }
+      return newState
+    })
+  }
+
+  const updateJiraField = <K extends keyof JiraSettings>(key: K, value: JiraSettings[K]) => {
+    setFormData((prev: AppSettings | null) => {
+      if (!prev) return null
+      const currentJira = prev.jira || { instanceUrl: "", username: "", apiToken: "" }
+      const newState = {
+        ...prev,
+        jira: { ...currentJira, [key]: value },
+      }
       if (newState) {
         saveMutation.mutate(newState)
       }
@@ -68,7 +90,10 @@ export function Settings({ onClose }: SettingsProps) {
       if (!prev) return null
       const newState = {
         ...prev,
-        worklogTypes: [...prev.worklogTypes, { name: t("New Type"), shortCode: "" }],
+        general: {
+          ...prev.general,
+          worklogTypes: [...prev.general.worklogTypes, { name: t("New Type"), shortCode: "" }],
+        },
       }
       saveMutation.mutate(newState)
       return newState
@@ -78,9 +103,12 @@ export function Settings({ onClose }: SettingsProps) {
   const removeWorklogType = (index: number) => {
     setFormData((prev: AppSettings | null) => {
       if (!prev) return null
-      const newTypes = [...prev.worklogTypes]
+      const newTypes = [...prev.general.worklogTypes]
       newTypes.splice(index, 1)
-      const newState = { ...prev, worklogTypes: newTypes }
+      const newState = {
+        ...prev,
+        general: { ...prev.general, worklogTypes: newTypes },
+      }
       saveMutation.mutate(newState)
       return newState
     })
@@ -89,9 +117,12 @@ export function Settings({ onClose }: SettingsProps) {
   const updateWorklogType = (index: number, field: keyof WorklogType, value: string) => {
     setFormData((prev: AppSettings | null) => {
       if (!prev) return null
-      const newTypes = [...prev.worklogTypes]
+      const newTypes = [...prev.general.worklogTypes]
       newTypes[index] = { ...newTypes[index], [field]: value }
-      const newState = { ...prev, worklogTypes: newTypes }
+      const newState = {
+        ...prev,
+        general: { ...prev.general, worklogTypes: newTypes },
+      }
       saveMutation.mutate(newState)
       return newState
     })
@@ -121,8 +152,8 @@ export function Settings({ onClose }: SettingsProps) {
                     </label>
                     <Input
                       id="jiraUrl"
-                      value={formData.jiraInstanceUrl}
-                      onChange={(e) => updateField("jiraInstanceUrl", e.target.value)}
+                      value={formData.jira?.instanceUrl || ""}
+                      onChange={(e) => updateJiraField("instanceUrl", e.target.value)}
                     />
                   </div>
                   <div>
@@ -131,8 +162,8 @@ export function Settings({ onClose }: SettingsProps) {
                     </label>
                     <Input
                       id="jiraUsername"
-                      value={formData.jiraUsername}
-                      onChange={(e) => updateField("jiraUsername", e.target.value)}
+                      value={formData.jira?.username || ""}
+                      onChange={(e) => updateJiraField("username", e.target.value)}
                     />
                   </div>
                   <div>
@@ -143,8 +174,8 @@ export function Settings({ onClose }: SettingsProps) {
                       <Input
                         id="jiraToken"
                         type="password"
-                        value={formData.jiraApiToken}
-                        onChange={(e) => updateField("jiraApiToken", e.target.value)}
+                        value={formData.jira?.apiToken || ""}
+                        onChange={(e) => updateJiraField("apiToken", e.target.value)}
                       />
                     </div>
                   </div>
@@ -178,8 +209,8 @@ export function Settings({ onClose }: SettingsProps) {
                         type="radio"
                         name="theme"
                         value={theme}
-                        checked={formData.theme === theme}
-                        onChange={() => updateField("theme", theme)}
+                        checked={formData.general.theme === theme}
+                        onChange={() => updateGeneralField("theme", theme)}
                       />
                       <span className="capitalize">{themeLabels[theme]}</span>
                     </label>
@@ -193,16 +224,18 @@ export function Settings({ onClose }: SettingsProps) {
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={formData.enableAutomaticUpdates}
-                      onChange={(e) => updateField("enableAutomaticUpdates", e.target.checked)}
+                      checked={formData.general.enableAutomaticUpdates}
+                      onChange={(e) =>
+                        updateGeneralField("enableAutomaticUpdates", e.target.checked)
+                      }
                     />
                     {t("Enable Automatic Updates")}
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={formData.alwaysOnTop}
-                      onChange={(e) => updateField("alwaysOnTop", e.target.checked)}
+                      checked={formData.general.alwaysOnTop}
+                      onChange={(e) => updateGeneralField("alwaysOnTop", e.target.checked)}
                     />
                     {t("Always on Top")}
                   </label>
@@ -220,7 +253,7 @@ export function Settings({ onClose }: SettingsProps) {
                     <div>{t("Comment Prefix")}</div>
                     <div></div>
                   </div>
-                  {formData.worklogTypes.map((type: WorklogType, index: number) => (
+                  {formData.general.worklogTypes.map((type: WorklogType, index: number) => (
                     // biome-ignore lint/suspicious/noArrayIndexKey: simple list
                     <div key={index} className="grid grid-cols-[1fr_160px_40px] gap-2 items-center">
                       <Input
@@ -252,8 +285,10 @@ export function Settings({ onClose }: SettingsProps) {
                   </label>
                   <Input
                     id="defaultDesc"
-                    value={formData.defaultWorklogDescription}
-                    onChange={(e) => updateField("defaultWorklogDescription", e.target.value)}
+                    value={formData.general.defaultWorklogDescription}
+                    onChange={(e) =>
+                      updateGeneralField("defaultWorklogDescription", e.target.value)
+                    }
                   />
                 </div>
               </section>

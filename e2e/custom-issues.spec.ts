@@ -1,8 +1,8 @@
 import { expect, test } from "@playwright/test"
 import type {
   AppSettings,
-  JiraConfig,
   JiraSearchResponse,
+  JiraSettings,
   JiraUserSession,
 } from "../src/types/bindings"
 
@@ -10,15 +10,19 @@ test.describe("Custom Issues", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => {
       const defaultSettings: AppSettings = {
-        jiraInstanceUrl: "https://test.atlassian.net",
-        jiraUsername: "test@example.com",
-        jiraApiToken: "test-token",
-        theme: "system",
-        worklogTypes: [],
-        defaultWorklogDescription: "",
-        enableAutomaticUpdates: false,
-        alwaysOnTop: false,
-        customIssueKeys: [],
+        general: {
+          theme: "system",
+          worklogTypes: [],
+          defaultWorklogDescription: "",
+          enableAutomaticUpdates: false,
+          alwaysOnTop: false,
+          customIssueKeys: [],
+        },
+        jira: {
+          instanceUrl: "https://test.atlassian.net",
+          username: "test@example.com",
+          apiToken: "test-token",
+        },
       }
 
       const getSettings = () => {
@@ -39,10 +43,10 @@ test.describe("Custom Issues", () => {
           const typedArgs = args as { jql?: string; settings?: AppSettings }
           if (cmd === "get_jira_config") {
             return {
-              url: "https://test.atlassian.net",
+              instanceUrl: "https://test.atlassian.net",
               username: "test@example.com",
-              password: "test-token",
-            } as const satisfies JiraConfig
+              apiToken: "test-token",
+            } as const satisfies JiraSettings
           }
           if (cmd === "jira_get_current_user") {
             return { name: "Test User" } as const satisfies JiraUserSession
@@ -186,15 +190,19 @@ test.describe("Custom Issues", () => {
     await page.evaluate(() => {
       window.__TAURI_INTERNALS__.invoke("save_app_settings", {
         settings: {
-          jiraInstanceUrl: "https://test.atlassian.net",
-          jiraUsername: "test@example.com",
-          jiraApiToken: "test-token",
-          theme: "system",
-          worklogTypes: [],
-          defaultWorklogDescription: "",
-          enableAutomaticUpdates: false,
-          alwaysOnTop: false,
-          customIssueKeys: ["CUSTOM-1"],
+          general: {
+            theme: "system",
+            worklogTypes: [],
+            defaultWorklogDescription: "",
+            enableAutomaticUpdates: false,
+            alwaysOnTop: false,
+            customIssueKeys: ["CUSTOM-1"],
+          },
+          jira: {
+            instanceUrl: "https://test.atlassian.net",
+            username: "test@example.com",
+            apiToken: "test-token",
+          },
         },
       })
     })

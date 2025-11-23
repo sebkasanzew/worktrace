@@ -126,22 +126,15 @@ export const commands = {
       else return { status: "error", error: e as any }
     }
   },
-  async saveJiraConfig(
-    url: string,
-    username: string,
-    password: string
-  ): Promise<Result<null, string>> {
+  async saveJiraConfig(settings: JiraSettings): Promise<Result<null, string>> {
     try {
-      return {
-        status: "ok",
-        data: await TAURI_INVOKE("save_jira_config", { url, username, password }),
-      }
+      return { status: "ok", data: await TAURI_INVOKE("save_jira_config", { settings }) }
     } catch (e) {
       if (e instanceof Error) throw e
       else return { status: "error", error: e as any }
     }
   },
-  async getJiraConfig(): Promise<Result<JiraConfig, string>> {
+  async getJiraConfig(): Promise<Result<JiraSettings | null, string>> {
     try {
       return { status: "ok", data: await TAURI_INVOKE("get_jira_config") }
     } catch (e) {
@@ -192,10 +185,11 @@ export const commands = {
 /**
  * Application settings
  */
-export type AppSettings = {
-  jiraInstanceUrl: string
-  jiraUsername: string
-  jiraApiToken: string
+export type AppSettings = { general: GeneralSettings; jira: JiraSettings | null }
+/**
+ * General application settings
+ */
+export type GeneralSettings = {
   theme: string
   worklogTypes: WorklogType[]
   defaultWorklogDescription: string
@@ -207,10 +201,6 @@ export type AppSettings = {
  * JIRA issue assignee
  */
 export type JiraAssignee = { displayName: string; emailAddress: string }
-/**
- * JIRA configuration stored in app settings
- */
-export type JiraConfig = { url: string | null; username: string | null; password: string | null }
 /**
  * JIRA issue fields
  */
@@ -236,6 +226,10 @@ export type JiraIssue = { id: string; key: string; fields: JiraFields }
  * JIRA search API response
  */
 export type JiraSearchResponse = { issues: JiraIssue[]; total: number; isLast: boolean }
+/**
+ * JIRA configuration stored in app settings
+ */
+export type JiraSettings = { instanceUrl: string; username: string; apiToken: string }
 /**
  * JIRA issue status
  */

@@ -95,9 +95,19 @@ test.describe("Settings Page", () => {
     await mockJiraConfig({
       page,
       appSettings: {
-        jiraInstanceUrl: "https://existing.atlassian.net",
-        enableAutomaticUpdates: true,
-        worklogTypes: [{ name: "Existing Type", shortCode: "(ET)" }],
+        general: {
+          theme: "system",
+          worklogTypes: [{ name: "Existing Type", shortCode: "(ET)" }],
+          defaultWorklogDescription: "",
+          enableAutomaticUpdates: true,
+          alwaysOnTop: false,
+          customIssueKeys: [],
+        },
+        jira: {
+          instanceUrl: "https://existing.atlassian.net",
+          username: "test@example.com",
+          apiToken: "test-token",
+        },
       },
     })
     // Reload page to apply new mock

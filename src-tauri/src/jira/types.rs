@@ -84,10 +84,30 @@ pub struct JiraUserSession {
 /// JIRA configuration stored in app settings
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
-pub struct JiraConfig {
-    pub url: Option<String>,
-    pub username: Option<String>,
-    pub password: Option<String>,
+pub struct JiraSettings {
+    pub instance_url: String,
+    pub username: String,
+    pub api_token: String,
+}
+
+/// General application settings
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct GeneralSettings {
+    pub theme: String,
+    pub worklog_types: Vec<WorklogType>,
+    pub default_worklog_description: String,
+    pub enable_automatic_updates: bool,
+    pub always_on_top: bool,
+    pub custom_issue_keys: Vec<String>,
+}
+
+/// Application settings
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct AppSettings {
+    pub general: GeneralSettings,
+    pub jira: Option<JiraSettings>,
 }
 
 /// Worklog payload for creating a worklog in JIRA
@@ -147,19 +167,4 @@ pub struct JiraWorklogListResponse {
     pub total: u64,
     pub max_results: u64,
     pub start_at: u64,
-}
-
-/// Application settings
-#[derive(Debug, Clone, Serialize, Deserialize, Type)]
-#[serde(rename_all = "camelCase")]
-pub struct AppSettings {
-    pub jira_instance_url: String,
-    pub jira_username: String,
-    pub jira_api_token: String,
-    pub theme: String,
-    pub worklog_types: Vec<WorklogType>,
-    pub default_worklog_description: String,
-    pub enable_automatic_updates: bool,
-    pub always_on_top: bool,
-    pub custom_issue_keys: Vec<String>,
 }

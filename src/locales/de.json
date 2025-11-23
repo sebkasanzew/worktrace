@@ -32,6 +32,7 @@
   "Enter your JIRA credentials to get started": "Geben Sie Ihre JIRA-Anmeldedaten ein, um zu beginnen",
   "Error Loading Issues": "Fehler beim Laden der Vorgänge",
   "Failed to check for updates: {{error}}": "Fehler bei der Suche nach Updates: {{error}}",
+  "Failed to connect to JIRA. Please check your credentials.": "Verbindung zu JIRA fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.",
   "Failed to delete worklog: {{error}}": "Fehler beim Löschen des Arbeitsprotokolls: {{error}}",
   "Failed to install update": "Fehler beim Installieren des Updates",
   "Failed to load worklogs: {{error}}": "Fehler beim Laden der Arbeitsprotokolle: {{error}}",

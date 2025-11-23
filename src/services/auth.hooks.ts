@@ -9,7 +9,7 @@ export function useLoginStatus() {
   const refreshLoginStatus = useCallback(async () => {
     try {
       const config = await configService.get()
-      setIsLoggedIn(!!(config.url && config.username && config.password))
+      setIsLoggedIn(!!(config?.instanceUrl && config?.username && config?.apiToken))
     } catch (error) {
       logError(`Failed to check login status: ${error}`)
       setIsLoggedIn(false)

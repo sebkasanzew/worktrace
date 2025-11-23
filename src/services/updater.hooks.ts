@@ -30,7 +30,7 @@ export function useUpdateChecker() {
   }, [openUpdateChecker])
 
   useEffect(() => {
-    if (settings?.enableAutomaticUpdates && !hasCheckedRef.current) {
+    if (settings?.general.enableAutomaticUpdates && !hasCheckedRef.current) {
       hasCheckedRef.current = true
       openUpdateChecker(true)
     }

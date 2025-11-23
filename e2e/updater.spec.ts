@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test"
 import { mockJiraConfig } from "./mocks/jira"
-import { setupTauriMocks } from "./utils/tauri"
+import { injectCommandMock } from "./utils/tauri"
 
 // Helper update metadata matching the plugin's expected shape
 const updateMetadata = {
@@ -25,9 +25,7 @@ test.describe("Updater", () => {
     await mockJiraConfig({ page })
 
     // Add mocks: updater check returns an available update
-    await setupTauriMocks(page, {
-      "plugin:updater|check": updateMetadata,
-    })
+    await injectCommandMock(page, "plugin:updater|check", updateMetadata)
 
     await triggerUpdateCheck(page)
 

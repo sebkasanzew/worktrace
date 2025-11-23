@@ -28,7 +28,7 @@ import { useAddWorklog, useIssuesByJql, useMyIssues } from "@/services/jira.hook
 import { jiraKeys } from "@/services/jira.keys"
 import { useAppSettings } from "@/services/settings.hooks"
 import type { useTimeTracker } from "@/services/time-tracker.hooks"
-import type { JiraConfig, JiraIssue } from "@/types/bindings"
+import type { JiraIssue, JiraSettings } from "@/types/bindings"
 
 interface TaskListProps {
   onLogout: () => void
@@ -50,13 +50,13 @@ export function TaskList({
   const customIssuesChangedRef = useRef(false)
   const queryClient = useQueryClient()
 
-  const { data: config } = useQuery<JiraConfig>({
+  const { data: config } = useQuery<JiraSettings | null>({
     queryKey: jiraKeys.config(),
     queryFn: () => configService.get(),
   })
 
   const { data: settings } = useAppSettings()
-  const customIssueKeys = settings?.customIssueKeys || []
+  const customIssueKeys = settings?.general.customIssueKeys || []
   const customIssuesJql = customIssueKeys.length > 0 ? `key in (${customIssueKeys.join(",")})` : ""
 
   const { data: customIssues } = useIssuesByJql(customIssuesJql)
@@ -120,8 +120,8 @@ export function TaskList({
 
   const openJiraIssue = async (e: React.MouseEvent, issueKey: string) => {
     e.stopPropagation()
-    if (config?.url) {
-      const url = config.url.endsWith("/") ? config.url : `${config.url}/`
+    if (config?.instanceUrl) {
+      const url = config.instanceUrl.endsWith("/") ? config.instanceUrl : `${config.instanceUrl}/`
       await openUrl(`${url}browse/${issueKey}`)
     }
   }
@@ -179,7 +179,7 @@ export function TaskList({
               {config && (
                 <div className="mt-3 text-xs text-muted-foreground">
                   <p>
-                    {t("JIRA URL")}: {config.url}
+                    {t("JIRA URL")}: {config.instanceUrl}
                   </p>
                   <p>
                     {t("Username")}: {config.username}

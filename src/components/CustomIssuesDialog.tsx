@@ -67,7 +67,7 @@ export function CustomIssuesDialog({
 
   const { data: searchResults, isLoading: isSearching } = useIssuesByJql(searchJql)
 
-  const customIssueKeys = settings?.customIssueKeys || []
+  const customIssueKeys = settings?.general.customIssueKeys || []
 
   // Fetch details for selected issues
   const selectedIssuesJql =
@@ -82,7 +82,10 @@ export function CustomIssuesDialog({
     saveSettings(
       {
         ...settings,
-        customIssueKeys: newKeys,
+        general: {
+          ...settings.general,
+          customIssueKeys: newKeys,
+        },
       },
       {
         onSuccess: () => onIssuesChanged?.(),
@@ -96,7 +99,10 @@ export function CustomIssuesDialog({
     saveSettings(
       {
         ...settings,
-        customIssueKeys: newKeys,
+        general: {
+          ...settings.general,
+          customIssueKeys: newKeys,
+        },
       },
       {
         onSuccess: () => onIssuesChanged?.(),

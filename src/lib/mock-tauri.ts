@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker"
 import {
   appSettingsSchema,
-  jiraConfigSchema,
   jiraSearchResponseSchema,
+  jiraSettingsSchema,
   jiraUserSessionSchema,
 } from "@/types/bindings.zod"
 
@@ -24,18 +24,22 @@ const mockUser = {
 }
 
 const mockAppSettings = {
-  jiraInstanceUrl: "https://jira.example.com",
-  jiraUsername: "demo",
-  jiraApiToken: "token",
-  theme: "system",
-  worklogTypes: [
-    { name: "Development", shortCode: "DEV" },
-    { name: "Meeting", shortCode: "MEET" },
-  ],
-  defaultWorklogDescription: "",
-  enableAutomaticUpdates: false,
-  alwaysOnTop: false,
-  customIssueKeys: [],
+  general: {
+    theme: "system",
+    worklogTypes: [
+      { name: "Development", shortCode: "DEV" },
+      { name: "Meeting", shortCode: "MEET" },
+    ],
+    defaultWorklogDescription: "",
+    enableAutomaticUpdates: false,
+    alwaysOnTop: false,
+    customIssueKeys: [],
+  },
+  jira: {
+    instanceUrl: "https://jira.example.com",
+    username: "demo",
+    apiToken: "token",
+  },
 }
 
 const mockStore = new Map<string, unknown>([["app_settings", mockAppSettings]])
@@ -60,10 +64,10 @@ if (typeof window !== "undefined" && !window.__TAURI_INTERNALS__) {
 
       switch (cmd) {
         case "get_jira_config":
-          return jiraConfigSchema.parse({
-            url: "https://jira.example.com",
+          return jiraSettingsSchema.parse({
+            instanceUrl: "https://jira.example.com",
             username: "demo",
-            password: "token",
+            apiToken: "token",
           })
 
         case "get_app_settings":

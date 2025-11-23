@@ -41,16 +41,16 @@ export function EditWorklogDialog({
       let currentComment = worklog.comment || ""
       let foundType = ""
 
-      if (settings?.worklogTypes) {
-        for (const type of settings.worklogTypes) {
+      if (settings?.general.worklogTypes) {
+        for (const type of settings.general.worklogTypes) {
           if (type.shortCode && currentComment.startsWith(type.shortCode)) {
             foundType = type.name
             currentComment = currentComment.substring(type.shortCode.length).trim()
             break
           }
         }
-        if (!foundType && settings.worklogTypes.length > 0) {
-          foundType = settings.worklogTypes[0].name
+        if (!foundType && settings.general.worklogTypes.length > 0) {
+          foundType = settings.general.worklogTypes[0].name
         }
       }
 
@@ -79,7 +79,7 @@ export function EditWorklogDialog({
       return
     }
 
-    const selectedType = settings?.worklogTypes.find(
+    const selectedType = settings?.general.worklogTypes.find(
       (t: { name: string; shortCode: string }) => t.name === workType
     )
     const prefix = selectedType?.shortCode ? selectedType.shortCode : ""

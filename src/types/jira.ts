@@ -1,9 +1,3 @@
-export interface JiraConfig {
-  url: string | null
-  username: string | null
-  password: string | null
-}
-
 export interface JiraIssue {
   id: string
   key: string
