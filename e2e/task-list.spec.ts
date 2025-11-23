@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test"
-import type { JiraConfig, JiraSearchResponse, JiraUserSession } from "../src/types/bindings"
+import type { JiraSearchResponse, JiraSettings, JiraUserSession } from "../src/types/bindings"
 
 test.describe("Task List UI", () => {
   test.beforeEach(async ({ page }) => {
@@ -14,10 +14,10 @@ test.describe("Task List UI", () => {
           if (cmd === "get_jira_config") {
             // Return saved config to show task list
             return {
-              url: "https://test.atlassian.net",
+              instanceUrl: "https://test.atlassian.net",
               username: "test@example.com",
-              password: "test-token",
-            } as const satisfies JiraConfig
+              apiToken: "test-token",
+            } as const satisfies JiraSettings
           }
           if (cmd === "jira_get_current_user") {
             return {
@@ -194,10 +194,10 @@ test.describe("Task List UI", () => {
         invoke: async (cmd: string) => {
           if (cmd === "get_jira_config") {
             return {
-              url: "https://test.atlassian.net",
+              instanceUrl: "https://test.atlassian.net",
               username: "test@example.com",
-              password: "test-token",
-            } as const satisfies JiraConfig
+              apiToken: "test-token",
+            } as const satisfies JiraSettings
           }
           if (cmd === "jira_api_request") {
             // Delay response to show loading state
@@ -224,10 +224,10 @@ test.describe("Task List UI", () => {
         invoke: async (cmd: string) => {
           if (cmd === "get_jira_config") {
             return {
-              url: "https://test.atlassian.net",
+              instanceUrl: "https://test.atlassian.net",
               username: "test@example.com",
-              password: "test-token",
-            } as const satisfies JiraConfig
+              apiToken: "test-token",
+            } as const satisfies JiraSettings
           }
           if (cmd === "jira_api_request") {
             return { issues: [], total: 0, isLast: true } as const satisfies JiraSearchResponse
@@ -258,10 +258,10 @@ test.describe("Task List UI", () => {
         invoke: async (cmd: string) => {
           if (cmd === "get_jira_config") {
             return {
-              url: "https://test.atlassian.net",
+              instanceUrl: "https://test.atlassian.net",
               username: "test@example.com",
-              password: "test-token",
-            } as const satisfies JiraConfig
+              apiToken: "test-token",
+            } as const satisfies JiraSettings
           }
           if (cmd === "jira_api_request") {
             throw new Error("Failed to fetch issues: Network error")

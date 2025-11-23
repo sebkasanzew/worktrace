@@ -19,6 +19,7 @@ export function useCurrentUser(): UseQueryResult<JiraUserSession, Error> {
     queryKey: jiraKeys.currentUser(),
     queryFn: async () => {
       const config = await configService.get()
+      if (!config) throw new Error("JIRA configuration missing")
       const client = createJiraClient(config)
       return client.getCurrentUser()
     },
@@ -36,6 +37,7 @@ export function useMyIssues(): UseQueryResult<JiraSearchResponse, Error> {
     queryKey: jiraKeys.myIssues(),
     queryFn: async () => {
       const config = await configService.get()
+      if (!config) throw new Error("JIRA configuration missing")
       const client = createJiraClient(config)
       return client.getCurrentUserIssues()
     },
@@ -53,6 +55,7 @@ export function useIssuesByJql(jql: string): UseQueryResult<JiraSearchResponse, 
     queryKey: jiraKeys.issuesByJql(jql),
     queryFn: async () => {
       const config = await configService.get()
+      if (!config) throw new Error("JIRA configuration missing")
       const client = createJiraClient(config)
       return client.searchIssues(jql)
     },
@@ -73,6 +76,7 @@ export function useAddWorklog(): UseMutationResult<
   return useMutation({
     mutationFn: async ({ issueKey, payload }) => {
       const config = await configService.get()
+      if (!config) throw new Error("JIRA configuration missing")
       const client = createJiraClient(config)
       return client.addWorklog(issueKey, payload)
     },
@@ -88,6 +92,7 @@ export function useIssueWorklogs(issueKey: string): UseQueryResult<JiraWorklogLi
     queryKey: jiraKeys.issueWorklogs(issueKey),
     queryFn: async () => {
       const config = await configService.get()
+      if (!config) throw new Error("JIRA configuration missing")
       const client = createJiraClient(config)
       return client.getWorklogs(issueKey)
     },
@@ -114,6 +119,7 @@ export function useUpdateWorklog(): UseMutationResult<
   return useMutation({
     mutationFn: async ({ issueKey, worklogId, timeSpentSeconds, comment, started }) => {
       const config = await configService.get()
+      if (!config) throw new Error("JIRA configuration missing")
       const client = createJiraClient(config)
       return client.updateWorklog(issueKey, worklogId, { timeSpentSeconds, comment, started })
     },
@@ -131,6 +137,7 @@ export function useDeleteWorklog(): UseMutationResult<
   return useMutation({
     mutationFn: async ({ issueKey, worklogId }) => {
       const config = await configService.get()
+      if (!config) throw new Error("JIRA configuration missing")
       const client = createJiraClient(config)
       return client.deleteWorklog(issueKey, worklogId)
     },

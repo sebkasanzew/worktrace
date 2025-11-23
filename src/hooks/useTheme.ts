@@ -8,7 +8,7 @@ export function useTheme() {
     const root = window.document.documentElement
     root.classList.remove("light", "dark")
 
-    const theme = settings?.theme || "system"
+    const theme = settings?.general.theme || "system"
 
     if (theme === "system") {
       const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -18,5 +18,5 @@ export function useTheme() {
     } else {
       root.classList.add(theme)
     }
-  }, [settings?.theme])
+  }, [settings?.general.theme])
 }

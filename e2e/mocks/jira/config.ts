@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker"
 import type { Page } from "@playwright/test"
 import { mergePartially } from "merge-partially"
-import type { AppSettings, JiraConfig } from "@/types/bindings"
+import type { AppSettings, JiraSettings } from "@/types/bindings"
 import { injectCommandMock } from "../../utils/tauri"
 
 interface ConfigMockOptions {
@@ -12,7 +12,7 @@ interface ConfigMockOptions {
   /**
    * Partial config to override default values
    */
-  override?: Partial<JiraConfig>
+  override?: Partial<JiraSettings>
   /**
    * Partial app settings to override default values
    */
@@ -29,28 +29,28 @@ interface EmptyConfigMockOptions {
 /**
  * Generate JIRA configuration mock data with faker
  * @param options.override - Partial config to override default values
- * @returns JiraConfig object
+ * @returns JiraSettings object
  */
-function generateJiraConfig(options: { override?: Partial<JiraConfig> } = {}): JiraConfig {
-  const response: JiraConfig = {
-    url: faker.internet.url({ appendSlash: false, protocol: "https" }),
+function generateJiraConfig(options: { override?: Partial<JiraSettings> } = {}): JiraSettings {
+  const response: JiraSettings = {
+    instanceUrl: faker.internet.url({ appendSlash: false, protocol: "https" }),
     username: faker.internet.email(),
-    password: faker.string.alphanumeric({ length: 24 }),
+    apiToken: faker.string.alphanumeric({ length: 24 }),
   }
 
   return options.override ? mergePartially.deep(response, options.override) : response
 }
 
 const defaultAppSettings: AppSettings = {
-  jiraInstanceUrl: "",
-  jiraUsername: "",
-  jiraApiToken: "",
-  theme: "system",
-  worklogTypes: [],
-  defaultWorklogDescription: "",
-  enableAutomaticUpdates: false,
-  alwaysOnTop: false,
-  customIssueKeys: [],
+  general: {
+    theme: "system",
+    worklogTypes: [],
+    defaultWorklogDescription: "",
+    enableAutomaticUpdates: false,
+    alwaysOnTop: false,
+    customIssueKeys: [],
+  },
+  jira: null,
 }
 
 /**
@@ -64,7 +64,7 @@ const defaultAppSettings: AppSettings = {
  * ```ts
  * await mockJiraConfig({
  *   page,
- *   override: { url: "https://mycompany.atlassian.net" }
+ *   override: { instanceUrl: "https://mycompany.atlassian.net" }
  * });
  * ```
  */
@@ -72,7 +72,12 @@ export async function mockJiraConfig(options: ConfigMockOptions): Promise<void> 
   const config = generateJiraConfig({ override: options.override })
   const appSettings = options.appSettings
     ? mergePartially.deep(defaultAppSettings, options.appSettings)
-    : defaultAppSettings
+    : { ...defaultAppSettings }
+
+  // Ensure jira settings are synced if not explicitly provided in appSettings
+  if (!appSettings.jira) {
+    appSettings.jira = config
+  }
 
   await injectCommandMock(options.page, "get_jira_config", config)
   await injectCommandMock(options.page, "get_app_settings", appSettings)
@@ -91,13 +96,7 @@ export async function mockJiraConfig(options: ConfigMockOptions): Promise<void> 
  * ```
  */
 export async function mockNoJiraConfig(options: EmptyConfigMockOptions): Promise<void> {
-  const emptyConfig: JiraConfig = {
-    url: null,
-    username: null,
-    password: null,
-  }
-
-  await injectCommandMock(options.page, "get_jira_config", emptyConfig)
+  await injectCommandMock(options.page, "get_jira_config", null)
   await injectCommandMock(options.page, "get_app_settings", defaultAppSettings)
   await injectCommandMock(options.page, "save_app_settings", null)
 }
@@ -106,12 +105,12 @@ export async function mockNoJiraConfig(options: EmptyConfigMockOptions): Promise
  * Get default mock config data for use in mockJiraData
  * @internal
  */
-export function getDefaultMockConfig(): JiraConfig {
+export function getDefaultMockConfig(): JiraSettings {
   return generateJiraConfig({
     override: {
-      url: "https://test.atlassian.net",
+      instanceUrl: "https://test.atlassian.net",
       username: "test@example.com",
-      password: "test-token",
+      apiToken: "test-token",
     },
   })
 }

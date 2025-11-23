@@ -158,7 +158,7 @@ export function WorklogForm({
             value={workType}
             onChange={(e) => setWorkType(e.target.value)}
           >
-            {settings?.worklogTypes?.map((t) => (
+            {settings?.general.worklogTypes?.map((t) => (
               <option key={t.name} value={t.name}>
                 {t.name}{" "}
                 {t.shortCode.startsWith("(") && t.shortCode.endsWith(")")

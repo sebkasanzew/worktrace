@@ -6,7 +6,7 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { configService } from "@/services/jira"
+import { configService, jiraApi } from "@/services/jira"
 
 // Zod schema for form validation
 type LoginFormData = {
@@ -53,10 +53,20 @@ export function Login({ onLoginSuccess }: LoginProps) {
     setError(null)
 
     try {
-      await configService.save(data)
+      const settings = {
+        instanceUrl: data.url,
+        username: data.username,
+        apiToken: data.password,
+      }
+
+      // Verify credentials before saving
+      await jiraApi.getCurrentUser(settings)
+
+      await configService.save(settings)
       onLoginSuccess()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save configuration")
+      console.error(err)
+      setError(t("Failed to connect to JIRA. Please check your credentials."))
     }
   }
 

@@ -36,7 +36,7 @@ export function WorklogDialog({
     const seconds = parseDuration(timeSpent)
     if (seconds <= 0) return
 
-    const selectedType = settings?.worklogTypes.find((t) => t.name === workType)
+    const selectedType = settings?.general.worklogTypes.find((t) => t.name === workType)
     const prefix = selectedType?.shortCode ? `${selectedType.shortCode}` : ""
     const fullComment = `${prefix} ${comment}`.trim()
 
@@ -51,8 +51,8 @@ export function WorklogDialog({
   const initialValues: WorklogFormData = useMemo(
     () => ({
       timeSpent: initialSeconds > 0 ? formatDurationHuman(initialSeconds) : "",
-      comment: settings?.defaultWorklogDescription || "",
-      workType: settings?.worklogTypes?.[0]?.name || "",
+      comment: settings?.general.defaultWorklogDescription || "",
+      workType: settings?.general.worklogTypes?.[0]?.name || "",
       started: new Date(),
     }),
     [initialSeconds, settings]

@@ -186,15 +186,15 @@ export async function setupTauriMocks(
     const createMockInvokeHandler = (responses: Record<string, unknown>) => {
       // Initialize settings from response override or default
       let currentAppSettings = responses.get_app_settings || {
-        jiraInstanceUrl: "",
-        jiraUsername: "",
-        jiraApiToken: "",
-        theme: "system",
-        worklogTypes: [],
-        defaultWorklogDescription: "",
-        enableAutomaticUpdates: false,
-        alwaysOnTop: false,
-        customIssueKeys: [],
+        general: {
+          theme: "system",
+          worklogTypes: [],
+          defaultWorklogDescription: "",
+          enableAutomaticUpdates: false,
+          alwaysOnTop: false,
+          customIssueKeys: [],
+        },
+        jira: null,
       }
 
       return async (cmd: string, args?: unknown) => {

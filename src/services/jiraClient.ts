@@ -5,6 +5,7 @@ import { redactSensitive } from "@/lib/utils"
 import {
   commands,
   type JiraSearchResponse,
+  type JiraSettings,
   type JiraUserSession,
   type JiraWorklogListResponse,
 } from "@/types/bindings"
@@ -13,16 +14,14 @@ import {
   jiraUserSessionSchema,
   jiraWorklogListResponseSchema,
 } from "@/types/bindings.zod"
-import type { JiraConfig, WorklogPayload, WorklogResponse } from "@/types/jira"
+import type { WorklogPayload, WorklogResponse } from "@/types/jira"
 
 /**
  * Validates that JIRA config has all required fields
  * @throws Error if config is incomplete
  */
-export function assertJiraConfig(
-  config: JiraConfig
-): asserts config is { url: string; username: string; password: string } {
-  if (!config.url || !config.username || !config.password) {
+export function assertJiraConfig(config: JiraSettings): asserts config is JiraSettings {
+  if (!config.instanceUrl || !config.username || !config.apiToken) {
     throw new Error("JIRA configuration is incomplete")
   }
 }
@@ -47,7 +46,7 @@ export function normalizeJiraUrl(url: string): string {
 /**
  * Maps JIRA API errors to user-friendly messages
  */
-export function mapJiraError(error: unknown, config: JiraConfig): Error {
+export function mapJiraError(error: unknown, config: JiraSettings): Error {
   if (!(error instanceof Error)) {
     return new Error("Unknown error occurred while communicating with JIRA")
   }
@@ -65,12 +64,12 @@ export function mapJiraError(error: unknown, config: JiraConfig): Error {
   }
   if (message.includes("404")) {
     return new Error(
-      `JIRA instance not found. Please verify the URL: ${redactSensitive(config.url)}`
+      `JIRA instance not found. Please verify the URL: ${redactSensitive(config.instanceUrl)}`
     )
   }
   if (message.toLowerCase().includes("connection") || message.includes("network")) {
     return new Error(
-      `Cannot connect to ${redactSensitive(config.url)}. Please check the URL and your internet connection.`
+      `Cannot connect to ${redactSensitive(config.instanceUrl)}. Please check the URL and your internet connection.`
     )
   }
 
@@ -80,10 +79,10 @@ export function mapJiraError(error: unknown, config: JiraConfig): Error {
 /**
  * Creates a typed JIRA API client with validation
  */
-export function createJiraClient(config: JiraConfig) {
+export function createJiraClient(config: JiraSettings) {
   assertJiraConfig(config)
-  const normalizedUrl = normalizeJiraUrl(config.url)
-  const { username, password } = config
+  const normalizedUrl = normalizeJiraUrl(config.instanceUrl)
+  const { username, apiToken: password } = config
 
   debug(`[JIRA Client] Using URL: ${redactSensitive(normalizedUrl)}`)
 

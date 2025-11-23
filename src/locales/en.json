@@ -32,6 +32,7 @@
   "Enter your JIRA credentials to get started": "Enter your JIRA credentials to get started",
   "Error Loading Issues": "Error Loading Issues",
   "Failed to check for updates: {{error}}": "Failed to check for updates: {{error}}",
+  "Failed to connect to JIRA. Please check your credentials.": "Failed to connect to JIRA. Please check your credentials.",
   "Failed to delete worklog: {{error}}": "Failed to delete worklog: {{error}}",
   "Failed to install update": "Failed to install update",
   "Failed to load worklogs: {{error}}": "Failed to load worklogs: {{error}}",
