@@ -1,0 +1,28 @@
+{
+	"name": "Worktrace Dev Container",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "24"
+		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"rust-lang.rust-analyzer",
+				"tamasfe.even-better-toml",
+				"dbaeumer.vscode-eslint",
+				"esbenp.prettier-vscode",
+				"tauri-apps.tauri-vscode",
+				"biomejs.biome",
+				"bradlc.vscode-tailwindcss"
+			]
+		}
+	},
+	"forwardPorts": [
+		1420
+	],
+	"postCreateCommand": "export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 && corepack enable && pnpm install && pnpm exec playwright install chromium --with-deps && cd src-tauri && cargo fetch"
+}

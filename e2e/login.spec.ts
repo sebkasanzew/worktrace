@@ -1,6 +1,11 @@
 import { expect, test } from "@playwright/test"
+import { mockNoJiraConfig } from "./mocks/jira"
 
 test.describe("Login", () => {
+  test.beforeEach(async ({ page }) => {
+    await mockNoJiraConfig({ page })
+  })
+
   test("should display login form when no credentials stored", async ({ page }) => {
     await page.goto("/")
 

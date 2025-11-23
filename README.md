@@ -37,6 +37,22 @@ Before you begin, ensure you have the following installed:
   - **macOS**: Xcode Command Line Tools
   - **Linux**: webkit2gtk, gtk3, and other dependencies
 
+### Using Dev Containers
+
+Alternatively, you can use the provided Dev Container configuration to set up a complete development environment automatically.
+
+1. Install [Docker Desktop](https://www.docker.com/products/docker-desktop).
+2. Install the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) in VS Code.
+3. Open the project in VS Code and run **Dev Containers: Reopen in Container**.
+
+This will install Node.js, Rust, and all system dependencies required for Linux development.
+
+**Limitations of Dev Containers**:
+- **Running the App**: Running the full desktop application (`pnpm dev`) inside the container is **not recommended** due to complexities with GUI forwarding (GTK/X11).
+- **UI Development**: You can run `pnpm dev:vite` to develop the frontend in a browser. A mock Tauri environment is provided to simulate backend calls.
+- **Testing**: E2E tests (`pnpm test:e2e`) **can** be executed in the container as they use headless browsers and mocks.
+- **Native Development**: For full integration testing with the actual Rust backend, we recommend developing natively on your host OS (macOS, Windows, or Linux).
+
 ## Installation
 
 1. **Clone the repository**:
