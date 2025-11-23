@@ -47,6 +47,12 @@ export function Settings({ onClose }: SettingsProps) {
     return null
   }
 
+  const themeLabels: Record<string, string> = {
+    system: t("system"),
+    dark: t("dark"),
+    light: t("light"),
+  }
+
   const updateField = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
     setFormData((prev: AppSettings | null) => {
       const newState = prev ? { ...prev, [key]: value } : null
@@ -175,7 +181,7 @@ export function Settings({ onClose }: SettingsProps) {
                         checked={formData.theme === theme}
                         onChange={() => updateField("theme", theme)}
                       />
-                      <span className="capitalize">{t(theme)}</span>
+                      <span className="capitalize">{themeLabels[theme]}</span>
                     </label>
                   ))}
                 </div>
