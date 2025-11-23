@@ -181,7 +181,7 @@ export function TaskList({ onLogout, onOpenSettings }: TaskListProps) {
                   value={filterMode}
                   onValueChange={(value: "assigned" | "all") => setFilterMode(value)}
                 >
-                  <SelectTrigger className="w-[200px] h-8">
+                  <SelectTrigger className="w-auto min-w-[200px] h-8">
                     <SelectValue placeholder={t("Filter issues")} />
                   </SelectTrigger>
                   <SelectContent>

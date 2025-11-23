@@ -1,4 +1,5 @@
 import type { ReactNode } from "react"
+import { FeedbackButton } from "@/components/FeedbackButton"
 
 interface ViewHeaderProps {
   title: string
@@ -13,7 +14,10 @@ export function ViewHeader({ title, actions }: ViewHeaderProps) {
     >
       <div className="max-w-4xl mx-auto px-6 py-4 flex justify-between items-center">
         <h1 className="text-2xl font-bold">{title}</h1>
-        <div className="flex gap-2">{actions}</div>
+        <div className="flex gap-2 items-center">
+          <FeedbackButton />
+          {actions}
+        </div>
       </div>
     </div>
   )
