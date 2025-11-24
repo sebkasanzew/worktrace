@@ -115,7 +115,7 @@ jobs:
         run: |
           $version = (Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json).version
           $zipName = "Worktrace_${version}_x64-portable.zip"
-          $releaseDir = "src-tauri/target/${{ matrix.target }}/release"
+          $releaseDir = "src-tauri/target/release"
           $destDir = "src-tauri/target/release/bundle/zip"
           New-Item -ItemType Directory -Force -Path $destDir
           Copy-Item "$releaseDir/worktrace.exe" "$releaseDir/Worktrace.exe"
