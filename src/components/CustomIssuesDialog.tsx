@@ -46,7 +46,16 @@ export function CustomIssuesDialog({
     const trimmedQuery = debouncedQuery.trim()
     if (!trimmedQuery) return ""
 
-    const parts = [`key = "${trimmedQuery}"`, `summary ~ "${trimmedQuery}*"`]
+    const parts: string[] = []
+
+    // Only search by exact key if it looks like a full issue key (e.g. PROJ-123)
+    // This prevents "Invalid issue key" errors from JIRA
+    if (/^[a-zA-Z]+-\d+$/.test(trimmedQuery)) {
+      parts.push(`key = "${trimmedQuery}"`)
+    }
+
+    // Always search summary
+    parts.push(`summary ~ "${trimmedQuery}*"`)
 
     // If query looks like a project key (letters, optionally ending with hyphen), try to match as project key prefix
     // This allows "KAN" to find "KAN-1", "KAN-5", etc.
@@ -54,16 +63,22 @@ export function CustomIssuesDialog({
       const projectKey = trimmedQuery.replace(/-$/, "").toUpperCase()
 
       // Use the CONTAINS (~) operator for fuzzy search on issue key
-      // This is the standard way to find issues by partial key in JQL
-      // e.g. issueKey ~ "KAN*" finds "KAN-1", "KAN-5", etc.
-      parts.push(`issueKey ~ "${projectKey}*"`)
-      debug(`Detected project key search: ${projectKey} -> issueKey ~ "${projectKey}*"`)
+      // This is the standard way to find issues by partial key in JQL (e.g. issueKey ~ "KAN*")
+      // BUT: JIRA API v2 (Server/DC) does not support ~ operator on issueKey field
+      const apiVersion = settings?.jira?.apiVersion || "3"
+      if (apiVersion === "3") {
+        parts.push(`issueKey ~ "${projectKey}*"`)
+        debug(`Detected project key search: ${projectKey} -> issueKey ~ "${projectKey}*"`)
+      }
+      // For v2, we skip fuzzy key search to avoid errors.
+      // We can't safely use 'project = ...' because it errors if the project doesn't exist,
+      // which would break summary search for words that look like project keys.
     }
 
     const jql = `(${parts.join(" OR ")}) AND issuetype not in subTaskIssueTypes() ORDER BY updated DESC`
     debug(`Generated JQL: ${jql}`)
     return jql
-  }, [debouncedQuery])
+  }, [debouncedQuery, settings?.jira?.apiVersion])
 
   const { data: searchResults, isLoading: isSearching } = useIssuesByJql(searchJql)
 
