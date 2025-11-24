@@ -1,8 +1,10 @@
 import { getCurrentWindow } from "@tauri-apps/api/window"
+import { error as logError } from "@tauri-apps/plugin-log"
 import { GripHorizontal, Maximize2, Square } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
+import { safeStringify } from "@/lib/utils"
 import { useAppSettings, useSaveAppSettings } from "@/services/settings.hooks"
 import type { useTimeTracker } from "@/services/time-tracker.hooks"
 
@@ -38,7 +40,7 @@ export function MinimalView({ onMaximize, timeTracker }: MinimalViewProps) {
     try {
       await getCurrentWindow().startDragging()
     } catch (error) {
-      console.error("Failed to start dragging:", error)
+      logError(`Failed to start dragging: ${safeStringify(error)}`)
     }
   }
 
