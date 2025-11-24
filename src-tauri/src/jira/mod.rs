@@ -9,5 +9,4 @@ pub mod worklogs;
 pub use auth::*;
 pub use config::*;
 pub use issues::*;
-pub use types::*;
 pub use worklogs::*;
