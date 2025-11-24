@@ -53,7 +53,9 @@ export const commands = {
     username: string,
     password: string,
     issueKey: string,
-    payload: WorklogPayload
+    payload: WorklogPayload,
+    apiVersion: string | null,
+    authType: string | null
   ): Promise<Result<WorklogResponse, string>> {
     try {
       return {
@@ -64,6 +66,8 @@ export const commands = {
           password,
           issueKey,
           payload,
+          apiVersion,
+          authType,
         }),
       }
     } catch (e) {
@@ -77,7 +81,9 @@ export const commands = {
     password: string,
     issueKey: string,
     worklogId: string,
-    payload: WorklogPayload
+    payload: WorklogPayload,
+    apiVersion: string | null,
+    authType: string | null
   ): Promise<Result<WorklogResponse, string>> {
     try {
       return {
@@ -89,6 +95,8 @@ export const commands = {
           issueKey,
           worklogId,
           payload,
+          apiVersion,
+          authType,
         }),
       }
     } catch (e) {
@@ -101,7 +109,9 @@ export const commands = {
     username: string,
     password: string,
     issueKey: string,
-    worklogId: string
+    worklogId: string,
+    apiVersion: string | null,
+    authType: string | null
   ): Promise<Result<null, string>> {
     try {
       return {
@@ -112,6 +122,8 @@ export const commands = {
           password,
           issueKey,
           worklogId,
+          apiVersion,
+          authType,
         }),
       }
     } catch (e) {
@@ -123,12 +135,21 @@ export const commands = {
     url: string,
     username: string,
     password: string,
-    issueKey: string
+    issueKey: string,
+    apiVersion: string | null,
+    authType: string | null
   ): Promise<Result<JiraWorklogListResponse, string>> {
     try {
       return {
         status: "ok",
-        data: await TAURI_INVOKE("jira_get_worklogs", { url, username, password, issueKey }),
+        data: await TAURI_INVOKE("jira_get_worklogs", {
+          url,
+          username,
+          password,
+          issueKey,
+          apiVersion,
+          authType,
+        }),
       }
     } catch (e) {
       if (e instanceof Error) throw e

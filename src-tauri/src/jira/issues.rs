@@ -1,5 +1,5 @@
 use serde_json::json;
-use time::format_description::well_known::Rfc3339;
+use time::format_description::{self, well_known::Rfc3339};
 use time::OffsetDateTime;
 
 use super::types::*;
@@ -20,6 +20,10 @@ pub fn jira_api_request(
     let version = api_version.unwrap_or_else(|| "3".to_string());
     let auth = auth_type.unwrap_or_else(|| "Basic".to_string());
 
+    // JIRA Cloud (v3) removed the 'search' endpoint in favor of 'search/jql'
+    // JIRA Server/DC (v2) still uses 'search'
+    let path = if version == "3" { "search/jql" } else { "search" };
+
     let client = reqwest::blocking::Client::new();
     
     let response = create_client_request(
@@ -27,7 +31,7 @@ pub fn jira_api_request(
         reqwest::Method::POST, 
         &url, 
         &version, 
-        "search", 
+        path, 
         &username, 
         &password, 
         &auth
@@ -49,6 +53,11 @@ pub fn jira_api_request(
     let results: serde_json::Value = response.json()
         .map_err(|e| format!("Failed to parse response: {}", e))?;
 
+    // JIRA date format: 2021-01-17T12:34:00.000+0000 (no colon in offset)
+    let jira_format = format_description::parse(
+        "[year]-[month]-[day]T[hour]:[minute]:[second].[subsecond][offset_hour sign:mandatory][offset_minute]"
+    ).unwrap_or_default();
+
     let issues: Vec<JiraIssue> = results["issues"]
         .as_array()
         .unwrap_or(&vec![])
@@ -58,7 +67,12 @@ pub fn jira_api_request(
             
             let parse_date = |s: Option<&str>| -> i64 {
                 s.and_then(|date_str| {
-                    OffsetDateTime::parse(date_str, &Rfc3339).ok()
+                    // Try RFC3339 first (standard)
+                    if let Ok(dt) = OffsetDateTime::parse(date_str, &Rfc3339) {
+                        return Some(dt);
+                    }
+                    // Try JIRA format
+                    OffsetDateTime::parse(date_str, &jira_format).ok()
                 })
                 .map(|dt| dt.unix_timestamp() * 1000)
                 .unwrap_or(0)
@@ -128,10 +142,28 @@ pub fn jira_api_request(
         })
         .collect();
 
+    // Handle response differences between v2 (Server/DC) and v3 (Cloud)
+    let (total, is_last) = if version == "3" {
+        // v3 search/jql: returns isLast, no total
+        (
+            issues.len() as u64,
+            results["isLast"].as_bool().unwrap_or(true)
+        )
+    } else {
+        // v2 search: returns total, startAt, maxResults
+        let total = results["total"].as_u64().unwrap_or(issues.len() as u64);
+        let start_at = results["startAt"].as_u64().unwrap_or(0);
+        let max_results = results["maxResults"].as_u64().unwrap_or(50);
+        (
+            total,
+            total <= (start_at + max_results)
+        )
+    };
+
     Ok(JiraSearchResponse {
         issues,
-        total: results["total"].as_u64().unwrap_or(0),
-        is_last: results["total"].as_u64().unwrap_or(0) <= (results["startAt"].as_u64().unwrap_or(0) + results["maxResults"].as_u64().unwrap_or(50)),
+        total,
+        is_last,
     })
 }
 
