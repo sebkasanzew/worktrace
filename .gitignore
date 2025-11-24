@@ -9,6 +9,7 @@ lerna-debug.log*
 
 # secret files
 app.key
+app.key.pub
 
 node_modules
 dist
