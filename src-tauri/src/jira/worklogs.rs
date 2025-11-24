@@ -39,27 +39,35 @@ pub fn jira_add_worklog(
     let started_formatted = started.format(&time_format)
         .map_err(|e| format!("Failed to format started time: {}", e))?;
 
-    let comment_adf = json!({
-        "version": 1,
-        "type": "doc",
-        "content": [
-            {
-                "type": "paragraph",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": payload.comment
-                    }
-                ]
-            }
-        ]
-    });
+    let worklog_payload = if version == "2" {
+        json!({
+            "timeSpentSeconds": payload.time_spent_seconds,
+            "started": started_formatted,
+            "comment": payload.comment
+        })
+    } else {
+        let comment_adf = json!({
+            "version": 1,
+            "type": "doc",
+            "content": [
+                {
+                    "type": "paragraph",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": payload.comment
+                        }
+                    ]
+                }
+            ]
+        });
 
-    let worklog_payload = json!({
-        "timeSpentSeconds": payload.time_spent_seconds,
-        "started": started_formatted,
-        "comment": comment_adf
-    });
+        json!({
+            "timeSpentSeconds": payload.time_spent_seconds,
+            "started": started_formatted,
+            "comment": comment_adf
+        })
+    };
 
     let client = reqwest::blocking::Client::new();
     let path = format!("issue/{}/worklog", issue_key);
@@ -129,27 +137,35 @@ pub fn jira_update_worklog(
     let started_formatted = started.format(&time_format)
         .map_err(|e| format!("Failed to format started time: {}", e))?;
 
-    let comment_adf = json!({
-        "version": 1,
-        "type": "doc",
-        "content": [
-            {
-                "type": "paragraph",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": payload.comment
-                    }
-                ]
-            }
-        ]
-    });
+    let worklog_payload = if version == "2" {
+        json!({
+            "timeSpentSeconds": payload.time_spent_seconds,
+            "started": started_formatted,
+            "comment": payload.comment
+        })
+    } else {
+        let comment_adf = json!({
+            "version": 1,
+            "type": "doc",
+            "content": [
+                {
+                    "type": "paragraph",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": payload.comment
+                        }
+                    ]
+                }
+            ]
+        });
 
-    let worklog_payload = json!({
-        "timeSpentSeconds": payload.time_spent_seconds,
-        "started": started_formatted,
-        "comment": comment_adf
-    });
+        json!({
+            "timeSpentSeconds": payload.time_spent_seconds,
+            "started": started_formatted,
+            "comment": comment_adf
+        })
+    };
 
     let client = reqwest::blocking::Client::new();
     let path = format!("issue/{}/worklog/{}", issue_key, worklog_id);
