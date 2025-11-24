@@ -38,6 +38,13 @@ export function useTimeTracker() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const tickRef = useRef<number | null>(null)
 
+  // a small state just to force re-render during ticking
+  const [, setTick] = useState(0)
+  const activeRef = useRef<ActiveTimer | null>(active)
+  useEffect(() => {
+    activeRef.current = active
+  }, [active])
+
   // persist on change
   useEffect(() => {
     ;(async () => {
@@ -75,13 +82,6 @@ export function useTimeTracker() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // a small state just to force re-render during ticking
-  const [, setTick] = useState(0)
-  const activeRef = useRef<ActiveTimer | null>(active)
-  useEffect(() => {
-    activeRef.current = active
-  }, [active])
 
   const activeIssueKey = active?.issueKey ?? null
   const elapsedMs = computeElapsedMs(active)
