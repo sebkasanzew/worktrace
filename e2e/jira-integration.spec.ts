@@ -42,7 +42,7 @@ test.describe("JIRA Integration with Mocked Tauri APIs", () => {
                     },
                     created: Date.now(),
                     updated: Date.now(),
-                    subtasks: [],
+                    issuetype: { name: "Task", subtask: false }, subtasks: [],
                   },
                 },
               ],

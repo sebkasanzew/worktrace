@@ -22,7 +22,7 @@ test.describe("Minimal View", () => {
               assignee: { displayName: "Test User", emailAddress: "test@example.com" },
               created: 1732350000000,
               updated: 1732350000000,
-              subtasks: [],
+              issuetype: { name: "Task", subtask: false }, subtasks: [],
             },
           },
         ],

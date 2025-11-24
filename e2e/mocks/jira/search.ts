@@ -60,6 +60,7 @@ function mockJiraIssue(): JiraIssue {
   const fields: JiraFields = {
     summary: faker.lorem.sentence({ min: 3, max: 8 }),
     status: mockJiraStatus(),
+    issuetype: { name: "Task", subtask: false },
     assignee: faker.datatype.boolean() ? mockJiraAssignee() : null,
     created: faker.date.past().getTime(),
     updated: faker.date.recent().getTime(),
