@@ -25,6 +25,14 @@ pub struct JiraAssignee {
     pub email_address: String,
 }
 
+/// JIRA issue type
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct JiraIssueType {
+    pub name: String,
+    pub subtask: bool,
+}
+
 /// JIRA subtask fields
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -48,6 +56,7 @@ pub struct JiraSubtask {
 pub struct JiraFields {
     pub summary: String,
     pub status: JiraStatus,
+    pub issuetype: JiraIssueType,
     pub assignee: Option<JiraAssignee>,
     /// Unix timestamp in milliseconds (for JavaScript Date compatibility)
     pub created: i64,

@@ -19,6 +19,11 @@ export const jiraAssigneeSchema = z.object({
   emailAddress: z.string(),
 })
 
+export const jiraIssueTypeSchema = z.object({
+  name: z.string(),
+  subtask: z.boolean(),
+})
+
 export const jiraStatusCategorySchema = z.object({
   key: z.string(),
   name: z.string(),
@@ -98,6 +103,7 @@ export const jiraSubtaskSchema = z.object({
 export const jiraFieldsSchema = z.object({
   summary: z.string(),
   status: jiraStatusSchema,
+  issuetype: jiraIssueTypeSchema,
   assignee: jiraAssigneeSchema.nullable(),
   created: z.number(),
   updated: z.number(),

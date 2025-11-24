@@ -36,7 +36,7 @@ test.describe("Worklog Management", () => {
               },
               created: Date.parse("2025-11-20T10:00:00.000Z"),
               updated: Date.parse("2025-11-21T14:30:00.000Z"),
-              subtasks: [],
+              issuetype: { name: "Task", subtask: false }, subtasks: [],
             },
           },
         ],

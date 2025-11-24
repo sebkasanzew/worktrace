@@ -38,7 +38,7 @@ pub fn jira_api_request(
     )
     .json(&json!({
         "jql": jql,
-        "fields": ["summary", "status", "assignee", "updated", "created", "key", "subtasks"],
+        "fields": ["summary", "status", "assignee", "updated", "created", "key", "subtasks", "issuetype"],
         "maxResults": 50
     }))
     .send()
@@ -124,6 +124,11 @@ pub fn jira_api_request(
                 email_address: a["emailAddress"].as_str().unwrap_or_default().to_string(),
             });
 
+            let issuetype = JiraIssueType {
+                name: fields["issuetype"]["name"].as_str().unwrap_or_default().to_string(),
+                subtask: fields["issuetype"]["subtask"].as_bool().unwrap_or(false),
+            };
+
             JiraIssue {
                 id: issue["id"].as_str().unwrap_or_default().to_string(),
                 key: issue["key"].as_str().unwrap_or_default().to_string(),
@@ -133,6 +138,7 @@ pub fn jira_api_request(
                         name: fields["status"]["name"].as_str().unwrap_or_default().to_string(),
                         status_category,
                     },
+                    issuetype,
                     assignee,
                     updated,
                     created,

@@ -237,6 +237,7 @@ export type JiraAssignee = { displayName: string; emailAddress: string }
 export type JiraFields = {
   summary: string
   status: JiraStatus
+  issuetype: JiraIssueType
   assignee: JiraAssignee | null
   /**
    * Unix timestamp in milliseconds (for JavaScript Date compatibility)
@@ -252,6 +253,10 @@ export type JiraFields = {
  * JIRA issue
  */
 export type JiraIssue = { id: string; key: string; fields: JiraFields }
+/**
+ * JIRA issue type
+ */
+export type JiraIssueType = { name: string; subtask: boolean }
 /**
  * JIRA search API response
  */

@@ -74,7 +74,9 @@ export function TaskList({
       const customToAdd = customIssues.issues.filter((i) => !result.some((r) => r.key === i.key))
       result = [...result, ...customToAdd]
     }
-    return result
+
+    // Filter out subtasks
+    return result.filter((issue) => !issue.fields.issuetype?.subtask)
   }, [filters, issues, customIssues])
 
   const {
