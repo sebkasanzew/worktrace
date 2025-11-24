@@ -1,0 +1,23 @@
+{
+  "About {{app_name}}": "About %{app_name}",
+  "Services": "Services",
+  "Hide {{app_name}}": "Hide %{app_name}",
+  "Hide Others": "Hide Others",
+  "Show All": "Show All",
+  "Quit {{app_name}}": "Quit %{app_name}",
+  "File": "File",
+  "Close Window": "Close Window",
+  "Edit": "Edit",
+  "Undo": "Undo",
+  "Redo": "Redo",
+  "Cut": "Cut",
+  "Copy": "Copy",
+  "Paste": "Paste",
+  "Select All": "Select All",
+  "View": "View",
+  "Enter Full Screen": "Enter Full Screen",
+  "Toggle Full Screen": "Toggle Full Screen",
+  "Window": "Window",
+  "Minimize": "Minimize",
+  "Zoom": "Zoom"
+}

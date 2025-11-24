@@ -1,0 +1,23 @@
+{
+  "About {{app_name}}": "Über %{app_name}",
+  "Services": "Dienste",
+  "Hide {{app_name}}": "%{app_name} ausblenden",
+  "Hide Others": "Andere ausblenden",
+  "Show All": "Alle einblenden",
+  "Quit {{app_name}}": "%{app_name} beenden",
+  "File": "Ablage",
+  "Close Window": "Fenster schließen",
+  "Edit": "Bearbeiten",
+  "Undo": "Widerrufen",
+  "Redo": "Wiederholen",
+  "Cut": "Ausschneiden",
+  "Copy": "Kopieren",
+  "Paste": "Einsetzen",
+  "Select All": "Alles auswählen",
+  "View": "Darstellung",
+  "Enter Full Screen": "Vollbildmodus",
+  "Toggle Full Screen": "Vollbildmodus",
+  "Window": "Fenster",
+  "Minimize": "Im Dock ablegen",
+  "Zoom": "Zoomen"
+}

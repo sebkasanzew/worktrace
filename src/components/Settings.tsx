@@ -10,9 +10,10 @@ import type { AppSettings, GeneralSettings, JiraSettings, WorklogType } from "@/
 
 interface SettingsProps {
   onClose: () => void
+  onCheckForUpdates: () => void
 }
 
-export function Settings({ onClose }: SettingsProps) {
+export function Settings({ onClose, onCheckForUpdates }: SettingsProps) {
   const { t, i18n } = useTranslation()
   const { data: settings, isLoading, error } = useAppSettings()
   const saveMutation = useSaveAppSettings()
@@ -239,6 +240,11 @@ export function Settings({ onClose }: SettingsProps) {
                     />
                     {t("Always on Top")}
                   </label>
+                  <div className="pt-2">
+                    <Button variant="outline" size="sm" onClick={onCheckForUpdates}>
+                      {t("Check for Updates")}
+                    </Button>
+                  </div>
                 </div>
               </section>
             </div>

@@ -53,16 +53,26 @@ function AppContent() {
       return <MinimalView onMaximize={() => setMiniMode(false)} timeTracker={timeTracker} />
     }
 
+    const updateChecker = showUpdateChecker && (
+      <UpdateChecker onCheckComplete={handleUpdateCheckComplete} silent={isSilentCheck} />
+    )
+
     if (isLoggedIn && view === "settings") {
-      return <Settings onClose={() => setView("tasks")} />
+      return (
+        <>
+          {updateChecker}
+          <Settings
+            onClose={() => setView("tasks")}
+            onCheckForUpdates={() => openUpdateChecker(false)}
+          />
+        </>
+      )
     }
 
     return (
       <>
         <AppMenu onUpdateCheck={openUpdateChecker} />
-        {showUpdateChecker && (
-          <UpdateChecker onCheckComplete={handleUpdateCheckComplete} silent={isSilentCheck} />
-        )}
+        {updateChecker}
         {isLoggedIn ? (
           <TaskList
             onLogout={logout}
