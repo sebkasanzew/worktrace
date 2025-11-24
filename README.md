@@ -116,10 +116,30 @@ pnpm build:linux    # Linux .deb and .AppImage
 
 **Note**: To build for a specific platform, you must run the build on that platform. Cross-compilation is not supported by default.
 
+### Signing Keys for Local Builds
+
+If you encounter errors related to missing signing keys (e.g., `app.key not found`), you need to generate a local key pair for the updater.
+
+1. **Generate the keys**:
+   ```bash
+   pnpm tauri signer generate -w app.key
+   ```
+   This will create `app.key` (private key) and `app.key.pub` (public key) in your project root.
+
+2. **Configure the Public Key**:
+   Copy the contents of `app.key.pub` and update the `plugins.updater.pubkey` field in `src-tauri/tauri.conf.json`:
+   ```json
+   "plugins": {
+     "updater": {
+       "pubkey": "YOUR_PUBLIC_KEY_HERE",
+       ...
+     }
+   }
+   ```
+
 ### Cross-Platform Builds with GitHub Actions
 
 This project includes a GitHub Actions workflow (`.github/workflows/build.yml`) that automatically builds for macOS and Windows on:
-- Push to `main` branch
 - Pull requests to `main`
 - Manual workflow dispatch
 
