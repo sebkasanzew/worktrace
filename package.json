@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "build:all": "node scripts/build-with-key.mts tauri build",
     "build:macos": "node scripts/build-with-key.mts tauri build --bundles app",
-    "build:windows": "node scripts/build-with-key.mts tauri build --bundles msi",
+    "build:windows": "node scripts/build-with-key.mts tauri build --bundles nsis,msi",
     "build:linux": "node scripts/build-with-key.mts tauri build --bundles deb,appimage",
     "tauri": "tauri",
     "lint": "biome check .",
