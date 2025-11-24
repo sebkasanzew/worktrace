@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker"
+import { safeStringify } from "@/lib/utils"
 import {
   appSettingsSchema,
   jiraSearchResponseSchema,
@@ -57,7 +58,8 @@ if (typeof window !== "undefined" && !window.__TAURI_INTERNALS__) {
     },
     // biome-ignore lint/suspicious/noExplicitAny: Mock implementation needs to be flexible
     invoke: async (cmd: string, args: any) => {
-      console.log(`[Mock Tauri] invoke: ${cmd}`, args)
+      // Avoid exposing potential secrets or PII in dev logs — redact before printing
+      console.log(`[Mock Tauri] invoke: ${cmd} ${safeStringify(args, true)}`)
 
       // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 500))
@@ -109,7 +111,7 @@ if (typeof window !== "undefined" && !window.__TAURI_INTERNALS__) {
             isLast: true,
           }
 
-          console.log("[Mock Tauri] jira_api_request response:", response)
+          console.log("[Mock Tauri] jira_api_request response:", safeStringify(response, true))
           return jiraSearchResponseSchema.parse(response)
         }
 

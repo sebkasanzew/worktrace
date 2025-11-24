@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core"
 import { debug, info, error as logError } from "@tauri-apps/plugin-log"
 import { z } from "zod"
-import { redactSensitive } from "@/lib/utils"
+import { redactSensitive, safeStringify } from "@/lib/utils"
 import {
   commands,
   type JiraSearchResponse,
@@ -106,7 +106,7 @@ export function createJiraClient(config: JiraSettings) {
 
         return validated
       } catch (error) {
-        logError(`[JIRA Client] Failed to get current user: ${error}`)
+        logError(`[JIRA Client] Failed to get current user: ${redactSensitive(String(error))}`)
         throw mapJiraError(error, config)
       }
     },
@@ -116,7 +116,7 @@ export function createJiraClient(config: JiraSettings) {
      */
     async searchIssues(jql: string): Promise<JiraSearchResponse> {
       info("[JIRA Client] Searching issues")
-      debug(`[JIRA Client] JQL: "${jql}"`)
+      debug(`[JIRA Client] JQL: "${redactSensitive(jql)}"`)
 
       try {
         const data = await invoke<JiraSearchResponse>("jira_api_request", {
@@ -134,7 +134,7 @@ export function createJiraClient(config: JiraSettings) {
 
         return validated
       } catch (error) {
-        logError(`[JIRA Client] Failed to search issues: ${error}`)
+        logError(`[JIRA Client] Failed to search issues: ${redactSensitive(String(error))}`)
         throw mapJiraError(error, config)
       }
     },
@@ -152,9 +152,7 @@ export function createJiraClient(config: JiraSettings) {
      */
     async addWorklog(issueKey: string, payload: WorklogPayload): Promise<WorklogResponse> {
       info(`[JIRA Client] Adding worklog to ${issueKey}`)
-      debug(
-        `[JIRA Client] Payload: ${payload.timeSpentSeconds}s, comment: "${payload.comment}", started: ${payload.started}`
-      )
+      debug(`[JIRA Client] Payload: ${safeStringify(payload, true)}`)
       const schema = z.object({ id: z.string() })
       try {
         const result = await invoke("jira_add_worklog", {
@@ -170,7 +168,7 @@ export function createJiraClient(config: JiraSettings) {
         debug(`[JIRA Client] Worklog created: ${validated.id}`)
         return validated
       } catch (error) {
-        logError(`[JIRA Client] Failed to add worklog: ${error}`)
+        logError(`[JIRA Client] Failed to add worklog: ${redactSensitive(String(error))}`)
         throw mapJiraError(error, config)
       }
     },
@@ -197,7 +195,7 @@ export function createJiraClient(config: JiraSettings) {
 
         return validated
       } catch (error) {
-        logError(`[JIRA Client] Failed to get worklogs: ${error}`)
+        logError(`[JIRA Client] Failed to get worklogs: ${redactSensitive(String(error))}`)
         throw mapJiraError(error, config)
       }
     },
@@ -211,9 +209,7 @@ export function createJiraClient(config: JiraSettings) {
       payload: WorklogPayload
     ): Promise<WorklogResponse> {
       info(`[JIRA Client] Updating worklog ${worklogId} for ${issueKey}`)
-      debug(
-        `[JIRA Client] Payload: ${payload.timeSpentSeconds}s, comment: "${payload.comment}", started: ${payload.started}`
-      )
+      debug(`[JIRA Client] Payload: ${safeStringify(payload, true)}`)
       const schema = z.object({ id: z.string() })
       try {
         const result = await invoke("jira_update_worklog", {
@@ -230,7 +226,7 @@ export function createJiraClient(config: JiraSettings) {
         debug(`[JIRA Client] Worklog updated: ${validated.id}`)
         return validated
       } catch (error) {
-        logError(`[JIRA Client] Failed to update worklog: ${error}`)
+        logError(`[JIRA Client] Failed to update worklog: ${redactSensitive(String(error))}`)
         throw mapJiraError(error, config)
       }
     },
@@ -253,7 +249,7 @@ export function createJiraClient(config: JiraSettings) {
         })
         debug(`[JIRA Client] Worklog deleted: ${worklogId}`)
       } catch (error) {
-        logError(`[JIRA Client] Failed to delete worklog: ${error}`)
+        logError(`[JIRA Client] Failed to delete worklog: ${redactSensitive(String(error))}`)
         throw mapJiraError(error, config)
       }
     },

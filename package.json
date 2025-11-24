@@ -23,7 +23,6 @@
     "test:e2e:debug": "playwright test --debug",
     "test:build-scripts": "node scripts/test-build-scripts.mts",
     "test:release": "node scripts/test-release.mts",
-    "test:updater": "node scripts/test-updater-local.mts",
     "version:bump": "node scripts/bump-version.mts",
     "updater:generate-json": "node scripts/generate-latest-json.mts",
     "updater:merge-json": "node scripts/merge-latest-json.mts",
@@ -31,6 +30,9 @@
     "release:manifests": "node scripts/generate-package-manifests.mts",
     "gen:zod:bindings": "ts-to-zod --config bindings && biome check --write src/types/bindings.zod.ts",
     "i18n:extract": "i18next"
+  },
+  "engines": {
+    "node": ">=24"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",

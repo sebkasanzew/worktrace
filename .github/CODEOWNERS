@@ -1,0 +1,17 @@
+# Code owners for security-critical files
+# Require review from the repo owner for any changes to these files
+
+# Tauri configuration (CSP) — production and dev fields
+/src-tauri/tauri.conf.json @sebkasanzew
+
+# CI security script — must be reviewed
+/scripts/ci/check-security.mts @sebkasanzew
+
+# Build and signing scripts that deal with keys / platform bundles
+/scripts/build-with-key.mts @sebkasanzew
+
+# GitHub workflows (security checks, release, updater)
+/.github/workflows/* @sebkasanzew
+
+# Tauri-side code (native bits) — extra scrutiny
+/src-tauri/** @sebkasanzew

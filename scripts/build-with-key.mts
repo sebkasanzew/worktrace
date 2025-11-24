@@ -25,15 +25,24 @@ if (args.length === 0) {
 const command = args[0];
 const commandArgs = args.slice(1);
 
-// Run the command with the environment variable
-const child = spawn(command, commandArgs, {
+// Handle Windows command extensions for npm/pnpm/tauri
+const isWindows = process.platform === 'win32';
+const cmdExtension = isWindows ? '.cmd' : '';
+const finalCommand = (isWindows && ['npm', 'pnpm', 'tauri'].includes(command))
+  ? `${command}${cmdExtension}` 
+  : command;
+
+// Prepare environment for child process. Don't inject an empty secret into the environment.
+const childEnv: NodeJS.ProcessEnv = { ...process.env }
+if (privateKey && privateKey.length > 0) {
+  childEnv.TAURI_SIGNING_PRIVATE_KEY = privateKey
+}
+
+// Run the command without a shell (safer) and inherit stdio.
+const child = spawn(finalCommand, commandArgs, {
   stdio: 'inherit',
-  shell: true,
-  env: {
-    ...process.env,
-    TAURI_SIGNING_PRIVATE_KEY: privateKey,
-  },
-});
+  env: childEnv,
+})
 
 child.on('exit', (code) => {
   process.exit(code ?? 0);
