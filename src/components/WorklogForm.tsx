@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { cn, parseDuration } from "@/lib/utils"
 import { useAppSettings } from "@/services/settings.hooks"
 
@@ -152,21 +159,21 @@ export function WorklogForm({
           <label className="text-sm font-medium" htmlFor="wl-type">
             {t("Work Type")}
           </label>
-          <select
-            id="wl-type"
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            value={workType}
-            onChange={(e) => setWorkType(e.target.value)}
-          >
-            {settings?.general.worklogTypes?.map((t) => (
-              <option key={t.name} value={t.name}>
-                {t.name}{" "}
-                {t.shortCode.startsWith("(") && t.shortCode.endsWith(")")
-                  ? t.shortCode
-                  : `(${t.shortCode})`}
-              </option>
-            ))}
-          </select>
+          <Select value={workType} onValueChange={setWorkType}>
+            <SelectTrigger id="wl-type">
+              <SelectValue placeholder={t("Select work type")} />
+            </SelectTrigger>
+            <SelectContent>
+              {settings?.general.worklogTypes?.map((t) => (
+                <SelectItem key={t.name} value={t.name}>
+                  {t.name}{" "}
+                  {t.shortCode.startsWith("(") && t.shortCode.endsWith(")")
+                    ? t.shortCode
+                    : `(${t.shortCode})`}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="grid gap-2">
