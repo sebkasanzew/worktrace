@@ -1,11 +1,11 @@
-pub fn setup_menu(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+pub fn setup_menu(_app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     // Get the default menu
     #[cfg(target_os = "macos")]
     {
         use tauri::menu::{HELP_SUBMENU_ID, Menu, MenuItemKind};
         type SetTextFn = Box<dyn Fn(&str) -> tauri::Result<()>>;
 
-        let menu = Menu::default(app.handle())?;
+        let menu = Menu::default(_app.handle())?;
 
         if let Some(MenuItemKind::Submenu(help_menu)) = menu.get(HELP_SUBMENU_ID) {
             menu.remove(&help_menu)?;
@@ -13,7 +13,7 @@ pub fn setup_menu(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>
 
         // Localize top-level menus
         let locale = sys_locale::get_locale().unwrap_or_else(|| "en-US".to_string());
-        let app_name = app.package_info().name.clone();
+        let app_name = _app.package_info().name.clone();
         
         for item in menu.items()? {
             if let MenuItemKind::Submenu(submenu) = item {
@@ -88,7 +88,7 @@ pub fn setup_menu(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>
             }
         }
 
-        app.set_menu(menu)?;
+        _app.set_menu(menu)?;
     }
 
     Ok(())
