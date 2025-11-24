@@ -49,7 +49,11 @@ test.describe("Custom Issues", () => {
             } as const satisfies JiraSettings
           }
           if (cmd === "jira_get_current_user") {
-            return { name: "Test User" } as const satisfies JiraUserSession
+            return {
+              name: "Test User",
+              apiVersion: "3",
+              authType: "Basic",
+            } as const satisfies JiraUserSession
           }
           if (cmd === "get_app_settings") {
             return getSettings()

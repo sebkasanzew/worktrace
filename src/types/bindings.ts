@@ -12,12 +12,21 @@ export const commands = {
     url: string,
     username: string,
     password: string,
-    jql: string
+    jql: string,
+    apiVersion: string | null,
+    authType: string | null
   ): Promise<Result<JiraSearchResponse, string>> {
     try {
       return {
         status: "ok",
-        data: await TAURI_INVOKE("jira_api_request", { url, username, password, jql }),
+        data: await TAURI_INVOKE("jira_api_request", {
+          url,
+          username,
+          password,
+          jql,
+          apiVersion,
+          authType,
+        }),
       }
     } catch (e) {
       if (e instanceof Error) throw e
@@ -229,7 +238,13 @@ export type JiraSearchResponse = { issues: JiraIssue[]; total: number; isLast: b
 /**
  * JIRA configuration stored in app settings
  */
-export type JiraSettings = { instanceUrl: string; username: string; apiToken: string }
+export type JiraSettings = {
+  instanceUrl: string
+  username: string
+  apiToken: string
+  apiVersion?: string
+  authType?: string
+}
 /**
  * JIRA issue status
  */
@@ -249,7 +264,7 @@ export type JiraSubtaskFields = { summary: string; status: JiraStatus }
 /**
  * JIRA current user session info
  */
-export type JiraUserSession = { name: string }
+export type JiraUserSession = { name: string; apiVersion: string; authType: string }
 /**
  * JIRA worklog
  */

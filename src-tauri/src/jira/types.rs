@@ -79,6 +79,8 @@ pub struct JiraSearchResponse {
 #[serde(rename_all = "camelCase")]
 pub struct JiraUserSession {
     pub name: String,
+    pub api_version: String,
+    pub auth_type: String,
 }
 
 /// JIRA configuration stored in app settings
@@ -88,6 +90,18 @@ pub struct JiraSettings {
     pub instance_url: String,
     pub username: String,
     pub api_token: String,
+    #[serde(default = "default_api_version")]
+    pub api_version: String,
+    #[serde(default = "default_auth_type")]
+    pub auth_type: String,
+}
+
+fn default_api_version() -> String {
+    "3".to_string()
+}
+
+fn default_auth_type() -> String {
+    "Basic".to_string()
 }
 
 /// General application settings

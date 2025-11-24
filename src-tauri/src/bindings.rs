@@ -4,12 +4,12 @@ pub fn export_bindings() {
     use tauri_specta::{Builder, collect_commands};
 
     let builder = Builder::<tauri::Wry>::new().commands(collect_commands![
-        crate::jira::commands::jira_api_request,
-        crate::jira::commands::jira_get_current_user,
-        crate::jira::commands::jira_add_worklog,
-        crate::jira::commands::jira_update_worklog,
-        crate::jira::commands::jira_delete_worklog,
-        crate::jira::commands::jira_get_worklogs,
+        crate::jira::issues::jira_api_request,
+        crate::jira::auth::jira_get_current_user,
+        crate::jira::worklogs::jira_add_worklog,
+        crate::jira::worklogs::jira_update_worklog,
+        crate::jira::worklogs::jira_delete_worklog,
+        crate::jira::worklogs::jira_get_worklogs,
         crate::jira::config::save_jira_config,
         crate::jira::config::get_jira_config,
         crate::jira::config::clear_jira_config,

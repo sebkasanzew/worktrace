@@ -23,6 +23,8 @@ test.describe("JIRA Integration with Mocked Tauri APIs", () => {
           if (cmd === "jira_get_current_user") {
             return {
               name: "Test User",
+              apiVersion: "3",
+              authType: "Basic",
             } as const satisfies JiraUserSession
           }
           if (cmd === "jira_api_request") {

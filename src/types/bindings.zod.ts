@@ -5,6 +5,8 @@ export const jiraSettingsSchema = z.object({
   instanceUrl: z.string(),
   username: z.string(),
   apiToken: z.string(),
+  apiVersion: z.string().optional(),
+  authType: z.string().optional(),
 })
 
 export const worklogTypeSchema = z.object({
@@ -29,6 +31,8 @@ export const jiraStatusSchema = z.object({
 
 export const jiraUserSessionSchema = z.object({
   name: z.string(),
+  apiVersion: z.string(),
+  authType: z.string(),
 })
 
 export const jiraWorklogAuthorSchema = z.object({
