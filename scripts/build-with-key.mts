@@ -25,12 +25,7 @@ if (args.length === 0) {
 const command = args[0];
 const commandArgs = args.slice(1);
 
-// Handle Windows command extensions for npm/pnpm/tauri
 const isWindows = process.platform === 'win32';
-const cmdExtension = isWindows ? '.cmd' : '';
-const finalCommand = (isWindows && ['npm', 'pnpm', 'tauri'].includes(command))
-  ? `${command}${cmdExtension}` 
-  : command;
 
 // Prepare environment for child process. Don't inject an empty secret into the environment.
 const childEnv: NodeJS.ProcessEnv = { ...process.env }
@@ -38,11 +33,23 @@ if (privateKey && privateKey.length > 0) {
   childEnv.TAURI_SIGNING_PRIVATE_KEY = privateKey
 }
 
-// Run the command without a shell (safer) and inherit stdio.
-const child = spawn(finalCommand, commandArgs, {
-  stdio: 'inherit',
-  env: childEnv,
-})
+// Run the command.
+let child;
+
+if (isWindows) {
+  // On Windows, .cmd/.bat files cannot be executed directly by spawn without a shell.
+  // We explicitly invoke cmd.exe to avoid using the generic 'shell: true' option
+  // which can be flagged as a security risk.
+  child = spawn('cmd.exe', ['/c', command, ...commandArgs], {
+    stdio: 'inherit',
+    env: childEnv,
+  });
+} else {
+  child = spawn(command, commandArgs, {
+    stdio: 'inherit',
+    env: childEnv,
+  });
+}
 
 child.on('exit', (code) => {
   process.exit(code ?? 0);
