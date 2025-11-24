@@ -118,9 +118,11 @@ jobs:
           $zipName = "Worktrace_${version}_x64-portable.zip"
           $releaseDir = "src-tauri/target/release"
           $destDir = "src-tauri/target/release/bundle/zip"
+          $stagingDir = "src-tauri/target/release/staging"
           New-Item -ItemType Directory -Force -Path $destDir
-          Copy-Item "$releaseDir/worktrace.exe" "$releaseDir/Worktrace.exe"
-          Compress-Archive -Path "$releaseDir/Worktrace.exe" -DestinationPath "$destDir/$zipName"
+          New-Item -ItemType Directory -Force -Path $stagingDir
+          Copy-Item "$releaseDir/worktrace.exe" "$stagingDir/Worktrace.exe"
+          Compress-Archive -Path "$stagingDir/Worktrace.exe" -DestinationPath "$destDir/$zipName"
         shell: pwsh
 
       - name: List bundle artifacts
