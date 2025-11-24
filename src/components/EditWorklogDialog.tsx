@@ -1,3 +1,4 @@
+import { error as logError } from "@tauri-apps/plugin-log"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -7,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { formatDurationHuman, formatJiraStarted, parseDuration } from "@/lib/utils"
+import { formatDurationHuman, formatJiraStarted, parseDuration, safeStringify } from "@/lib/utils"
 import { useDeleteWorklog, useUpdateWorklog } from "@/services/jira.hooks"
 import { useAppSettings } from "@/services/settings.hooks"
 import type { JiraWorklog } from "@/types/bindings"
@@ -98,7 +99,7 @@ export function EditWorklogDialog({
           onSuccess()
         },
         onError: (error: Error) => {
-          console.error("Failed to update worklog:", error)
+          logError(`Failed to update worklog: ${safeStringify(error)}`)
           alert(t("Failed to update worklog: {{error}}", { error: error.message }))
         },
       }
@@ -118,7 +119,7 @@ export function EditWorklogDialog({
           onSuccess()
         },
         onError: (error: Error) => {
-          console.error("Failed to delete worklog:", error)
+          logError(`Failed to delete worklog: ${safeStringify(error)}`)
           alert(t("Failed to delete worklog: {{error}}", { error: error.message }))
         },
       }

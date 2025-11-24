@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { error as logError } from "@tauri-apps/plugin-log"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -6,6 +7,7 @@ import { z } from "zod"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { safeStringify } from "@/lib/utils"
 import { configService, jiraApi } from "@/services/jira"
 
 // Zod schema for form validation
@@ -71,7 +73,7 @@ export function Login({ onLoginSuccess }: LoginProps) {
       await configService.save(settingsToSave)
       onLoginSuccess()
     } catch (err) {
-      console.error(err)
+      logError(safeStringify(err))
       setError(t("Failed to connect to JIRA. Please check your credentials."))
     }
   }

@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { invoke } from "@tauri-apps/api/core"
+import { error as logError } from "@tauri-apps/plugin-log"
 import { useCallback, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AppMenu } from "@/components/AppMenu"
@@ -9,6 +10,7 @@ import { Settings } from "@/components/Settings"
 import { TaskList } from "@/components/TaskList"
 import { UpdateChecker } from "@/components/UpdateChecker"
 import { useTheme } from "@/hooks/useTheme"
+import { safeStringify } from "@/lib/utils"
 import { useLoginStatus } from "@/services/auth.hooks"
 import { useTimeTracker } from "@/services/time-tracker.hooks"
 import { useUpdateChecker } from "@/services/updater.hooks"
@@ -30,7 +32,7 @@ function AppContent() {
       await invoke("set_mini_mode", { enable })
       setView(enable ? "minimal" : "tasks")
     } catch (error) {
-      console.error("Failed to toggle mini mode:", error)
+      logError(`Failed to toggle mini mode: ${safeStringify(error)}`)
     }
   }, [])
 
