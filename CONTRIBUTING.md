@@ -54,3 +54,14 @@ For full application development involving the Rust backend, we recommend settin
 ## License
 
 By contributing, you agree that your contributions will be licensed under the project's license.
+
+## Security configuration & CSP (short guide)
+
+Keep security-critical configuration in a single place to avoid drift and accidental regressions.
+
+- Dev-only CSP: use `src-tauri/tauri.conf.json` → `app.security.devCsp` for permissive settings used only during local development.
+- Production CSP: keep `src-tauri/tauri.conf.json` → `app.security.csp` strict and without `unsafe-inline`, `unsafe-eval`, or `localhost` references.
+- CI enforcement: the repository runs `scripts/ci/check-security.mts` in CI to validate CSP presence and basic safety rules — do not remove or weaken it without review.
+- Ownership: changes to `src-tauri/tauri.conf.json`, security scripts, build-with-key, and workflows are protected by `CODEOWNERS`. Please request review from the listed owners when touching these files.
+
+If you need to loosen the CSP for test or temporary work, use a short-lived PR with a clear justification and reviewers assigned via CODEOWNERS.

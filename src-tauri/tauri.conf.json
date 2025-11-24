@@ -18,7 +18,8 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' https: wss:; img-src 'self' data:; object-src 'none'; frame-ancestors 'self'; base-uri 'self';",
+      "devCsp": "default-src 'self' http://localhost:1420; script-src 'self' http://localhost:1420 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https: ws: ws://localhost:1420; img-src 'self' data:; object-src 'none'; frame-ancestors 'self'; base-uri 'self';"
     }
   },
   "bundle": {
