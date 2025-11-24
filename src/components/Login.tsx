@@ -60,9 +60,15 @@ export function Login({ onLoginSuccess }: LoginProps) {
       }
 
       // Verify credentials before saving
-      await jiraApi.getCurrentUser(settings)
+      const session = await jiraApi.getCurrentUser(settings)
 
-      await configService.save(settings)
+      const settingsToSave = {
+        ...settings,
+        apiVersion: session.apiVersion,
+        authType: session.authType,
+      }
+
+      await configService.save(settingsToSave)
       onLoginSuccess()
     } catch (err) {
       console.error(err)

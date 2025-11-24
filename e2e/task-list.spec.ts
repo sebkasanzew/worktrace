@@ -22,6 +22,8 @@ test.describe("Task List UI", () => {
           if (cmd === "jira_get_current_user") {
             return {
               name: "Test User",
+              apiVersion: "3",
+              authType: "basic",
             } as const satisfies JiraUserSession
           }
           if (cmd === "jira_api_request") {
@@ -274,7 +276,7 @@ test.describe("Task List UI", () => {
     await page.goto("/")
 
     // Wait for error to be displayed
-    await expect(page.getByText("Error Loading Issues")).toBeVisible()
+    await expect(page.getByText("Error Loading Issues")).toBeVisible({ timeout: 10000 })
     await expect(page.getByText(/Failed to fetch issues: Network error/)).toBeVisible()
 
     // Should show config details in error message

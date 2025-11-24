@@ -25,6 +25,8 @@ function generateJiraUserSession(
 ): JiraUserSession {
   const response: JiraUserSession = {
     name: faker.person.fullName(),
+    apiVersion: "3",
+    authType: "Basic",
   }
 
   return mergePartially.deep(response, options.override)

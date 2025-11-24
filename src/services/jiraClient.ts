@@ -82,7 +82,7 @@ export function mapJiraError(error: unknown, config: JiraSettings): Error {
 export function createJiraClient(config: JiraSettings) {
   assertJiraConfig(config)
   const normalizedUrl = normalizeJiraUrl(config.instanceUrl)
-  const { username, apiToken: password } = config
+  const { username, apiToken: password, apiVersion, authType } = config
 
   debug(`[JIRA Client] Using URL: ${redactSensitive(normalizedUrl)}`)
 
@@ -119,14 +119,17 @@ export function createJiraClient(config: JiraSettings) {
       debug(`[JIRA Client] JQL: "${jql}"`)
 
       try {
-        const result = await commands.jiraApiRequest(normalizedUrl, username, password, jql)
-
-        if (result.status === "error") {
-          throw new Error(result.error)
-        }
+        const data = await invoke<JiraSearchResponse>("jira_api_request", {
+          url: normalizedUrl,
+          username,
+          password,
+          jql,
+          apiVersion: apiVersion ?? null,
+          authType: authType ?? null,
+        })
 
         // Validate response with Zod
-        const validated = jiraSearchResponseSchema.parse(result.data)
+        const validated = jiraSearchResponseSchema.parse(data)
         info(`[JIRA Client] Found ${validated.issues.length} issues`)
 
         return validated
@@ -160,6 +163,8 @@ export function createJiraClient(config: JiraSettings) {
           password,
           issueKey,
           payload,
+          apiVersion: apiVersion ?? null,
+          authType: authType ?? null,
         })
         const validated = schema.parse(result)
         debug(`[JIRA Client] Worklog created: ${validated.id}`)
@@ -177,14 +182,17 @@ export function createJiraClient(config: JiraSettings) {
       info(`[JIRA Client] Fetching worklogs for ${issueKey}`)
 
       try {
-        const result = await commands.jiraGetWorklogs(normalizedUrl, username, password, issueKey)
-
-        if (result.status === "error") {
-          throw new Error(result.error)
-        }
+        const data = await invoke<JiraWorklogListResponse>("jira_get_worklogs", {
+          url: normalizedUrl,
+          username,
+          password,
+          issueKey,
+          apiVersion: apiVersion ?? null,
+          authType: authType ?? null,
+        })
 
         // Validate response with Zod
-        const validated = jiraWorklogListResponseSchema.parse(result.data)
+        const validated = jiraWorklogListResponseSchema.parse(data)
         debug(`[JIRA Client] Found ${validated.worklogs.length} worklogs`)
 
         return validated
@@ -215,6 +223,8 @@ export function createJiraClient(config: JiraSettings) {
           issueKey,
           worklogId,
           payload,
+          apiVersion: apiVersion ?? null,
+          authType: authType ?? null,
         })
         const validated = schema.parse(result)
         debug(`[JIRA Client] Worklog updated: ${validated.id}`)
@@ -238,6 +248,8 @@ export function createJiraClient(config: JiraSettings) {
           password,
           issueKey,
           worklogId,
+          apiVersion: apiVersion ?? null,
+          authType: authType ?? null,
         })
         debug(`[JIRA Client] Worklog deleted: ${worklogId}`)
       } catch (error) {
