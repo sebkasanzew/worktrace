@@ -7,7 +7,7 @@ rust_i18n::i18n!("locales");
 
 use jira::*;
 use std::sync::Mutex;
-use tauri::{Manager, PhysicalPosition, PhysicalSize};
+use tauri::{LogicalSize, Manager, PhysicalPosition, PhysicalSize};
 
 struct WindowState {
     prev_size: Option<PhysicalSize<u32>>,
@@ -41,15 +41,14 @@ async fn set_mini_mode(
         window.set_resizable(false).map_err(|e| e.to_string())?;
         window.set_decorations(false).map_err(|e| e.to_string())?;
 
-        window
-            .set_size(PhysicalSize::new(500, 280))
-            .map_err(|e| e.to_string())?;
+        let size = LogicalSize::new(250.0, 135.0);
+        window.set_size(size).map_err(|e| e.to_string())?;
 
         window
-            .set_min_size(Some(PhysicalSize::new(500, 280)))
+            .set_min_size(Some(size))
             .map_err(|e| e.to_string())?;
         window
-            .set_max_size(Some(PhysicalSize::new(500, 280)))
+            .set_max_size(Some(size))
             .map_err(|e| e.to_string())?;
 
         window.set_maximizable(false).map_err(|e| e.to_string())?;
