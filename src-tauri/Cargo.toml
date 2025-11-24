@@ -1,6 +1,6 @@
 [package]
 name = "worktrace"
-version = "0.2.5"
+version = "0.2.6"
 description = "A minimal desktop app that makes time and work tracking with issue tracking tools, like JIRA, easy."
 authors = ["Sebastian Kasanzew"]
 edition = "2024"
@@ -37,4 +37,5 @@ tauri-specta = { version = "2.0.0-rc.21", features = ["derive", "typescript"] }
 time = { version = "0.3.41", features = ["parsing", "formatting"] }
 sys-locale = "0.3.2"
 rust-i18n = "3.1.5"
+url = "2.5.7"
 
