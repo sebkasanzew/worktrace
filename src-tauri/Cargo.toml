@@ -38,4 +38,5 @@ time = { version = "0.3.41", features = ["parsing", "formatting"] }
 sys-locale = "0.3.2"
 rust-i18n = "3.1.5"
 url = "2.5.7"
+keyring = "3.6.3"
 
