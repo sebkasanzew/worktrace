@@ -45,8 +45,21 @@ async function main() {
       platformKey = `macos-${arch}`;
     } else if (platform === 'win32') {
       target = `windows-${arch}`;
-      bundlePath = path.join(tauriDir, 'target/release/bundle/nsis');
-      ext = '.exe';
+      // Prefer zip (portable) for Scoop, fallback to nsis
+      const zipPath = path.join(tauriDir, 'target/release/bundle/zip');
+      try {
+        const zipFiles = await fs.readdir(zipPath);
+        if (zipFiles.some(f => f.endsWith('.zip'))) {
+          bundlePath = zipPath;
+          ext = '.zip';
+        } else {
+          bundlePath = path.join(tauriDir, 'target/release/bundle/nsis');
+          ext = '.exe';
+        }
+      } catch {
+        bundlePath = path.join(tauriDir, 'target/release/bundle/nsis');
+        ext = '.exe';
+      }
       platformKey = `windows-${arch}`;
     } else {
       console.log('Skipping hashing for unsupported platform:', platform);

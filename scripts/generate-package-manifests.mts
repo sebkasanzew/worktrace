@@ -127,7 +127,9 @@ async function generateScoopManifest(version: string, hashes: Hashes) {
     autoupdate: {
       architecture: {
         "64bit": {
-          "url": "https://github.com/sebkasanzew/worktrace/releases/download/v$version/Worktrace_${version}_x64-setup.exe"
+          "url": x64Hash.file.endsWith('.zip') 
+            ? "https://github.com/sebkasanzew/worktrace/releases/download/v$version/Worktrace_$version_x64-portable.zip"
+            : "https://github.com/sebkasanzew/worktrace/releases/download/v$version/Worktrace_$version_x64-setup.exe"
         }
       }
     }

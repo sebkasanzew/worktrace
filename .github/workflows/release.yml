@@ -6,11 +6,11 @@ permissions:
 on:
   push:
     tags:
-      - 'v*' # Triggers on version tags like v0.1.0, v1.0.0, etc.
+      - "v*" # Triggers on version tags like v0.1.0, v1.0.0, etc.
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to release (e.g., v0.2.0)'
+        description: "Tag to release (e.g., v0.2.0)"
         required: true
         type: string
 
@@ -62,6 +62,7 @@ jobs:
             artifact_patterns: |
               src-tauri/target/release/bundle/nsis/*.exe
               src-tauri/target/release/bundle/msi/*.msi
+              src-tauri/target/release/bundle/zip/*.zip
 
     runs-on: ${{ matrix.platform }}
 
@@ -76,7 +77,7 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -108,6 +109,18 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+      - name: Create portable zip (Windows)
+        if: matrix.os == 'Windows'
+        run: |
+          $version = (Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json).version
+          $zipName = "Worktrace_${version}_x64-portable.zip"
+          $releaseDir = "src-tauri/target/${{ matrix.target }}/release"
+          $destDir = "src-tauri/target/release/bundle/zip"
+          New-Item -ItemType Directory -Force -Path $destDir
+          Copy-Item "$releaseDir/worktrace.exe" "$releaseDir/Worktrace.exe"
+          Compress-Archive -Path "$releaseDir/Worktrace.exe" -DestinationPath "$destDir/$zipName"
+        shell: pwsh
 
       - name: List bundle artifacts
         run: ls -R src-tauri/target/release/bundle
@@ -203,11 +216,11 @@ jobs:
             echo "Skipping Homebrew update: HOMEBREW_TAP_REPO or TAP_GITHUB_TOKEN not set"
             exit 0
           fi
-          
+
           echo "Updating Homebrew Tap: $HOMEBREW_TAP_REPO"
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           git clone https://x-access-token:${GH_TOKEN}@github.com/${HOMEBREW_TAP_REPO}.git tap
           cd tap
           mkdir -p Casks
@@ -225,11 +238,11 @@ jobs:
             echo "Skipping Scoop update: SCOOP_BUCKET_REPO or TAP_GITHUB_TOKEN not set"
             exit 0
           fi
-          
+
           echo "Updating Scoop Bucket: $SCOOP_BUCKET_REPO"
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           git clone https://x-access-token:${GH_TOKEN}@github.com/${SCOOP_BUCKET_REPO}.git bucket
           cd bucket
           cp ../worktrace.json .
