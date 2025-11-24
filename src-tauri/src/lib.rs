@@ -2,10 +2,12 @@
 mod bindings;
 mod jira;
 mod menu;
+mod updater;
 
 rust_i18n::i18n!("locales");
 
 use jira::*;
+use updater::*;
 use std::sync::Mutex;
 use tauri::{LogicalSize, Manager, PhysicalPosition, PhysicalSize};
 
@@ -104,6 +106,7 @@ pub fn run() {
                 prev_size: None,
                 prev_pos: None,
             }));
+            app.manage(UpdaterState(Mutex::new(None)));
 
             // Setup application menu
             menu::setup_menu(app)?;
@@ -125,7 +128,9 @@ pub fn run() {
             jira_update_worklog,
             jira_delete_worklog,
             jira_get_worklogs,
-            set_mini_mode
+            set_mini_mode,
+            check_update,
+            install_update
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

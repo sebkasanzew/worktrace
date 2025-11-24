@@ -6408,7 +6408,7 @@ checksum = "f17a85883d4e6d00e8a97c586de764dabcc06133f7f1d55dce5cdc070ad7fe59"
 
 [[package]]
 name = "worktrace"
-version = "0.2.5"
+version = "0.2.6"
 dependencies = [
  "base64 0.22.1",
  "gouqi",
@@ -6430,6 +6430,7 @@ dependencies = [
  "tauri-plugin-updater",
  "tauri-specta",
  "time",
+ "url",
 ]
 
 [[package]]

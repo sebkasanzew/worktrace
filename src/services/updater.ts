@@ -1,11 +1,28 @@
-import { debug, info, error as logError } from "@tauri-apps/plugin-log"
+import { invoke } from "@tauri-apps/api/core"
+import { listen } from "@tauri-apps/api/event"
+import { info, error as logError } from "@tauri-apps/plugin-log"
 import { relaunch } from "@tauri-apps/plugin-process"
-import { check } from "@tauri-apps/plugin-updater"
 
 export interface UpdateInfo {
   available: boolean
   currentVersion?: string
   version?: string
+  body?: string
+  date?: string
+}
+
+interface RustUpdateInfo {
+  available: boolean
+  current_version: string
+  version: string
+  body: string | null
+  date: string | null
+}
+
+interface ProgressEvent {
+  event: string
+  chunk_length?: number
+  content_length?: number
 }
 
 export const updaterService = {
@@ -15,14 +32,16 @@ export const updaterService = {
   async checkForUpdates(): Promise<UpdateInfo> {
     try {
       info("Checking for updates...")
-      const update = await check()
+      const update = await invoke<RustUpdateInfo>("check_update")
 
-      if (update) {
-        info(`Update available: ${update.currentVersion} -> ${update.version}`)
+      if (update.available) {
+        info(`Update available: ${update.current_version} -> ${update.version}`)
         return {
           available: true,
-          currentVersion: update.currentVersion,
+          currentVersion: update.current_version,
           version: update.version,
+          body: update.body || undefined,
+          date: update.date || undefined,
         }
       }
 
@@ -40,31 +59,26 @@ export const updaterService = {
    */
   async installUpdate(onProgress?: (progress: number) => void): Promise<void> {
     try {
-      const update = await check()
-      if (!update) {
-        throw new Error("No update available")
-      }
-
       info("Downloading and installing update...")
 
-      // Download and install the update
-      await update.downloadAndInstall((event) => {
-        switch (event.event) {
-          case "Started":
-            info("Update download started")
-            onProgress?.(0)
-            break
-          case "Progress":
-            debug(`Download progress: ${JSON.stringify(event.data)}`)
-            // Note: Progress tracking is simplified since exact progress is not available
-            onProgress?.(50)
-            break
-          case "Finished":
-            info("Update download finished")
-            onProgress?.(100)
-            break
-        }
-      })
+      let unlisten: (() => void) | undefined
+
+      if (onProgress) {
+        unlisten = await listen<ProgressEvent>("update-progress", (event) => {
+          const { event: status } = event.payload
+          if (status === "Started") {
+            onProgress(0)
+          } else if (status === "Progress") {
+            onProgress(50)
+          } else if (status === "Finished") {
+            onProgress(100)
+          }
+        })
+      }
+
+      await invoke("install_update")
+
+      if (unlisten) unlisten()
 
       info("Update installed successfully. Restarting application...")
 
