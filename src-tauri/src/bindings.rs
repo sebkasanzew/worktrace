@@ -29,8 +29,14 @@ pub fn export_bindings() {
         )
         .expect("Failed to export typescript bindings");
 
+    let pnpm_cmd = if cfg!(target_os = "windows") {
+        "pnpm.cmd"
+    } else {
+        "pnpm"
+    };
+
     // Auto-fix the generated file with biome (format + fixable lints)
-    let status = std::process::Command::new("pnpm")
+    let status = std::process::Command::new(pnpm_cmd)
         .args(["biome", "check", "--write", "src/types/bindings.ts"])
         .current_dir("..")
         .status();
@@ -40,7 +46,7 @@ pub fn export_bindings() {
     }
 
     // Generate Zod schemas from the freshly formatted bindings
-    match std::process::Command::new("pnpm")
+    match std::process::Command::new(pnpm_cmd)
         .args(["run", "gen:zod:bindings"])
         .current_dir("..")
         .status()
