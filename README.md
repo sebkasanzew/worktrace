@@ -110,7 +110,7 @@ pnpm build:all
 
 # Platform-specific builds
 pnpm build:macos    # macOS .app bundle
-pnpm build:windows  # Windows .msi installer
+pnpm build:windows  # Windows .exe (NSIS) and .msi installers
 pnpm build:linux    # Linux .deb and .AppImage
 ```
 
@@ -124,7 +124,7 @@ This project includes a GitHub Actions workflow (`.github/workflows/build.yml`) 
 - Manual workflow dispatch
 
 The workflow:
-- Builds optimized bundles using GitHub's hosted runners (macOS .dmg and Windows .msi)
+- Builds optimized bundles using GitHub's hosted runners (macOS .dmg and Windows .exe/.msi)
 - Uploads artifacts for each platform
 - Can be triggered manually from the Actions tab
 
@@ -136,7 +136,7 @@ To use the workflow for releases, you can optionally configure code signing by a
 
 After building, installers will be located in `src-tauri/target/release/bundle/`:
 - **macOS**: `.dmg` installer (most common distribution format)
-- **Windows**: `.msi` installer (most common installer format)
+- **Windows**: `.exe` (NSIS) and `.msi` installers
 - **Linux**: Build locally using `pnpm build:linux` for `.deb` and `.AppImage`
 
 ## Usage
@@ -199,7 +199,7 @@ worktrace/
 - `pnpm tauri dev` - Run the app in development mode
 - `pnpm build:all` - Build the app for current platform
 - `pnpm build:macos` - Build macOS .app bundle
-- `pnpm build:windows` - Build Windows .msi installer
+- `pnpm build:windows` - Build Windows .exe (NSIS) and .msi installers
 - `pnpm build:linux` - Build Linux .deb and .AppImage
 - `pnpm lint` - Check code with Biome
 - `pnpm lint:fix` - Fix linting issues automatically

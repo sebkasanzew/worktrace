@@ -63,7 +63,7 @@ jobs:
           - platform: windows-latest
             os: Windows
             target: x86_64-pc-windows-msvc
-            bundles: msi
+            bundles: nsis,msi
     steps:
       - uses: actions/checkout@v6
       
@@ -99,6 +99,7 @@ jobs:
           name: worktrace-${{ matrix.os }}
           path: |
             src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/nsis/*.exe
             src-tauri/target/release/bundle/msi/*.msi
           if-no-files-found: ignore
 
