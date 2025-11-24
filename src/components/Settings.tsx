@@ -7,13 +7,16 @@ import { Input } from "@/components/ui/input"
 import { ViewHeader } from "@/components/ViewHeader"
 import { useAppSettings, useSaveAppSettings } from "@/services/settings.hooks"
 import type { AppSettings, GeneralSettings, JiraSettings, WorklogType } from "@/types/bindings"
+// Read app version from root package.json (bundled at build time)
+import packageJson from "../../package.json"
 
 interface SettingsProps {
   onClose: () => void
   onCheckForUpdates: () => void
+  isChecking?: boolean
 }
 
-export function Settings({ onClose, onCheckForUpdates }: SettingsProps) {
+export function Settings({ onClose, onCheckForUpdates, isChecking = false }: SettingsProps) {
   const { t, i18n } = useTranslation()
   const { data: settings, isLoading, error } = useAppSettings()
   const saveMutation = useSaveAppSettings()
@@ -240,10 +243,18 @@ export function Settings({ onClose, onCheckForUpdates }: SettingsProps) {
                     />
                     {t("Always on Top")}
                   </label>
-                  <div className="pt-2">
-                    <Button variant="outline" size="sm" onClick={onCheckForUpdates}>
+                  <div className="pt-2 flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onCheckForUpdates}
+                      disabled={isChecking}
+                    >
+                      {isChecking && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                       {t("Check for Updates")}
                     </Button>
+                    {/* Show current running app version next to the update button */}
+                    <div className="text-sm text-muted-foreground">v{packageJson.version}</div>
                   </div>
                 </div>
               </section>

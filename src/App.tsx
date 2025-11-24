@@ -64,6 +64,7 @@ function AppContent() {
           <Settings
             onClose={() => setView("tasks")}
             onCheckForUpdates={() => openUpdateChecker(false)}
+            isChecking={showUpdateChecker}
           />
         </>
       )

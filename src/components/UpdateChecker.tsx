@@ -164,7 +164,10 @@ export function UpdateChecker({ onCheckComplete, silent = false }: UpdateChecker
             </Button>
             <Button
               variant="outline"
-              onClick={() => setUpdateAvailable(false)}
+              onClick={() => {
+                setUpdateAvailable(false)
+                onCheckComplete?.()
+              }}
               disabled={downloading}
             >
               {t("Later")}
