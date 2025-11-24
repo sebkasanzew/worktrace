@@ -3,6 +3,8 @@ mod bindings;
 mod jira;
 mod menu;
 
+rust_i18n::i18n!("locales");
+
 use jira::*;
 use std::sync::Mutex;
 use tauri::{Manager, PhysicalPosition, PhysicalSize};
