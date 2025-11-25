@@ -36,15 +36,27 @@ jobs:
           find test-results/demo-videos -name "video.webm" -exec cp {} docs/demo.webm \;
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: update demo video"
-          title: "chore: update demo video"
-          body: |
-            This PR updates the demo video in `docs/demo.webm`.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-            Generated automatically by the **Generate Demo Video** workflow.
-          branch: chore/update-demo-video
-          delete-branch: true
-          add-paths: docs/demo.webm
+          # Create branch and commit
+          git checkout -b chore/update-demo-video
+          git add docs/demo.webm
+          git commit -m "chore: update demo video"
+          git push -f origin chore/update-demo-video
+
+          # Create or update PR
+          gh pr create \
+            --base main \
+            --head chore/update-demo-video \
+            --title "chore: update demo video" \
+            --body "This PR updates the demo video in \`docs/demo.webm\`.
+
+          Generated automatically by the **Generate Demo Video** workflow." \
+            --label documentation \
+            2>/dev/null || gh pr edit chore/update-demo-video --body "This PR updates the demo video in \`docs/demo.webm\`.
+
+          Generated automatically by the **Generate Demo Video** workflow."
