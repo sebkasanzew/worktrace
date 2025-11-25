@@ -30,10 +30,14 @@ jobs:
       - name: Run demo test
         run: xvfb-run --auto-servernum -- pnpm test:e2e:demo
 
-      - name: Move demo video to docs folder
+      - name: Convert video to GIF
         run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
           mkdir -p docs
-          find test-results/demo-videos -name "video.webm" -exec cp {} docs/demo.webm \;
+          VIDEO_FILE=$(find test-results/demo-videos -name "video.webm" | head -1)
+          ffmpeg -i "$VIDEO_FILE" \
+            -vf "fps=10,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer" \
+            -loop 0 docs/demo.gif
 
       - name: Create Pull Request
         env:
@@ -44,7 +48,7 @@ jobs:
 
           # Create branch and commit
           git checkout -b chore/update-demo-video
-          git add docs/demo.webm
+          git add docs/demo.gif
           git commit -m "chore: update demo video"
           git push -f origin chore/update-demo-video
 
@@ -56,7 +60,7 @@ jobs:
               --base main \
               --head chore/update-demo-video \
               --title "chore: update demo video" \
-              --body "This PR updates the demo video in \`docs/demo.webm\`.
+              --body "This PR updates the demo GIF in \`docs/demo.gif\`.
 
           Generated automatically by the **Generate Demo Video** workflow."
           fi
