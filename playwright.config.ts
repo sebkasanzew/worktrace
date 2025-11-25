@@ -14,6 +14,8 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [["list"], ["json", { outputFile: "test-results.json" }]],
+  // Exclude demo tests from normal runs (use pnpm test:e2e:demo to run them)
+  testIgnore: ["**/demo-video.spec.ts"],
   use: {
     baseURL: "http://localhost:1420",
     trace: "on-first-retry",
