@@ -48,15 +48,15 @@ jobs:
           git commit -m "chore: update demo video"
           git push -f origin chore/update-demo-video
 
-          # Create or update PR
-          gh pr create \
-            --base main \
-            --head chore/update-demo-video \
-            --title "chore: update demo video" \
-            --body "This PR updates the demo video in \`docs/demo.webm\`.
-
-          Generated automatically by the **Generate Demo Video** workflow." \
-            --label documentation \
-            2>/dev/null || gh pr edit chore/update-demo-video --body "This PR updates the demo video in \`docs/demo.webm\`.
+          # Create PR if it doesn't exist, otherwise just update the branch (already pushed)
+          if gh pr view chore/update-demo-video --json state -q '.state' 2>/dev/null | grep -q "OPEN"; then
+            echo "PR already exists and is open, branch has been updated"
+          else
+            gh pr create \
+              --base main \
+              --head chore/update-demo-video \
+              --title "chore: update demo video" \
+              --body "This PR updates the demo video in \`docs/demo.webm\`.
 
           Generated automatically by the **Generate Demo Video** workflow."
+          fi
