@@ -1,0 +1,43 @@
+name: Generate Demo Video
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-demo:
+    name: Generate Demo Video
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run demo test
+        run: pnpm test:e2e:demo
+
+      - name: Move demo video to docs folder
+        run: |
+          mkdir -p docs
+          find test-results/demo-videos -name "video.webm" -exec cp {} docs/demo.webm \;
+
+      - name: Commit and push demo video
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/demo.webm
+          git commit -m "chore: update demo video" || echo "No changes to commit"
+          git push
