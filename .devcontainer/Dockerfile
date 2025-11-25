@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/rust:1-bookworm
+FROM mcr.microsoft.com/devcontainers/rust:2-bookworm
 
 # Install Tauri dependencies
 # Note: libwebkit2gtk-4.1-dev is for Tauri v2 on newer Debian/Ubuntu
