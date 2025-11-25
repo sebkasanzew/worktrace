@@ -42,11 +42,17 @@ interface MockData {
   assignedIssue: JiraIssue
   customIssue: JiraIssue
   initialSettings: AppSettings
+  fixedTimestamp: number
 }
 
 test.describe("Demo Video", () => {
   // Tag this test to exclude from normal runs
   test("@demo main use case walkthrough", async ({ page }) => {
+    // Fix the clock to a consistent date/time for reproducible videos
+    // Using a Monday morning for realistic work scenario
+    const fixedDate = new Date("2025-03-10T09:30:00.000Z")
+    await page.clock.install({ time: fixedDate })
+
     // Add a visual cursor indicator for the video
     // This creates a visible dot that follows the mouse cursor
     await page.addInitScript(() => {
@@ -89,7 +95,9 @@ test.describe("Demo Video", () => {
       jira: null,
     }
 
-    // Mock data
+    // Mock data - use fixed timestamps relative to fixedDate
+    const fixedTimestamp = fixedDate.getTime()
+
     const mockConfig: JiraSettings = {
       instanceUrl: "https://acme-corp.atlassian.net",
       username: "john.doe@acme.com",
@@ -112,8 +120,8 @@ test.describe("Demo Video", () => {
           statusCategory: { key: "indeterminate", name: "In Progress" },
         },
         assignee: { displayName: "John Doe", emailAddress: "john.doe@acme.com" },
-        created: Date.now() - 86400000 * 3,
-        updated: Date.now() - 3600000,
+        created: fixedTimestamp - 86400000 * 3, // 3 days ago
+        updated: fixedTimestamp - 3600000, // 1 hour ago
         issuetype: { name: "Story", subtask: false },
         subtasks: [],
       },
@@ -126,8 +134,8 @@ test.describe("Demo Video", () => {
         summary: "Upgrade database connection pooling",
         status: { name: "To Do", statusCategory: { key: "new", name: "To Do" } },
         assignee: { displayName: "Jane Smith", emailAddress: "jane.smith@acme.com" },
-        created: Date.now() - 86400000 * 5,
-        updated: Date.now() - 86400000,
+        created: fixedTimestamp - 86400000 * 5, // 5 days ago
+        updated: fixedTimestamp - 86400000, // 1 day ago
         issuetype: { name: "Task", subtask: false },
         subtasks: [],
       },
@@ -139,6 +147,7 @@ test.describe("Demo Video", () => {
       assignedIssue,
       customIssue,
       initialSettings: appSettings,
+      fixedTimestamp,
     }
 
     // Setup comprehensive mocks
