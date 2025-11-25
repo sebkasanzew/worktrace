@@ -28,7 +28,7 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run demo test
-        run: pnpm test:e2e:demo
+        run: xvfb-run --auto-servernum -- pnpm test:e2e:demo
 
       - name: Move demo video to docs folder
         run: |
