@@ -36,7 +36,7 @@ interface WorklogEvent {
   }
 }
 
-export function SimpleCalendar() {
+export function WorklogCalendar() {
   const { t, i18n } = useTranslation()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
@@ -159,11 +159,13 @@ export function SimpleCalendar() {
             }
             .rbc-toolbar button:hover {
               background: hsl(var(--accent));
+              color: hsl(var(--accent-foreground));
               border-color: hsl(var(--border));
             }
             .rbc-toolbar button:active,
             .rbc-toolbar button.rbc-active {
               background: hsl(var(--accent));
+              color: hsl(var(--accent-foreground));
               border-color: hsl(var(--border));
               box-shadow: none;
             }
@@ -187,6 +189,7 @@ export function SimpleCalendar() {
             }
             .rbc-day-bg {
               transition: background-color 0.2s;
+              cursor: pointer;
             }
             .rbc-day-bg:hover {
               background-color: hsl(var(--accent) / 0.5);
@@ -206,6 +209,7 @@ export function SimpleCalendar() {
             .rbc-date-cell {
               padding: 8px;
               text-align: left;
+              cursor: pointer;
             }
             .rbc-date-cell > a {
               font-size: 0.875rem;

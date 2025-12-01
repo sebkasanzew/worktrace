@@ -16,7 +16,7 @@ import {
 import { useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { CustomIssuesDialog } from "@/components/CustomIssuesDialog"
-import { SimpleCalendar } from "@/components/SimpleCalendar"
+import { WorklogCalendar } from "@/components/WorklogCalendar"
 import { TodayTimeIndicator } from "@/components/TodayTimeIndicator"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -474,7 +474,7 @@ export function TaskList({
       />
       <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
         <DialogContent className="max-w-4xl h-[80vh] overflow-y-auto">
-          <SimpleCalendar />
+          <WorklogCalendar />
         </DialogContent>
       </Dialog>
     </div>
