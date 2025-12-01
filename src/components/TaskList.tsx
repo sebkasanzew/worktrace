@@ -13,7 +13,7 @@ import {
   Settings,
   Square,
 } from "lucide-react"
-import { useMemo, useRef, useState } from "react"
+import { lazy, Suspense, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { CustomIssuesDialog } from "@/components/CustomIssuesDialog"
 import { TodayTimeIndicator } from "@/components/TodayTimeIndicator"
@@ -23,8 +23,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ViewHeader } from "@/components/ViewHeader"
-import { WorklogCalendar } from "@/components/WorklogCalendar"
 import { WorklogDialog } from "@/components/WorklogDialog"
 import { WorklogHistory } from "@/components/WorklogHistory"
 import { formatDuration } from "@/lib/utils"
@@ -33,6 +33,13 @@ import { useAddWorklog, useIssuesByJql, useMyIssues } from "@/services/jira.hook
 import { jiraKeys } from "@/services/jira.keys"
 import { useAppSettings } from "@/services/settings.hooks"
 import type { useTimeTracker } from "@/services/time-tracker.hooks"
+
+// Lazy load WorklogCalendar to avoid FullCalendar's cssRules access during initial load
+// This prevents crashes on Windows WebView2 where stylesheets aren't immediately available
+const WorklogCalendar = lazy(() =>
+  import("@/components/WorklogCalendar").then((m) => ({ default: m.WorklogCalendar }))
+)
+
 import type { JiraIssue, JiraSettings } from "@/types/bindings"
 
 interface TaskListProps {
@@ -473,7 +480,15 @@ export function TaskList({
       />
       <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
         <DialogContent className="max-w-4xl h-[80vh] overflow-y-auto">
-          <WorklogCalendar />
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center h-full">
+                <Skeleton className="h-96 w-full" />
+              </div>
+            }
+          >
+            <WorklogCalendar />
+          </Suspense>
         </DialogContent>
       </Dialog>
     </div>
