@@ -10,6 +10,7 @@ use jira::*;
 use updater::*;
 use std::sync::Mutex;
 use tauri::{LogicalSize, Manager, PhysicalPosition, PhysicalSize};
+use tauri_plugin_store::StoreExt;
 
 struct WindowState {
     prev_size: Option<PhysicalSize<u32>>,
@@ -102,6 +103,22 @@ pub fn run() {
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
+            log::info!("Tauri app setup started");
+
+            // Log app data directory for debugging
+            if let Ok(app_data_dir) = app.path().app_data_dir() {
+                log::info!("App data directory: {:?}", app_data_dir);
+            }
+
+            // Validate store plugin can access config files - if not, clean them up
+            log::info!("Validating store access...");
+            match app.store("config.json") {
+                Ok(_) => log::info!("Store access validated successfully"),
+                Err(e) => {
+                    log::error!("Store access failed: {:?}. Will attempt config reset on first access.", e);
+                }
+            }
+
             app.manage(Mutex::new(WindowState {
                 prev_size: None,
                 prev_pos: None,
@@ -109,11 +126,13 @@ pub fn run() {
             app.manage(UpdaterState(Mutex::new(None)));
 
             // Setup application menu
+            log::info!("Setting up application menu...");
             menu::setup_menu(app)?;
 
             #[cfg(debug_assertions)]
             bindings::export_bindings();
 
+            log::info!("Tauri app setup complete");
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

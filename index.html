@@ -20,11 +20,151 @@
         justify-content: center;
         min-height: 100vh;
       }
+      /* Debug info styles - hidden in Playwright tests */
+      #early-debug {
+        position: fixed;
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+        background: rgba(0, 0, 0, 0.9);
+        color: #666;
+        font-size: 0.75rem;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        font-family: monospace;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 9999;
+        display: none;
+        pointer-events: none;
+      }
+      #early-debug.show { display: block; }
+      /* Error fallback styles */
+      .fatal-error {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 1rem;
+      }
+      .fatal-error-box {
+        max-width: 32rem;
+        width: 100%;
+        background: #1a1a1a;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        border: 1px solid #333;
+      }
+      .fatal-error h1 { margin: 0 0 0.5rem 0; font-size: 1.25rem; }
+      .fatal-error p { margin: 0; color: #888; font-size: 0.875rem; }
+      .fatal-error pre { 
+        background: #0a0a0a; 
+        padding: 0.75rem; 
+        border-radius: 0.375rem; 
+        color: #ef4444; 
+        font-size: 0.75rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 200px;
+        overflow-y: auto;
+        margin: 1rem 0;
+      }
+      .fatal-error button {
+        width: 100%;
+        padding: 0.5rem 1rem;
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+      }
+      .fatal-error button.secondary { background: #374151; }
     </style>
+    <script>
+      // Early error handler - catches errors before React/main.tsx loads
+      window.__EARLY_ERRORS__ = [];
+      window.__APP_INIT_STARTED__ = false;
+      window.__APP_INIT_COMPLETE__ = false;
+      window.__DEBUG_LOGS__ = [];
+      
+      function debugLog(msg) {
+        var timestamp = new Date().toISOString().substr(11, 12);
+        var entry = '[' + timestamp + '] ' + msg;
+        window.__DEBUG_LOGS__.push(entry);
+        
+        // Show debug panel on Loading screen
+        var debugEl = document.getElementById('early-debug');
+        if (debugEl) {
+          debugEl.classList.add('show');
+          debugEl.textContent = window.__DEBUG_LOGS__.join('\n');
+          debugEl.scrollTop = debugEl.scrollHeight;
+        }
+        // Also log to console
+        console.log('[worktrace]', msg);
+      }
+      
+      debugLog('HTML script tag executing');
+      debugLog('navigator.webdriver: ' + navigator.webdriver);
+      debugLog('__TAURI_INTERNALS__: ' + (typeof window.__TAURI_INTERNALS__));
+      
+      window.onerror = function(msg, url, line, col, error) {
+        debugLog('ERROR: ' + msg + ' at ' + url + ':' + line);
+        window.__EARLY_ERRORS__.push({ msg, url, line, col, error });
+        showEarlyError(error || msg);
+        return true;
+      };
+      window.onunhandledrejection = function(event) {
+        debugLog('UNHANDLED REJECTION: ' + event.reason);
+        window.__EARLY_ERRORS__.push({ reason: event.reason });
+        showEarlyError(event.reason);
+      };
+      
+      // Timeout - if app doesn't initialize within 15 seconds, show error
+      // Skip timeout in Playwright tests (navigator.webdriver is true)
+      if (!navigator.webdriver) {
+        setTimeout(function() {
+          debugLog('Timeout check: started=' + window.__APP_INIT_STARTED__ + ', complete=' + window.__APP_INIT_COMPLETE__);
+          if (!window.__APP_INIT_COMPLETE__) {
+            var status = window.__APP_INIT_STARTED__ ? 'App started but did not complete initialization' : 'App script did not start';
+            showEarlyError(new Error('Initialization timeout: ' + status + '. Debug logs:\n' + window.__DEBUG_LOGS__.join('\n')));
+          }
+        }, 15000);
+      }
+      
+      function showEarlyError(error) {
+        // Skip in Playwright tests
+        if (navigator.webdriver) return;
+        
+        var msg = error instanceof Error ? error.message : String(error);
+        var stack = error instanceof Error ? error.stack : '';
+        document.body.innerHTML = 
+          '<div class="fatal-error">' +
+            '<div class="fatal-error-box">' +
+              '<h1>Something went wrong</h1>' +
+              '<p>The app failed to start. Please try resetting the configuration.</p>' +
+              '<pre>' + msg + (stack ? '\n\n' + stack : '') + '</pre>' +
+              '<button onclick="location.reload()">Reload App</button>' +
+              '<button class="secondary" onclick="resetConfig()">Reset Config & Reload</button>' +
+            '</div>' +
+          '</div>';
+      }
+      function resetConfig() {
+        if (window.__TAURI_INTERNALS__) {
+          window.__TAURI_INTERNALS__.invoke('reset_all_config')
+            .then(function() { location.reload(); })
+            .catch(function() { location.reload(); });
+        } else {
+          location.reload();
+        }
+      }
+    </script>
   </head>
 
   <body>
     <div id="root"></div>
+    <div id="early-debug"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
