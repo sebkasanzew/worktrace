@@ -1,5 +1,30 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { type AppSettings, commands } from "@/types/bindings"
+import { type AppSettings, commands, type GeneralSettings } from "@/types/bindings"
+
+/**
+ * Default general settings to use when config is missing or malformed
+ */
+const defaultGeneralSettings: GeneralSettings = {
+  theme: "system",
+  worklogTypes: [],
+  defaultWorklogDescription: "",
+  enableAutomaticUpdates: false,
+  alwaysOnTop: false,
+  customIssueKeys: [],
+}
+
+/**
+ * Ensures AppSettings has valid structure with all required fields.
+ * Provides defaults for missing or malformed data to prevent white screen errors.
+ */
+function ensureValidSettings(data: unknown): AppSettings {
+  const settings = data as Partial<AppSettings> | null | undefined
+
+  return {
+    general: settings?.general ?? defaultGeneralSettings,
+    jira: settings?.jira ?? null,
+  }
+}
 
 export const useAppSettings = () => {
   return useQuery({
@@ -7,7 +32,7 @@ export const useAppSettings = () => {
     queryFn: async () => {
       const result = await commands.getAppSettings()
       if (result.status === "error") throw new Error(result.error)
-      return result.data
+      return ensureValidSettings(result.data)
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
   })
