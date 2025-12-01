@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { error as logError } from "@tauri-apps/plugin-log"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod"
@@ -41,6 +41,7 @@ export function Login({ onLoginSuccess }: LoginProps) {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -50,6 +51,24 @@ export function Login({ onLoginSuccess }: LoginProps) {
       password: "",
     },
   })
+
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const config = await configService.get()
+        if (config) {
+          setValue("url", config.instanceUrl)
+          setValue("username", config.username)
+          if (config.username && !config.username.includes("@")) {
+            setUseApiToken(false)
+          }
+        }
+      } catch (_e) {
+        // ignore
+      }
+    }
+    loadConfig()
+  }, [setValue])
 
   const onSubmit = async (data: LoginFormData) => {
     setError(null)
