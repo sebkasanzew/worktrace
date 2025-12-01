@@ -16,11 +16,13 @@ export function generateMockWorklogs(): JiraWorklog[] {
       updated: "2025-11-21T09:00:00.000+0100",
       author: {
         displayName: "Test User",
+        name: "testuser",
         emailAddress: "test@example.com",
         avatarUrls: null,
       },
       updateAuthor: {
         displayName: "Test User",
+        name: "testuser",
         emailAddress: "test@example.com",
         avatarUrls: null,
       },
@@ -35,11 +37,13 @@ export function generateMockWorklogs(): JiraWorklog[] {
       updated: "2025-11-21T11:00:00.000+0100",
       author: {
         displayName: "Test User",
+        name: "testuser",
         emailAddress: "test@example.com",
         avatarUrls: null,
       },
       updateAuthor: {
         displayName: "Test User",
+        name: "testuser",
         emailAddress: "test@example.com",
         avatarUrls: null,
       },
@@ -75,6 +79,7 @@ export function getDefaultMockUserWorklogs(): UserWorklogsResponse {
           id: "10001",
           author: {
             displayName: "Test User",
+            name: "testuser",
             emailAddress: "test@example.com",
             avatarUrls: null,
           },
