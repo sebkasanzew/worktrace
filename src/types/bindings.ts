@@ -176,6 +176,18 @@ export const commands = {
       else return { status: "error", error: e as any }
     }
   },
+  /**
+   * Reset all app configuration to defaults
+   * This is a recovery command for when config is corrupted
+   */
+  async resetAllConfig(): Promise<Result<null, string>> {
+    try {
+      return { status: "ok", data: await TAURI_INVOKE("reset_all_config") }
+    } catch (e) {
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
+    }
+  },
   async setMiniMode(enable: boolean): Promise<Result<null, string>> {
     try {
       return { status: "ok", data: await TAURI_INVOKE("set_mini_mode", { enable }) }

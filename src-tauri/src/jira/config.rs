@@ -1,4 +1,5 @@
 use crate::jira::types::{AppSettings, GeneralSettings, JiraSettings, WorklogType};
+#[cfg(not(target_os = "macos"))]
 use keyring::Entry;
 use tauri::Manager;
 use tauri_plugin_store::StoreExt;
@@ -50,6 +51,7 @@ fn delete_password_macos(service: &str, user: &str) -> Result<(), String> {
     Ok(())
 }
 
+#[cfg(not(target_os = "macos"))]
 fn get_keyring_entry() -> Result<Entry, String> {
     Entry::new(SERVICE_NAME, KEYRING_USER_KEY).map_err(|e| e.to_string())
 }
@@ -218,13 +220,14 @@ pub async fn clear_jira_config(app: tauri::AppHandle) -> Result<(), String> {
 
 /// Clear credentials from keyring (best effort)
 fn clear_keyring() {
-    if let Ok(_entry) = get_keyring_entry() {
-        log::info!(target: "jira", "Deleting credential from keyring");
-        #[cfg(target_os = "macos")]
-        let _ = delete_password_macos(SERVICE_NAME, KEYRING_USER_KEY);
+    log::info!(target: "jira", "Deleting credential from keyring");
+    
+    #[cfg(target_os = "macos")]
+    let _ = delete_password_macos(SERVICE_NAME, KEYRING_USER_KEY);
 
-        #[cfg(not(target_os = "macos"))]
-        let _ = _entry.delete_credential();
+    #[cfg(not(target_os = "macos"))]
+    if let Ok(entry) = get_keyring_entry() {
+        let _ = entry.delete_credential();
     }
 }
 
@@ -264,10 +267,19 @@ pub async fn save_app_settings(app: tauri::AppHandle, settings: AppSettings) -> 
         if !jira.api_token.is_empty() {
             // Save token to keyring
             log::info!(target: "jira", "Updating token in keyring from app settings");
-            let entry = get_keyring_entry()?;
-            entry
-                .set_password(&jira.api_token)
-                .map_err(|e| e.to_string())?;
+            
+            #[cfg(target_os = "macos")]
+            {
+                set_password_macos(SERVICE_NAME, KEYRING_USER_KEY, &jira.api_token)?;
+            }
+            
+            #[cfg(not(target_os = "macos"))]
+            {
+                let entry = get_keyring_entry()?;
+                entry
+                    .set_password(&jira.api_token)
+                    .map_err(|e| e.to_string())?;
+            }
         }
 
         // Prepare jira settings for store
@@ -278,14 +290,7 @@ pub async fn save_app_settings(app: tauri::AppHandle, settings: AppSettings) -> 
         log::info!(target: "jira", "JIRA settings missing in save_app_settings, deleting from keyring");
         
         store.delete("jira");
-        
-        if let Ok(_entry) = get_keyring_entry() {
-            #[cfg(target_os = "macos")]
-            let _ = delete_password_macos(SERVICE_NAME, KEYRING_USER_KEY);
-            
-            #[cfg(not(target_os = "macos"))]
-            let _ = _entry.delete_credential();
-        }
+        clear_keyring();
     }
 
     store.save().map_err(|e| e.to_string())?;
