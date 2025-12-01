@@ -1,6 +1,6 @@
 [package]
 name = "worktrace"
-version = "0.3.4"
+version = "0.3.5"
 description = "A minimal desktop app that makes time and work tracking with issue tracking tools, like JIRA, easy."
 authors = ["Sebastian Kasanzew"]
 edition = "2024"
