@@ -50,6 +50,7 @@ export const jiraUserSessionSchema = z.object({
 
 export const jiraWorklogAuthorSchema = z.object({
   displayName: z.string(),
+  name: z.string().nullable(),
   emailAddress: z.string().nullable(),
   avatarUrls: z.array(z.tuple([z.string(), z.string()])).nullable(),
 })

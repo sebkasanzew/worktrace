@@ -223,6 +223,7 @@ pub fn jira_get_worklogs(
         .map(|w| {
             let author = w["author"].as_object().map(|a| JiraWorklogAuthor {
                 display_name: a["displayName"].as_str().unwrap_or_default().to_string(),
+                name: a["name"].as_str().map(|s| s.to_string()),
                 email_address: a["emailAddress"].as_str().map(|s| s.to_string()),
                 avatar_urls: a["avatarUrls"].as_object().map(|urls| {
                     urls.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or_default().to_string())).collect()
@@ -231,6 +232,7 @@ pub fn jira_get_worklogs(
 
             let update_author = w["updateAuthor"].as_object().map(|ua| JiraWorklogAuthor {
                 display_name: ua["displayName"].as_str().unwrap_or_default().to_string(),
+                name: ua["name"].as_str().map(|s| s.to_string()),
                 email_address: ua["emailAddress"].as_str().map(|s| s.to_string()),
                 avatar_urls: ua["avatarUrls"].as_object().map(|urls| {
                     urls.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or_default().to_string())).collect()
@@ -283,6 +285,7 @@ pub fn jira_get_worklogs(
 fn parse_worklog(w: &serde_json::Value) -> JiraWorklog {
     let author = w["author"].as_object().map(|a| JiraWorklogAuthor {
         display_name: a["displayName"].as_str().unwrap_or_default().to_string(),
+        name: a["name"].as_str().map(|s| s.to_string()),
         email_address: a["emailAddress"].as_str().map(|s| s.to_string()),
         avatar_urls: a["avatarUrls"].as_object().map(|urls| {
             urls.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or_default().to_string())).collect()
@@ -291,6 +294,7 @@ fn parse_worklog(w: &serde_json::Value) -> JiraWorklog {
 
     let update_author = w["updateAuthor"].as_object().map(|ua| JiraWorklogAuthor {
         display_name: ua["displayName"].as_str().unwrap_or_default().to_string(),
+        name: ua["name"].as_str().map(|s| s.to_string()),
         email_address: ua["emailAddress"].as_str().map(|s| s.to_string()),
         avatar_urls: ua["avatarUrls"].as_object().map(|urls| {
             urls.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or_default().to_string())).collect()
@@ -438,11 +442,19 @@ pub fn jira_get_user_worklogs_by_date_range(
             .unwrap_or(&empty_vec);
 
         for w in worklogs {
-            // Check if worklog author matches (by email or displayName)
+            // Check if worklog author matches
+            // API v3 uses emailAddress, API v2 uses name (username)
             let author_email = w["author"]["emailAddress"].as_str().unwrap_or_default();
-            let is_author = author_email.eq_ignore_ascii_case(config.username);
+            let author_name = w["author"]["name"].as_str().unwrap_or_default();
+            let author_display_name = w["author"]["displayName"].as_str().unwrap_or_default();
+            
+            let is_author = author_email.eq_ignore_ascii_case(config.username)
+                || author_name.eq_ignore_ascii_case(config.username)
+                || author_display_name.eq_ignore_ascii_case(config.username);
 
             if !is_author {
+                log::trace!(target: "jira", "Skipping worklog - author mismatch. Looking for '{}', found email='{}', name='{}', displayName='{}'", 
+                    config.username, author_email, author_name, author_display_name);
                 continue;
             }
 

@@ -300,6 +300,13 @@ export type JiraWorklog = {
  */
 export type JiraWorklogAuthor = {
   displayName: string
+  /**
+   * Username (used in API v2, e.g., "jdoe")
+   */
+  name: string | null
+  /**
+   * Email address (used in API v3)
+   */
   emailAddress: string | null
   avatarUrls: [string, string][] | null
 }
