@@ -123,11 +123,13 @@ export async function setupWorklogMocks(options: { page: Page }): Promise<void> 
         updated: "2025-11-21T09:00:00.000+0100",
         author: {
           displayName: "Test User",
+          name: "testuser",
           emailAddress: "test@example.com",
           avatarUrls: null,
         },
         updateAuthor: {
           displayName: "Test User",
+          name: "testuser",
           emailAddress: "test@example.com",
           avatarUrls: null,
         },
@@ -142,16 +144,18 @@ export async function setupWorklogMocks(options: { page: Page }): Promise<void> 
         updated: "2025-11-21T11:00:00.000+0100",
         author: {
           displayName: "Test User",
+          name: "testuser",
           emailAddress: "test@example.com",
           avatarUrls: null,
         },
         updateAuthor: {
           displayName: "Test User",
+          name: "testuser",
           emailAddress: "test@example.com",
           avatarUrls: null,
         },
       },
-    ]
+    ] satisfies JiraWorklog[]
 
     // Setup window.__TAURI_INTERNALS__ if it doesn't exist
     if (!window.__TAURI_INTERNALS__) {
@@ -213,11 +217,13 @@ export async function setupWorklogMocks(options: { page: Page }): Promise<void> 
             updated: new Date().toISOString(),
             author: {
               displayName: "Test User",
+              name: "testuser",
               emailAddress: "test@example.com",
               avatarUrls: null,
             },
             updateAuthor: {
               displayName: "Test User",
+              name: "testuser",
               emailAddress: "test@example.com",
               avatarUrls: null,
             },
