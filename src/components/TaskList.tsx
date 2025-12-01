@@ -9,6 +9,7 @@ import {
   LogOut,
   Minimize2,
   Play,
+  Plus,
   RefreshCw,
   Settings,
   Square,
@@ -53,6 +54,7 @@ export function TaskList({
   const [expandedIssue, setExpandedIssue] = useState<string | null>(null)
   const [customIssuesDialogOpen, setCustomIssuesDialogOpen] = useState(false)
   const [calendarOpen, setCalendarOpen] = useState(false)
+  const [manualWorklogIssue, setManualWorklogIssue] = useState<string | null>(null)
   const [filters, setFilters] = useState({ assigned: true, custom: false })
   const customIssuesChangedRef = useRef(false)
   const queryClient = useQueryClient()
@@ -328,14 +330,24 @@ export function TaskList({
                             </Button>
                           </div>
                         ) : (
-                          <Button
-                            size="sm"
-                            onClick={() => requestStart(issue.key)}
-                            aria-label={`Start timer for ${issue.key}`}
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                          >
-                            <Play className="h-4 w-4 mr-1" /> {t("Start")}
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => setManualWorklogIssue(issue.key)}
+                              aria-label={`Log work for ${issue.key}`}
+                            >
+                              <Plus className="h-4 w-4 mr-1" /> {t("Log Work")}
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => requestStart(issue.key)}
+                              aria-label={`Start timer for ${issue.key}`}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <Play className="h-4 w-4 mr-1" /> {t("Start")}
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -459,6 +471,34 @@ export function TaskList({
                 refetch()
                 // Invalidate worklogs for this issue
                 queryClient.invalidateQueries({ queryKey: jiraKeys.issueWorklogs(activeIssueKey) })
+                // Invalidate today's worklogs to update the indicator
+                const today = format(new Date(), "yyyy-MM-dd")
+                queryClient.invalidateQueries({ queryKey: jiraKeys.userWorklogs(today, today) })
+              },
+            }
+          )
+        }}
+      />
+      <WorklogDialog
+        isOpen={!!manualWorklogIssue}
+        issueKey={manualWorklogIssue ?? ""}
+        initialSeconds={0}
+        onCancel={() => setManualWorklogIssue(null)}
+        onSubmit={({ timeSpentSeconds, comment, started }) => {
+          if (!manualWorklogIssue) return
+          logInfo(
+            `[TaskList] Manually submitting worklog for ${manualWorklogIssue}: ${timeSpentSeconds}s, comment: "${comment}"`
+          )
+          addWorklog.mutate(
+            { issueKey: manualWorklogIssue, payload: { timeSpentSeconds, comment, started } },
+            {
+              onSuccess: () => {
+                setManualWorklogIssue(null)
+                refetch()
+                // Invalidate worklogs for this issue
+                queryClient.invalidateQueries({
+                  queryKey: jiraKeys.issueWorklogs(manualWorklogIssue),
+                })
                 // Invalidate today's worklogs to update the indicator
                 const today = format(new Date(), "yyyy-MM-dd")
                 queryClient.invalidateQueries({ queryKey: jiraKeys.userWorklogs(today, today) })
