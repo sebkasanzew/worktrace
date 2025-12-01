@@ -216,95 +216,49 @@ pub fn jira_get_worklogs(
     let results: serde_json::Value = response.json()
         .map_err(|e| format!("Failed to parse response: {}", e))?;
 
-    let worklogs: Vec<JiraWorklog> = results["worklogs"]
-        .as_array()
-        .unwrap_or(&vec![])
+    let empty_vec = vec![];
+    let worklogs: Vec<JiraWorklog> = results.get("worklogs")
+        .and_then(|v| v.as_array())
+        .unwrap_or(&empty_vec)
         .iter()
-        .map(|w| {
-            let author = w["author"].as_object().map(|a| JiraWorklogAuthor {
-                display_name: a["displayName"].as_str().unwrap_or_default().to_string(),
-                name: a["name"].as_str().map(|s| s.to_string()),
-                email_address: a["emailAddress"].as_str().map(|s| s.to_string()),
-                avatar_urls: a["avatarUrls"].as_object().map(|urls| {
-                    urls.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or_default().to_string())).collect()
-                }),
-            });
-
-            let update_author = w["updateAuthor"].as_object().map(|ua| JiraWorklogAuthor {
-                display_name: ua["displayName"].as_str().unwrap_or_default().to_string(),
-                name: ua["name"].as_str().map(|s| s.to_string()),
-                email_address: ua["emailAddress"].as_str().map(|s| s.to_string()),
-                avatar_urls: ua["avatarUrls"].as_object().map(|urls| {
-                    urls.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or_default().to_string())).collect()
-                }),
-            });
-            
-            // Handle comment which can be string (v2) or ADF (v3)
-            let comment_text = if let Some(comment_str) = w["comment"].as_str() {
-                Some(comment_str.to_string())
-            } else if let Some(comment_obj) = w["comment"].as_object() {
-                // Try to extract text from ADF if possible, or just dump JSON
-                // For now, let's just try to get the text content if it's a simple paragraph
-                // This is a simplification
-                comment_obj.get("content")
-                    .and_then(|c| c.as_array())
-                    .and_then(|arr| arr.first())
-                    .and_then(|p| p.get("content"))
-                    .and_then(|c| c.as_array())
-                    .and_then(|arr| arr.first())
-                    .and_then(|t| t.get("text"))
-                    .and_then(|t| t.as_str())
-                    .map(|s| s.to_string())
-            } else {
-                None
-            };
-
-            JiraWorklog {
-                id: w["id"].as_str().unwrap_or_default().to_string(),
-                author,
-                update_author,
-                comment: comment_text,
-                created: w["created"].as_str().unwrap_or_default().to_string(),
-                updated: w["updated"].as_str().unwrap_or_default().to_string(),
-                started: w["started"].as_str().unwrap_or_default().to_string(),
-                time_spent: w["timeSpent"].as_str().unwrap_or_default().to_string(),
-                time_spent_seconds: w["timeSpentSeconds"].as_u64().unwrap_or(0),
-            }
-        })
+        .map(parse_worklog)
         .collect();
 
     Ok(JiraWorklogListResponse {
         worklogs,
-        total: results["total"].as_u64().unwrap_or(0),
-        max_results: results["maxResults"].as_u64().unwrap_or(0),
-        start_at: results["startAt"].as_u64().unwrap_or(0),
+        total: results.get("total").and_then(|v| v.as_u64()).unwrap_or(0),
+        max_results: results.get("maxResults").and_then(|v| v.as_u64()).unwrap_or(0),
+        start_at: results.get("startAt").and_then(|v| v.as_u64()).unwrap_or(0),
+    })
+}
+
+/// Helper to safely get a string from a JSON object
+fn get_str<'a>(obj: &'a serde_json::Map<String, serde_json::Value>, key: &str) -> Option<&'a str> {
+    obj.get(key).and_then(|v| v.as_str())
+}
+
+/// Helper to parse author from JSON object
+fn parse_author(author_value: &serde_json::Value) -> Option<JiraWorklogAuthor> {
+    let a = author_value.as_object()?;
+    Some(JiraWorklogAuthor {
+        display_name: get_str(a, "displayName").unwrap_or_default().to_string(),
+        name: get_str(a, "name").map(|s| s.to_string()),
+        email_address: get_str(a, "emailAddress").map(|s| s.to_string()),
+        avatar_urls: a.get("avatarUrls").and_then(|v| v.as_object()).map(|urls| {
+            urls.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or_default().to_string())).collect()
+        }),
     })
 }
 
 /// Parse worklog from JSON (shared helper)
 fn parse_worklog(w: &serde_json::Value) -> JiraWorklog {
-    let author = w["author"].as_object().map(|a| JiraWorklogAuthor {
-        display_name: a["displayName"].as_str().unwrap_or_default().to_string(),
-        name: a["name"].as_str().map(|s| s.to_string()),
-        email_address: a["emailAddress"].as_str().map(|s| s.to_string()),
-        avatar_urls: a["avatarUrls"].as_object().map(|urls| {
-            urls.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or_default().to_string())).collect()
-        }),
-    });
-
-    let update_author = w["updateAuthor"].as_object().map(|ua| JiraWorklogAuthor {
-        display_name: ua["displayName"].as_str().unwrap_or_default().to_string(),
-        name: ua["name"].as_str().map(|s| s.to_string()),
-        email_address: ua["emailAddress"].as_str().map(|s| s.to_string()),
-        avatar_urls: ua["avatarUrls"].as_object().map(|urls| {
-            urls.iter().map(|(k, v)| (k.clone(), v.as_str().unwrap_or_default().to_string())).collect()
-        }),
-    });
+    let author = w.get("author").and_then(parse_author);
+    let update_author = w.get("updateAuthor").and_then(parse_author);
     
     // Handle comment which can be string (v2) or ADF (v3)
-    let comment_text = if let Some(comment_str) = w["comment"].as_str() {
+    let comment_text = if let Some(comment_str) = w.get("comment").and_then(|c| c.as_str()) {
         Some(comment_str.to_string())
-    } else if let Some(comment_obj) = w["comment"].as_object() {
+    } else if let Some(comment_obj) = w.get("comment").and_then(|c| c.as_object()) {
         comment_obj.get("content")
             .and_then(|c| c.as_array())
             .and_then(|arr| arr.first())
@@ -319,15 +273,15 @@ fn parse_worklog(w: &serde_json::Value) -> JiraWorklog {
     };
 
     JiraWorklog {
-        id: w["id"].as_str().unwrap_or_default().to_string(),
+        id: w.get("id").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
         author,
         update_author,
         comment: comment_text,
-        created: w["created"].as_str().unwrap_or_default().to_string(),
-        updated: w["updated"].as_str().unwrap_or_default().to_string(),
-        started: w["started"].as_str().unwrap_or_default().to_string(),
-        time_spent: w["timeSpent"].as_str().unwrap_or_default().to_string(),
-        time_spent_seconds: w["timeSpentSeconds"].as_u64().unwrap_or(0),
+        created: w.get("created").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        updated: w.get("updated").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        started: w.get("started").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        time_spent: w.get("timeSpent").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
+        time_spent_seconds: w.get("timeSpentSeconds").and_then(|v| v.as_u64()).unwrap_or(0),
     }
 }
 

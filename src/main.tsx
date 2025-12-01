@@ -10,29 +10,11 @@ declare global {
   interface Window {
     __APP_INIT_STARTED__?: boolean
     __APP_INIT_COMPLETE__?: boolean
-    __DEBUG_LOGS__?: string[]
     resetConfig?: () => Promise<void>
   }
 }
 
-// Debug logging function that syncs with early debug panel
-function debugLog(msg: string) {
-  const timestamp = new Date().toISOString().substr(11, 12)
-  const entry = `[${timestamp}] ${msg}`
-  window.__DEBUG_LOGS__ = window.__DEBUG_LOGS__ || []
-  window.__DEBUG_LOGS__.push(entry)
-
-  const debugEl = document.getElementById("early-debug")
-  if (debugEl) {
-    debugEl.classList.add("show")
-    debugEl.textContent = window.__DEBUG_LOGS__.join("\n")
-    debugEl.scrollTop = debugEl.scrollHeight
-  }
-}
-
-debugLog("main.tsx module loaded")
 window.__APP_INIT_STARTED__ = true
-debugLog("__APP_INIT_STARTED__ = true")
 
 // Track if we've already shown an error to prevent multiple error screens
 let hasShownError = false
@@ -113,17 +95,12 @@ if (shouldEnableGlobalErrorHandler) {
 }
 
 async function initApp() {
-  debugLog("initApp() called")
-
   if (import.meta.env.DEV && !window.__TAURI_INTERNALS__ && !navigator.webdriver) {
-    debugLog("Loading mock-tauri (dev mode)")
     await import("./lib/mock-tauri")
-    debugLog("mock-tauri loaded")
   }
 
   // Check for early error preview route (for testing)
   if (new URLSearchParams(window.location.search).has("previewEarlyError")) {
-    debugLog("Loading early error preview")
     const { EarlyErrorPreview } = await import("./components/EarlyErrorPreview")
     ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
       <React.StrictMode>
@@ -134,9 +111,7 @@ async function initApp() {
     return
   }
 
-  debugLog("Rendering React app")
   const rootEl = document.getElementById("root")
-  debugLog(`Root element: ${rootEl ? "found" : "NOT FOUND"}`)
 
   ReactDOM.createRoot(rootEl as HTMLElement).render(
     <React.StrictMode>
@@ -144,15 +119,10 @@ async function initApp() {
     </React.StrictMode>
   )
 
-  debugLog("React.render called")
-
   // Signal that initialization is complete
   window.__APP_INIT_COMPLETE__ = true
-  debugLog("__APP_INIT_COMPLETE__ = true")
 }
 
-debugLog("Calling initApp()")
 initApp().catch((error) => {
-  debugLog(`initApp error: ${error}`)
   showFatalError(error)
 })

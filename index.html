@@ -20,25 +20,6 @@
         justify-content: center;
         min-height: 100vh;
       }
-      /* Debug info styles - hidden in Playwright tests */
-      #early-debug {
-        position: fixed;
-        bottom: 1rem;
-        left: 1rem;
-        right: 1rem;
-        background: rgba(0, 0, 0, 0.9);
-        color: #666;
-        font-size: 0.75rem;
-        padding: 0.5rem;
-        border-radius: 0.25rem;
-        font-family: monospace;
-        max-height: 200px;
-        overflow-y: auto;
-        z-index: 9999;
-        display: none;
-        pointer-events: none;
-      }
-      #early-debug.show { display: block; }
       /* Error fallback styles */
       .fatal-error {
         display: flex;
@@ -87,36 +68,13 @@
       window.__EARLY_ERRORS__ = [];
       window.__APP_INIT_STARTED__ = false;
       window.__APP_INIT_COMPLETE__ = false;
-      window.__DEBUG_LOGS__ = [];
-      
-      function debugLog(msg) {
-        var timestamp = new Date().toISOString().substr(11, 12);
-        var entry = '[' + timestamp + '] ' + msg;
-        window.__DEBUG_LOGS__.push(entry);
-        
-        // Show debug panel on Loading screen
-        var debugEl = document.getElementById('early-debug');
-        if (debugEl) {
-          debugEl.classList.add('show');
-          debugEl.textContent = window.__DEBUG_LOGS__.join('\n');
-          debugEl.scrollTop = debugEl.scrollHeight;
-        }
-        // Also log to console
-        console.log('[worktrace]', msg);
-      }
-      
-      debugLog('HTML script tag executing');
-      debugLog('navigator.webdriver: ' + navigator.webdriver);
-      debugLog('__TAURI_INTERNALS__: ' + (typeof window.__TAURI_INTERNALS__));
       
       window.onerror = function(msg, url, line, col, error) {
-        debugLog('ERROR: ' + msg + ' at ' + url + ':' + line);
         window.__EARLY_ERRORS__.push({ msg, url, line, col, error });
         showEarlyError(error || msg);
         return true;
       };
       window.onunhandledrejection = function(event) {
-        debugLog('UNHANDLED REJECTION: ' + event.reason);
         window.__EARLY_ERRORS__.push({ reason: event.reason });
         showEarlyError(event.reason);
       };
@@ -125,10 +83,9 @@
       // Skip timeout in Playwright tests (navigator.webdriver is true)
       if (!navigator.webdriver) {
         setTimeout(function() {
-          debugLog('Timeout check: started=' + window.__APP_INIT_STARTED__ + ', complete=' + window.__APP_INIT_COMPLETE__);
           if (!window.__APP_INIT_COMPLETE__) {
             var status = window.__APP_INIT_STARTED__ ? 'App started but did not complete initialization' : 'App script did not start';
-            showEarlyError(new Error('Initialization timeout: ' + status + '. Debug logs:\n' + window.__DEBUG_LOGS__.join('\n')));
+            showEarlyError(new Error('Initialization timeout: ' + status));
           }
         }, 15000);
       }
@@ -164,7 +121,6 @@
 
   <body>
     <div id="root"></div>
-    <div id="early-debug"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
