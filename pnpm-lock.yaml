@@ -33,7 +33,7 @@ importers:
         specifier: 2.4.2
         version: 2.4.2
       '@tauri-apps/plugin-fs':
-        specifier: ^2.4.4
+        specifier: 2.4.4
         version: 2.4.4
       '@tauri-apps/plugin-log':
         specifier: 2.7.1

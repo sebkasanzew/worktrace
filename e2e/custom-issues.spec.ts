@@ -178,8 +178,8 @@ test.describe("Custom Issues", () => {
     await page.waitForTimeout(600)
 
     await expect(page.getByText("CUSTOM-1")).toBeVisible()
-    // Click the add button (plus icon)
-    await page.locator("button:has(svg.lucide-plus)").click()
+    // Click the add button (plus icon) inside the dialog
+    await page.getByRole("dialog").locator("button:has(svg.lucide-plus)").click()
 
     await expect(page.getByText("Selected Issues (1)")).toBeVisible()
     // Check if it appears in the selected list (look for item with Minus icon)
@@ -257,6 +257,7 @@ test.describe("Custom Issues", () => {
     await page.getByPlaceholder("Search by issue key or summary...").fill("CUSTOM-1")
     await page.waitForTimeout(600)
     await page
+      .getByRole("dialog")
       .locator("button")
       .filter({ has: page.locator("svg.lucide-plus") })
       .click()
