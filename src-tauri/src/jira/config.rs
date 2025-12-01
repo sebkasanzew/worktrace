@@ -1,5 +1,6 @@
 use crate::jira::types::{AppSettings, GeneralSettings, JiraSettings, WorklogType};
 use keyring::Entry;
+use tauri::Manager;
 use tauri_plugin_store::StoreExt;
 
 const SERVICE_NAME: &str = "worktrace";
@@ -51,6 +52,18 @@ fn delete_password_macos(service: &str, user: &str) -> Result<(), String> {
 
 fn get_keyring_entry() -> Result<Entry, String> {
     Entry::new(SERVICE_NAME, KEYRING_USER_KEY).map_err(|e| e.to_string())
+}
+
+/// Delete the config file to reset corrupted state
+fn reset_config_file(app: &tauri::AppHandle) -> Result<(), String> {
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    let config_path = app_data_dir.join("config.json");
+
+    if config_path.exists() {
+        log::warn!(target: "jira", "Deleting corrupted config file: {:?}", config_path);
+        std::fs::remove_file(&config_path).map_err(|e| e.to_string())?;
+    }
+    Ok(())
 }
 
 fn load_jira_settings(store: &tauri_plugin_store::Store<tauri::Wry>) -> Option<JiraSettings> {
@@ -170,7 +183,14 @@ pub async fn save_jira_config(
 #[tauri::command]
 #[specta::specta]
 pub async fn get_jira_config(app: tauri::AppHandle) -> Result<Option<JiraSettings>, String> {
-    let store = app.store("config.json").map_err(|e| e.to_string())?;
+    let store = match app.store("config.json") {
+        Ok(s) => s,
+        Err(e) => {
+            log::error!(target: "jira", "Failed to open config store, resetting: {}", e);
+            reset_config_file(&app)?;
+            return Ok(None);
+        }
+    };
     Ok(load_jira_settings(&store))
 }
 
@@ -178,27 +198,51 @@ pub async fn get_jira_config(app: tauri::AppHandle) -> Result<Option<JiraSetting
 #[specta::specta]
 pub async fn clear_jira_config(app: tauri::AppHandle) -> Result<(), String> {
     log::info!(target: "jira", "Clearing JIRA configuration");
-    let store = app.store("config.json").map_err(|e| e.to_string())?;
+    
+    let store = match app.store("config.json") {
+        Ok(s) => s,
+        Err(e) => {
+            log::error!(target: "jira", "Failed to open config store, resetting: {}", e);
+            reset_config_file(&app)?;
+            clear_keyring();
+            return Ok(());
+        }
+    };
 
     store.delete("jira");
     store.save().map_err(|e| e.to_string())?;
+    clear_keyring();
 
+    Ok(())
+}
+
+/// Clear credentials from keyring (best effort)
+fn clear_keyring() {
     if let Ok(_entry) = get_keyring_entry() {
         log::info!(target: "jira", "Deleting credential from keyring");
         #[cfg(target_os = "macos")]
         let _ = delete_password_macos(SERVICE_NAME, KEYRING_USER_KEY);
-        
+
         #[cfg(not(target_os = "macos"))]
         let _ = _entry.delete_credential();
     }
-
-    Ok(())
 }
 
 #[tauri::command]
 #[specta::specta]
 pub async fn get_app_settings(app: tauri::AppHandle) -> Result<AppSettings, String> {
-    let store = app.store("config.json").map_err(|e| e.to_string())?;
+    let store = match app.store("config.json") {
+        Ok(s) => s,
+        Err(e) => {
+            log::error!(target: "jira", "Failed to open config store, resetting: {}", e);
+            reset_config_file(&app)?;
+            // Return defaults after reset
+            return Ok(AppSettings {
+                general: default_general_settings(),
+                jira: None,
+            });
+        }
+    };
 
     let general: GeneralSettings = store
         .get("general")
@@ -274,4 +318,15 @@ fn default_general_settings() -> GeneralSettings {
         always_on_top: false,
         custom_issue_keys: vec![],
     }
+}
+
+/// Reset all app configuration to defaults
+/// This is a recovery command for when config is corrupted
+#[tauri::command]
+#[specta::specta]
+pub async fn reset_all_config(app: tauri::AppHandle) -> Result<(), String> {
+    log::warn!(target: "jira", "Resetting all configuration to defaults");
+    reset_config_file(&app)?;
+    clear_keyring();
+    Ok(())
 }
