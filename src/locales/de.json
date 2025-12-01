@@ -60,6 +60,7 @@
   "Loading issues...": "Lade Vorgänge...",
   "Loading worklogs...": "Lade Arbeitsprotokolle...",
   "Loading...": "Laden...",
+  "Log Work": "Arbeit protokollieren",
   "Log Work for {{issueKey}}": "Arbeit protokollieren für {{issueKey}}",
   "Logout": "Abmelden",
   "Manage Custom Issues": "Benutzerdefinierte Vorgänge verwalten",
