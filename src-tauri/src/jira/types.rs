@@ -176,6 +176,9 @@ pub struct WorklogResponse {
 #[serde(rename_all = "camelCase")]
 pub struct JiraWorklogAuthor {
     pub display_name: String,
+    /// Username (used in API v2, e.g., "jdoe")
+    pub name: Option<String>,
+    /// Email address (used in API v3)
     pub email_address: Option<String>,
     pub avatar_urls: Option<Vec<(String, String)>>,
 }
