@@ -1,6 +1,6 @@
 import { error as logError } from "@tauri-apps/plugin-log"
 import { useCallback, useEffect, useState } from "react"
-import { configService } from "@/services/jira"
+import { configService, jiraApi } from "@/services/jira"
 
 export function useLoginStatus() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -9,7 +9,17 @@ export function useLoginStatus() {
   const refreshLoginStatus = useCallback(async () => {
     try {
       const config = await configService.get()
-      setIsLoggedIn(!!(config?.instanceUrl && config?.username && config?.apiToken))
+      if (config?.instanceUrl && config?.username && config?.apiToken) {
+        try {
+          await jiraApi.getCurrentUser(config)
+          setIsLoggedIn(true)
+        } catch (error) {
+          logError(`Credentials verification failed: ${error}`)
+          setIsLoggedIn(false)
+        }
+      } else {
+        setIsLoggedIn(false)
+      }
     } catch (error) {
       logError(`Failed to check login status: ${error}`)
       setIsLoggedIn(false)

@@ -201,6 +201,23 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
     }
   }
 
+  const getAuthLabels = () => {
+    const authType = formData.jira?.authType
+    const username = formData.jira?.username || ""
+
+    if (authType === "Bearer") {
+      return { username: t("Username"), password: t("Personal Access Token") }
+    }
+
+    if (username.includes("@")) {
+      return { username: t("Email Address"), password: t("API Token") }
+    }
+
+    return { username: t("Username"), password: t("Password") }
+  }
+
+  const authLabels = getAuthLabels()
+
   return (
     <div className="min-h-screen bg-background">
       <ViewHeader
@@ -231,7 +248,7 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
                   </div>
                   <div>
                     <label htmlFor="jiraUsername" className="block text-sm font-medium mb-1">
-                      {t("Username")} ({t("Email Address")})
+                      {authLabels.username}
                     </label>
                     <Input
                       id="jiraUsername"
@@ -241,7 +258,7 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
                   </div>
                   <div>
                     <label htmlFor="jiraToken" className="block text-sm font-medium mb-1">
-                      {t("API Token")}
+                      {authLabels.password}
                     </label>
                     <div className="flex gap-2">
                       <Input
