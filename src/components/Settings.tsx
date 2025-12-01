@@ -1,4 +1,7 @@
-import { Loader2, Plus, Trash2 } from "lucide-react"
+import { open, save } from "@tauri-apps/plugin-dialog"
+import { readTextFile, writeTextFile } from "@tauri-apps/plugin-fs"
+import { error as logError } from "@tauri-apps/plugin-log"
+import { Download, Loader2, Plus, Trash2, Upload } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
@@ -96,7 +99,7 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
         ...prev,
         general: {
           ...prev.general,
-          worklogTypes: [...prev.general.worklogTypes, { name: t("New Type"), shortCode: "" }],
+          worklogTypes: [...prev.general.worklogTypes, { name: "", shortCode: "" }],
         },
       }
       saveMutation.mutate(newState)
@@ -130,6 +133,72 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
       saveMutation.mutate(newState)
       return newState
     })
+  }
+
+  const handleExportConfig = async () => {
+    if (!formData) return
+
+    try {
+      const configToExport = {
+        worklogTypes: formData.general.worklogTypes,
+        defaultWorklogDescription: formData.general.defaultWorklogDescription,
+      }
+
+      const filePath = await save({
+        filters: [
+          {
+            name: "JSON",
+            extensions: ["json"],
+          },
+        ],
+        defaultPath: "worktrace-config.json",
+      })
+
+      if (filePath) {
+        await writeTextFile(filePath, JSON.stringify(configToExport, null, 2))
+      }
+    } catch (error) {
+      logError(`Failed to export config: ${error}`)
+    }
+  }
+
+  const handleImportConfig = async () => {
+    try {
+      const filePath = await open({
+        filters: [
+          {
+            name: "JSON",
+            extensions: ["json"],
+          },
+        ],
+        multiple: false,
+      })
+
+      if (filePath && typeof filePath === "string") {
+        const content = await readTextFile(filePath)
+        const importedConfig = JSON.parse(content)
+
+        if (importedConfig && Array.isArray(importedConfig.worklogTypes)) {
+          setFormData((prev) => {
+            if (!prev) return null
+            const newState = {
+              ...prev,
+              general: {
+                ...prev.general,
+                worklogTypes: importedConfig.worklogTypes,
+                defaultWorklogDescription:
+                  importedConfig.defaultWorklogDescription ??
+                  prev.general.defaultWorklogDescription,
+              },
+            }
+            saveMutation.mutate(newState)
+            return newState
+          })
+        }
+      }
+    } catch (error) {
+      logError(`Failed to import config: ${error}`)
+    }
   }
 
   return (
@@ -307,6 +376,20 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
                       updateGeneralField("defaultWorklogDescription", e.target.value)
                     }
                   />
+                </div>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold mb-4">{t("Configuration Backup")}</h2>
+                <div className="flex gap-4 flex-col">
+                  <Button variant="outline" onClick={handleExportConfig} className="flex-1">
+                    <Download className="mr-2 h-4 w-4" />
+                    {t("Export Settings")}
+                  </Button>
+                  <Button variant="outline" onClick={handleImportConfig} className="flex-1">
+                    <Upload className="mr-2 h-4 w-4" />
+                    {t("Import Settings")}
+                  </Button>
                 </div>
               </section>
             </div>
