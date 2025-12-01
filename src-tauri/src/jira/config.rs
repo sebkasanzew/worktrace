@@ -134,6 +134,21 @@ pub async fn save_jira_config(
         match entry.set_password(&settings.api_token) {
             Ok(_) => {
                 log::info!(target: "jira", "Successfully saved token to keyring");
+                // Verify immediately by reading back
+                match get_keyring_entry().and_then(|e| e.get_password().map_err(|e| e.to_string())) {
+                    Ok(saved) => {
+                        if saved == settings.api_token {
+                            log::info!(target: "jira", "Verification successful: Token read back matches");
+                        } else {
+                            log::error!(target: "jira", "Verification failed: Token read back does not match");
+                            return Err("Token verification failed: saved token does not match".to_string());
+                        }
+                    },
+                    Err(e) => {
+                        log::error!(target: "jira", "Verification failed: Could not read back token: {}", e);
+                        return Err(format!("Token verification failed: {}", e));
+                    }
+                }
             },
             Err(e) => {
                 log::error!(target: "jira", "Failed to save token to keyring: {}", e);
