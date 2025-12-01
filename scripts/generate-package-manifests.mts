@@ -89,10 +89,10 @@ async function generateHomebrewCask(version: string, hashes: Hashes) {
   app "Worktrace.app"
 
   zap trash: [
-    "~/Library/Application Support/com.worktrace.desktop",
-    "~/Library/Caches/com.worktrace.desktop",
-    "~/Library/Preferences/com.worktrace.desktop.plist",
-    "~/Library/Saved Application State/com.worktrace.desktop.savedState",
+    "~/Library/Application Support/Worktrace",
+    "~/Library/Caches/Worktrace",
+    "~/Library/Preferences/Worktrace.plist",
+    "~/Library/Saved Application State/Worktrace.savedState",
   ]
 end
 `;

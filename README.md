@@ -250,9 +250,9 @@ worktrace/
 ## Configuration
 
 The app stores your JIRA configuration securely using Tauri's store plugin. The configuration file is located at:
-- **Windows**: `%APPDATA%/com.worktrace.app/config.json`
-- **macOS**: `~/Library/Application Support/com.worktrace.app/config.json`
-- **Linux**: `~/.config/com.worktrace.app/config.json`
+- **Windows**: `%APPDATA%/Worktrace/config.json`
+- **macOS**: `~/Library/Application Support/Worktrace/config.json`
+- **Linux**: `~/.config/Worktrace/config.json`
 
 ## Security
 
