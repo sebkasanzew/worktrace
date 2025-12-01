@@ -122,6 +122,7 @@ pub fn run() {
             clear_jira_config,
             get_app_settings,
             save_app_settings,
+            reset_all_config,
             jira_api_request,
             jira_get_current_user,
             jira_add_worklog,

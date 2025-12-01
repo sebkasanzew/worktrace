@@ -16,6 +16,7 @@ pub fn export_bindings() {
         crate::jira::config::clear_jira_config,
         crate::jira::config::get_app_settings,
         crate::jira::config::save_app_settings,
+        crate::jira::config::reset_all_config,
         crate::set_mini_mode,
     ]);
 

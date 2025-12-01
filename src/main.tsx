@@ -5,8 +5,14 @@ import "./index.css"
 import "./i18n"
 import packageJson from "../package.json"
 
+// Track if we've already shown an error to prevent multiple error screens
+let hasShownError = false
+
 // Global error handler for uncaught errors (before React mounts)
 function showFatalError(error: unknown) {
+  if (hasShownError) return
+  hasShownError = true
+
   const errorMessage = error instanceof Error ? error.message : String(error)
   const errorStack = error instanceof Error ? error.stack : undefined
 
@@ -26,7 +32,7 @@ function showFatalError(error: unknown) {
         </div>
         <div style="background: #0a0a0a; padding: 0.75rem; border-radius: 0.375rem; margin-bottom: 1rem;">
           <p style="color: #ef4444; font-size: 0.875rem; margin: 0; word-break: break-word;">${errorMessage}</p>
-          ${errorStack ? `<pre style="color: #666; font-size: 0.75rem; margin: 0.5rem 0 0 0; white-space: pre-wrap; word-break: break-word;">${errorStack}</pre>` : ""}
+          ${errorStack ? `<pre style="color: #666; font-size: 0.75rem; margin: 0.5rem 0 0 0; white-space: pre-wrap; word-break: break-word; max-height: 150px; overflow-y: auto;">${errorStack}</pre>` : ""}
         </div>
         <div style="text-align: center; color: #666; font-size: 0.875rem; margin-bottom: 1rem;">
           App Version: ${packageJson.version}
@@ -35,32 +41,50 @@ function showFatalError(error: unknown) {
           <button onclick="window.location.reload()" style="width: 100%; padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 0.375rem; cursor: pointer; font-size: 0.875rem;">
             Reload App
           </button>
+          <button onclick="resetConfig()" style="width: 100%; padding: 0.5rem 1rem; background: #374151; color: white; border: none; border-radius: 0.375rem; cursor: pointer; font-size: 0.875rem;">
+            Reset Config & Reload
+          </button>
         </div>
       </div>
     </div>
   `
 }
 
-// Track if we've already shown an error to prevent multiple error screens
-let hasShownError = false
+// Function to reset config when shown in error screen
+declare global {
+  interface Window {
+    resetConfig?: () => Promise<void>
+  }
+}
+window.resetConfig = async () => {
+  try {
+    // Try to reset all config via Tauri command if available
+    if (window.__TAURI_INTERNALS__) {
+      const { invoke } = await import("@tauri-apps/api/core")
+      await invoke("reset_all_config")
+    }
+  } catch {
+    // Ignore errors during reset
+  }
+  window.location.reload()
+}
 
 // Check if we should enable global error handlers
-// In production: always enabled
-// In dev/test: enabled via URL param for e2e testing
+// Enable in production builds OR when running in Tauri (but NOT in Playwright tests)
+// navigator.webdriver is true when Playwright is controlling the browser
 const shouldEnableGlobalErrorHandler =
-  !import.meta.env.DEV || new URLSearchParams(window.location.search).has("testFatalError")
+  !navigator.webdriver &&
+  (!import.meta.env.DEV ||
+    !!window.__TAURI_INTERNALS__ ||
+    new URLSearchParams(window.location.search).has("testFatalError"))
 
 if (shouldEnableGlobalErrorHandler) {
   window.onerror = (message, _source, _lineno, _colno, error) => {
-    if (hasShownError) return
-    hasShownError = true
     showFatalError(error || message)
   }
 
   // Catch unhandled promise rejections
   window.onunhandledrejection = (event) => {
-    if (hasShownError) return
-    hasShownError = true
     showFatalError(event.reason)
   }
 }
@@ -78,9 +102,5 @@ async function initApp() {
 }
 
 initApp().catch((error) => {
-  // In production, show the error screen
-  if (!import.meta.env.DEV && !hasShownError) {
-    hasShownError = true
-    showFatalError(error)
-  }
+  showFatalError(error)
 })
