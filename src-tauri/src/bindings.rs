@@ -10,6 +10,7 @@ pub fn export_bindings() {
         crate::jira::worklogs::jira_update_worklog,
         crate::jira::worklogs::jira_delete_worklog,
         crate::jira::worklogs::jira_get_worklogs,
+        crate::jira::worklogs::jira_get_user_worklogs_by_date_range,
         crate::jira::config::save_jira_config,
         crate::jira::config::get_jira_config,
         crate::jira::config::clear_jira_config,

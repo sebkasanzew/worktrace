@@ -19,6 +19,14 @@ export const jiraAssigneeSchema = z.object({
   emailAddress: z.string(),
 })
 
+export const jiraConnectionSchema = z.object({
+  url: z.string(),
+  username: z.string(),
+  password: z.string(),
+  apiVersion: z.string().optional(),
+  authType: z.string().optional(),
+})
+
 export const jiraIssueTypeSchema = z.object({
   name: z.string(),
   subtask: z.boolean(),
@@ -56,6 +64,19 @@ export const jiraWorklogSchema = z.object({
   started: z.string(),
   timeSpent: z.string(),
   timeSpentSeconds: z.number(),
+})
+
+export const userWorklogEntrySchema = z.object({
+  issueKey: z.string(),
+  issueSummary: z.string(),
+  worklog: jiraWorklogSchema,
+})
+
+export const userWorklogsResponseSchema = z.object({
+  entries: z.array(userWorklogEntrySchema),
+  startDate: z.string(),
+  endDate: z.string(),
+  totalTimeSeconds: z.number(),
 })
 
 export const worklogPayloadSchema = z.object({

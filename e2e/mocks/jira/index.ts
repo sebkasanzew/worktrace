@@ -4,6 +4,7 @@ export { getDefaultMockSearchResponse, mockJiraSearchResponse } from "./search"
 export { getDefaultMockUserSession, mockJiraUserSession } from "./user-session"
 export {
   generateMockWorklogs,
+  getDefaultMockUserWorklogs,
   getDefaultMockWorklogList,
   setupWorklogMocks,
 } from "./worklogs"

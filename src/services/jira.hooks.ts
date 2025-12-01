@@ -4,7 +4,13 @@ import {
   useMutation,
   useQuery,
 } from "@tanstack/react-query"
-import type { JiraSearchResponse, JiraUserSession, JiraWorklogListResponse } from "@/types/bindings"
+import { format } from "date-fns"
+import type {
+  JiraSearchResponse,
+  JiraUserSession,
+  JiraWorklogListResponse,
+  UserWorklogsResponse,
+} from "@/types/bindings"
 import type { WorklogPayload, WorklogResponse } from "@/types/jira"
 import { configService } from "./jira"
 import { jiraKeys } from "./jira.keys"
@@ -99,6 +105,50 @@ export function useIssueWorklogs(issueKey: string): UseQueryResult<JiraWorklogLi
     enabled: !!issueKey,
     retry: 1,
     staleTime: 30 * 1000, // 30 seconds
+  })
+}
+
+/**
+ * Hook to fetch worklogs for the current user within a date range
+ * Requires valid JIRA configuration
+ */
+export function useUserWorklogsByDateRange(
+  startDate: string,
+  endDate: string
+): UseQueryResult<UserWorklogsResponse, Error> {
+  return useQuery({
+    queryKey: jiraKeys.userWorklogs(startDate, endDate),
+    queryFn: async () => {
+      const config = await configService.get()
+      if (!config) throw new Error("JIRA configuration missing")
+      const client = createJiraClient(config)
+      return client.getUserWorklogsByDateRange(startDate, endDate)
+    },
+    enabled: !!startDate && !!endDate,
+    retry: 1,
+    staleTime: 1 * 60 * 1000, // 1 minute
+  })
+}
+
+/**
+ * Hook to fetch worklogs for today
+ * Convenience wrapper around useUserWorklogsByDateRange
+ * Includes periodic refresh every minute
+ */
+export function useTodaysWorklogs(): UseQueryResult<UserWorklogsResponse, Error> {
+  const today = format(new Date(), "yyyy-MM-dd")
+  return useQuery({
+    queryKey: jiraKeys.userWorklogs(today, today),
+    queryFn: async () => {
+      const config = await configService.get()
+      if (!config) throw new Error("JIRA configuration missing")
+      const client = createJiraClient(config)
+      return client.getUserWorklogsByDateRange(today, today)
+    },
+    enabled: true,
+    retry: 1,
+    staleTime: 30 * 1000, // 30 seconds
+    refetchInterval: 60 * 1000, // Refetch every 1 minute
   })
 }
 

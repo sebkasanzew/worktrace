@@ -3,7 +3,7 @@ use time::format_description::{self, well_known::Rfc3339};
 use time::OffsetDateTime;
 
 use super::types::*;
-use super::requests::create_client_request;
+use super::requests::{create_client_request, RequestConfig};
 
 #[tauri::command]
 #[specta::specta]
@@ -17,32 +17,28 @@ pub fn jira_api_request(
 ) -> Result<JiraSearchResponse, String> {
     log::info!(target: "jira", "Making JIRA API request");
     
-    let version = api_version.unwrap_or_else(|| "3".to_string());
-    let auth = auth_type.unwrap_or_else(|| "Basic".to_string());
+    let config = RequestConfig {
+        url: &url,
+        api_version: api_version.as_deref().unwrap_or("3"),
+        username: &username,
+        password: &password,
+        auth_type: auth_type.as_deref().unwrap_or("Basic"),
+    };
 
     // JIRA Cloud (v3) removed the 'search' endpoint in favor of 'search/jql'
     // JIRA Server/DC (v2) still uses 'search'
-    let path = if version == "3" { "search/jql" } else { "search" };
+    let path = if config.api_version == "3" { "search/jql" } else { "search" };
 
     let client = reqwest::blocking::Client::new();
     
-    let response = create_client_request(
-        &client, 
-        reqwest::Method::POST, 
-        &url, 
-        &version, 
-        path, 
-        &username, 
-        &password, 
-        &auth
-    )
-    .json(&json!({
-        "jql": jql,
-        "fields": ["summary", "status", "assignee", "updated", "created", "key", "subtasks", "issuetype"],
-        "maxResults": 50
-    }))
-    .send()
-    .map_err(|e| format!("Request failed: {}", e))?;
+    let response = create_client_request(&client, reqwest::Method::POST, &config, path)
+        .json(&json!({
+            "jql": jql,
+            "fields": ["summary", "status", "assignee", "updated", "created", "key", "subtasks", "issuetype"],
+            "maxResults": 50
+        }))
+        .send()
+        .map_err(|e| format!("Request failed: {}", e))?;
 
     if !response.status().is_success() {
         let status = response.status();
@@ -149,7 +145,7 @@ pub fn jira_api_request(
         .collect();
 
     // Handle response differences between v2 (Server/DC) and v3 (Cloud)
-    let (total, is_last) = if version == "3" {
+    let (total, is_last) = if config.api_version == "3" {
         // v3 search/jql: returns isLast, no total
         (
             issues.len() as u64,

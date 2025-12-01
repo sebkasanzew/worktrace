@@ -49,26 +49,14 @@ export const commands = {
     }
   },
   async jiraAddWorklog(
-    url: string,
-    username: string,
-    password: string,
+    connection: JiraConnection,
     issueKey: string,
-    payload: WorklogPayload,
-    apiVersion: string | null,
-    authType: string | null
+    payload: WorklogPayload
   ): Promise<Result<WorklogResponse, string>> {
     try {
       return {
         status: "ok",
-        data: await TAURI_INVOKE("jira_add_worklog", {
-          url,
-          username,
-          password,
-          issueKey,
-          payload,
-          apiVersion,
-          authType,
-        }),
+        data: await TAURI_INVOKE("jira_add_worklog", { connection, issueKey, payload }),
       }
     } catch (e) {
       if (e instanceof Error) throw e
@@ -76,27 +64,19 @@ export const commands = {
     }
   },
   async jiraUpdateWorklog(
-    url: string,
-    username: string,
-    password: string,
+    connection: JiraConnection,
     issueKey: string,
     worklogId: string,
-    payload: WorklogPayload,
-    apiVersion: string | null,
-    authType: string | null
+    payload: WorklogPayload
   ): Promise<Result<WorklogResponse, string>> {
     try {
       return {
         status: "ok",
         data: await TAURI_INVOKE("jira_update_worklog", {
-          url,
-          username,
-          password,
+          connection,
           issueKey,
           worklogId,
           payload,
-          apiVersion,
-          authType,
         }),
       }
     } catch (e) {
@@ -105,26 +85,14 @@ export const commands = {
     }
   },
   async jiraDeleteWorklog(
-    url: string,
-    username: string,
-    password: string,
+    connection: JiraConnection,
     issueKey: string,
-    worklogId: string,
-    apiVersion: string | null,
-    authType: string | null
+    worklogId: string
   ): Promise<Result<null, string>> {
     try {
       return {
         status: "ok",
-        data: await TAURI_INVOKE("jira_delete_worklog", {
-          url,
-          username,
-          password,
-          issueKey,
-          worklogId,
-          apiVersion,
-          authType,
-        }),
+        data: await TAURI_INVOKE("jira_delete_worklog", { connection, issueKey, worklogId }),
       }
     } catch (e) {
       if (e instanceof Error) throw e
@@ -132,23 +100,35 @@ export const commands = {
     }
   },
   async jiraGetWorklogs(
-    url: string,
-    username: string,
-    password: string,
-    issueKey: string,
-    apiVersion: string | null,
-    authType: string | null
+    connection: JiraConnection,
+    issueKey: string
   ): Promise<Result<JiraWorklogListResponse, string>> {
     try {
       return {
         status: "ok",
-        data: await TAURI_INVOKE("jira_get_worklogs", {
-          url,
-          username,
-          password,
-          issueKey,
-          apiVersion,
-          authType,
+        data: await TAURI_INVOKE("jira_get_worklogs", { connection, issueKey }),
+      }
+    } catch (e) {
+      if (e instanceof Error) throw e
+      else return { status: "error", error: e as any }
+    }
+  },
+  /**
+   * Get all worklogs for the current user within a date range
+   * Uses JQL to find issues with worklogs in the date range, then fetches and filters worklogs
+   */
+  async jiraGetUserWorklogsByDateRange(
+    connection: JiraConnection,
+    startDate: string,
+    endDate: string
+  ): Promise<Result<UserWorklogsResponse, string>> {
+    try {
+      return {
+        status: "ok",
+        data: await TAURI_INVOKE("jira_get_user_worklogs_by_date_range", {
+          connection,
+          startDate,
+          endDate,
         }),
       }
     } catch (e) {
@@ -231,6 +211,16 @@ export type GeneralSettings = {
  * JIRA issue assignee
  */
 export type JiraAssignee = { displayName: string; emailAddress: string }
+/**
+ * JIRA connection parameters for API calls
+ */
+export type JiraConnection = {
+  url: string
+  username: string
+  password: string
+  apiVersion?: string
+  authType?: string
+}
 /**
  * JIRA issue fields
  */
@@ -321,6 +311,19 @@ export type JiraWorklogListResponse = {
   total: number
   maxResults: number
   startAt: number
+}
+/**
+ * User worklog entry with issue context
+ */
+export type UserWorklogEntry = { issueKey: string; issueSummary: string; worklog: JiraWorklog }
+/**
+ * Response for user worklogs by date range
+ */
+export type UserWorklogsResponse = {
+  entries: UserWorklogEntry[]
+  startDate: string
+  endDate: string
+  totalTimeSeconds: number
 }
 /**
  * Worklog payload for creating a worklog in JIRA

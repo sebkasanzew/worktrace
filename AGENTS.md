@@ -19,6 +19,7 @@ Be extremely concise. Sacrifice grammar for the sake of concision.
 - **Lint/Format**: `pnpm lint:fix` (Biome), `pnpm format`
 - **Type Check**: `pnpm typecheck` (TypeScript)
 - **Gen Schemas**: `pnpm gen:zod:bindings` (Sync Rust types to Zod)
+- **Add UI Component**: `pnpm ui:add <component-name>` (shadcn/ui)
 
 ## Project Knowledge
 - **Tech Stack**:
@@ -32,7 +33,8 @@ Be extremely concise. Sacrifice grammar for the sake of concision.
   - `src-tauri/` - Backend source (Rust, Tauri config)
   - `e2e/` - Playwright end-to-end tests
   - `scripts/` - Build and maintenance scripts
-  - `src/types/bindings.ts` - Auto-generated Rust types (READ ONLY)
+  - `src/types/bindings.ts` - Auto-generated Rust types (DO NOT EDIT)
+  - `src/types/bindings.zod.ts` - Auto-generated Zod schemas (DO NOT EDIT)
 
 ## Boundaries
 - ✅ **Always**:
@@ -50,7 +52,7 @@ Be extremely concise. Sacrifice grammar for the sake of concision.
   - Commit secrets or API tokens.
   - Use `console.log` (use `@tauri-apps/plugin-log`).
   - Use destructive git commands (`reset --hard`, `rm`) without explicit instruction.
-  - Edit `src/types/bindings.ts` manually (generated file).
+  - Edit `src/types/bindings.ts` or `src/types/bindings.zod.ts` manually (auto-generated files). To add new types, define them in `src-tauri/src/jira/types.rs`, register commands in `src-tauri/src/bindings.rs`, then run `pnpm dev` to regenerate.
 
 ## Git Workflow
 - **Atomic Commits**: Commit only files you modified.
@@ -126,7 +128,7 @@ Be extremely concise. Sacrifice grammar for the sake of concision.
 - **Design for Flexibility**: Avoid fixed widths/heights. Use `min-w`, `max-w`, `h-auto` to accommodate varying text lengths (e.g., German is often 30% longer).
 - **Enable Text Wrapping**: Use `whitespace-normal` and `break-words` for buttons and labels that might expand.
 - **Concise Translations**: Prefer shorter, punchier translations over literal ones to save space.
-- **Natural Keys**: Use English text as keys in `t()` calls for readability.
+- **Natural Keys**: Use English text as keys in `t()` calls for readability (e.g., `t("Save Changes")` instead of `t("saveChanges")`).
 
 ### State Management
 

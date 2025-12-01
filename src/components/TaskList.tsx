@@ -1,7 +1,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { info, info as logInfo } from "@tauri-apps/plugin-log"
 import { openUrl } from "@tauri-apps/plugin-opener"
+import { format } from "date-fns"
 import {
+  Calendar as CalendarIcon,
   ChevronDown,
   ExternalLink,
   LogOut,
@@ -14,12 +16,15 @@ import {
 import { useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { CustomIssuesDialog } from "@/components/CustomIssuesDialog"
+import { TodayTimeIndicator } from "@/components/TodayTimeIndicator"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ViewHeader } from "@/components/ViewHeader"
+import { WorklogCalendar } from "@/components/WorklogCalendar"
 import { WorklogDialog } from "@/components/WorklogDialog"
 import { WorklogHistory } from "@/components/WorklogHistory"
 import { formatDuration } from "@/lib/utils"
@@ -46,6 +51,7 @@ export function TaskList({
   const { t } = useTranslation()
   const [expandedIssue, setExpandedIssue] = useState<string | null>(null)
   const [customIssuesDialogOpen, setCustomIssuesDialogOpen] = useState(false)
+  const [calendarOpen, setCalendarOpen] = useState(false)
   const [filters, setFilters] = useState({ assigned: true, custom: false })
   const customIssuesChangedRef = useRef(false)
   const queryClient = useQueryClient()
@@ -264,9 +270,20 @@ export function TaskList({
                   </PopoverContent>
                 </Popover>
               </div>
-              <Button variant="outline" size="sm" onClick={() => setCustomIssuesDialogOpen(true)}>
-                {t("More issues")}
-              </Button>
+              <div className="flex items-center gap-2">
+                <TodayTimeIndicator />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCalendarOpen(true)}
+                  aria-label={t("Worklog Calendar")}
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setCustomIssuesDialogOpen(true)}>
+                  {t("More issues")}
+                </Button>
+              </div>
             </div>
             <div className="space-y-4">
               {displayedIssues.map((issue) => (
@@ -441,6 +458,9 @@ export function TaskList({
                 refetch()
                 // Invalidate worklogs for this issue
                 queryClient.invalidateQueries({ queryKey: jiraKeys.issueWorklogs(activeIssueKey) })
+                // Invalidate today's worklogs to update the indicator
+                const today = format(new Date(), "yyyy-MM-dd")
+                queryClient.invalidateQueries({ queryKey: jiraKeys.userWorklogs(today, today) })
               },
             }
           )
@@ -451,6 +471,11 @@ export function TaskList({
         onOpenChange={handleCustomIssuesOpenChange}
         onIssuesChanged={handleIssuesChanged}
       />
+      <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
+        <DialogContent className="max-w-4xl h-[80vh] overflow-y-auto">
+          <WorklogCalendar />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
