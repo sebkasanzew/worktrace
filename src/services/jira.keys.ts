@@ -11,4 +11,6 @@ export const jiraKeys = {
   issuesByJql: (jql: string) => [...jiraKeys.issues(), "jql", jql] as const,
   worklogs: () => [...jiraKeys.all, "worklogs"] as const,
   issueWorklogs: (issueKey: string) => [...jiraKeys.worklogs(), issueKey] as const,
+  userWorklogs: (startDate: string, endDate: string) =>
+    [...jiraKeys.worklogs(), "user", startDate, endDate] as const,
 }

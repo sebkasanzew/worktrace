@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core"
 import { debug, info, error as logError } from "@tauri-apps/plugin-log"
 import { z } from "zod"
 import { redactSensitive, safeStringify } from "@/lib/utils"
+import type { UserWorklogsResponse, WorklogPayload, WorklogResponse } from "@/types/bindings"
 import {
   commands,
   type JiraSearchResponse,
@@ -13,8 +14,8 @@ import {
   jiraSearchResponseSchema,
   jiraUserSessionSchema,
   jiraWorklogListResponseSchema,
+  userWorklogsResponseSchema,
 } from "@/types/bindings.zod"
-import type { WorklogPayload, WorklogResponse } from "@/types/jira"
 
 /**
  * Validates that JIRA config has all required fields
@@ -156,13 +157,15 @@ export function createJiraClient(config: JiraSettings) {
       const schema = z.object({ id: z.string() })
       try {
         const result = await invoke("jira_add_worklog", {
-          url: normalizedUrl,
-          username,
-          password,
+          connection: {
+            url: normalizedUrl,
+            username,
+            password,
+            apiVersion: apiVersion ?? "3",
+            authType: authType ?? "Basic",
+          },
           issueKey,
           payload,
-          apiVersion: apiVersion ?? null,
-          authType: authType ?? null,
         })
         const validated = schema.parse(result)
         debug(`[JIRA Client] Worklog created: ${validated.id}`)
@@ -181,12 +184,14 @@ export function createJiraClient(config: JiraSettings) {
 
       try {
         const data = await invoke<JiraWorklogListResponse>("jira_get_worklogs", {
-          url: normalizedUrl,
-          username,
-          password,
+          connection: {
+            url: normalizedUrl,
+            username,
+            password,
+            apiVersion: apiVersion ?? "3",
+            authType: authType ?? "Basic",
+          },
           issueKey,
-          apiVersion: apiVersion ?? null,
-          authType: authType ?? null,
         })
 
         // Validate response with Zod
@@ -196,6 +201,41 @@ export function createJiraClient(config: JiraSettings) {
         return validated
       } catch (error) {
         logError(`[JIRA Client] Failed to get worklogs: ${redactSensitive(String(error))}`)
+        throw mapJiraError(error, config)
+      }
+    },
+
+    /**
+     * Gets worklogs for the current user within a date range
+     */
+    async getUserWorklogsByDateRange(
+      startDate: string,
+      endDate: string
+    ): Promise<UserWorklogsResponse> {
+      info(`[JIRA Client] Fetching user worklogs from ${startDate} to ${endDate}`)
+
+      try {
+        const data = await invoke<UserWorklogsResponse>("jira_get_user_worklogs_by_date_range", {
+          connection: {
+            url: normalizedUrl,
+            username,
+            password,
+            apiVersion: apiVersion ?? "3",
+            authType: authType ?? "Basic",
+          },
+          startDate,
+          endDate,
+        })
+
+        // Validate response with Zod
+        const validated = userWorklogsResponseSchema.parse(data)
+        debug(
+          `[JIRA Client] Found ${validated.entries.length} worklogs totaling ${validated.totalTimeSeconds}s`
+        )
+
+        return validated
+      } catch (error) {
+        logError(`[JIRA Client] Failed to get user worklogs: ${redactSensitive(String(error))}`)
         throw mapJiraError(error, config)
       }
     },
@@ -213,14 +253,16 @@ export function createJiraClient(config: JiraSettings) {
       const schema = z.object({ id: z.string() })
       try {
         const result = await invoke("jira_update_worklog", {
-          url: normalizedUrl,
-          username,
-          password,
+          connection: {
+            url: normalizedUrl,
+            username,
+            password,
+            apiVersion: apiVersion ?? "3",
+            authType: authType ?? "Basic",
+          },
           issueKey,
           worklogId,
           payload,
-          apiVersion: apiVersion ?? null,
-          authType: authType ?? null,
         })
         const validated = schema.parse(result)
         debug(`[JIRA Client] Worklog updated: ${validated.id}`)
@@ -239,13 +281,15 @@ export function createJiraClient(config: JiraSettings) {
 
       try {
         await invoke("jira_delete_worklog", {
-          url: normalizedUrl,
-          username,
-          password,
+          connection: {
+            url: normalizedUrl,
+            username,
+            password,
+            apiVersion: apiVersion ?? "3",
+            authType: authType ?? "Basic",
+          },
           issueKey,
           worklogId,
-          apiVersion: apiVersion ?? null,
-          authType: authType ?? null,
         })
         debug(`[JIRA Client] Worklog deleted: ${worklogId}`)
       } catch (error) {

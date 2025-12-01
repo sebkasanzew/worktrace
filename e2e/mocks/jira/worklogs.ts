@@ -1,5 +1,5 @@
 import type { Page } from "@playwright/test"
-import type { JiraWorklog, JiraWorklogListResponse } from "@/types/bindings"
+import type { JiraWorklog, JiraWorklogListResponse, UserWorklogsResponse } from "@/types/bindings"
 
 /**
  * Generate mock worklog data
@@ -57,6 +57,40 @@ export function getDefaultMockWorklogList(): JiraWorklogListResponse {
     total: worklogs.length,
     maxResults: 100,
     startAt: 0,
+  }
+}
+
+/**
+ * Generate mock user worklogs response for today's worklogs
+ * Used by jira_get_user_worklogs_by_date_range command
+ */
+export function getDefaultMockUserWorklogs(): UserWorklogsResponse {
+  const today = new Date().toISOString().split("T")[0]
+  return {
+    entries: [
+      {
+        issueKey: "TEST-1",
+        issueSummary: "Test Issue 1",
+        worklog: {
+          id: "10001",
+          author: {
+            displayName: "Test User",
+            emailAddress: "test@example.com",
+            avatarUrls: null,
+          },
+          updateAuthor: null,
+          comment: "Working on feature",
+          created: new Date().toISOString(),
+          updated: new Date().toISOString(),
+          started: new Date().toISOString(),
+          timeSpent: "2h",
+          timeSpentSeconds: 7200,
+        },
+      },
+    ],
+    startDate: today,
+    endDate: today,
+    totalTimeSeconds: 7200,
   }
 }
 

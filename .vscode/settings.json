@@ -19,13 +19,18 @@
     },
     "cSpell.words": [
         "cdylib",
+        "daygrid",
+        "fullcalendar",
         "jira",
+        "languagedetector",
         "rlib",
         "serde",
         "specta",
         "staticlib",
         "tauri",
         "worklog",
+        "worklogs",
+        "Worklogs",
         "worktrace"
     ],
     "editor.codeActionsOnSave": {

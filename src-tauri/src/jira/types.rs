@@ -133,6 +133,19 @@ pub struct AppSettings {
     pub jira: Option<JiraSettings>,
 }
 
+/// JIRA connection parameters for API calls
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct JiraConnection {
+    pub url: String,
+    pub username: String,
+    pub password: String,
+    #[serde(default = "default_api_version")]
+    pub api_version: String,
+    #[serde(default = "default_auth_type")]
+    pub auth_type: String,
+}
+
 /// Worklog payload for creating a worklog in JIRA
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -190,4 +203,23 @@ pub struct JiraWorklogListResponse {
     pub total: u64,
     pub max_results: u64,
     pub start_at: u64,
+}
+
+/// User worklog entry with issue context
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct UserWorklogEntry {
+    pub issue_key: String,
+    pub issue_summary: String,
+    pub worklog: JiraWorklog,
+}
+
+/// Response for user worklogs by date range
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct UserWorklogsResponse {
+    pub entries: Vec<UserWorklogEntry>,
+    pub start_date: String,
+    pub end_date: String,
+    pub total_time_seconds: u64,
 }

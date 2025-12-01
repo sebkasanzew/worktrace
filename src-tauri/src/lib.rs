@@ -128,6 +128,7 @@ pub fn run() {
             jira_update_worklog,
             jira_delete_worklog,
             jira_get_worklogs,
+            jira_get_user_worklogs_by_date_range,
             set_mini_mode,
             check_update,
             install_update
