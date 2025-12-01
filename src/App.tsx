@@ -2,8 +2,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { invoke } from "@tauri-apps/api/core"
 import { error as logError } from "@tauri-apps/plugin-log"
 import { useCallback, useEffect, useState } from "react"
+import { ErrorBoundary } from "react-error-boundary"
 import { useTranslation } from "react-i18next"
 import { AppMenu } from "@/components/AppMenu"
+import { ErrorFallback } from "@/components/ErrorFallback"
 import { Login } from "@/components/Login"
 import { MinimalView } from "@/components/MinimalView"
 import { Settings } from "@/components/Settings"
@@ -101,9 +103,11 @@ function AppContent() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppContent />
-    </QueryClientProvider>
+    <ErrorBoundary FallbackComponent={ErrorFallback}>
+      <QueryClientProvider client={queryClient}>
+        <AppContent />
+      </QueryClientProvider>
+    </ErrorBoundary>
   )
 }
 
