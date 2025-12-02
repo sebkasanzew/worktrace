@@ -53,12 +53,12 @@ function CustomToolbar({ label, onNavigate }: ToolbarProps<WorklogEvent, object>
   const { t } = useTranslation()
 
   return (
-    <div className="rbc-toolbar">
-      <span className="rbc-btn-group">
+    <div className="rbc-toolbar flex items-center justify-between gap-2">
+      <div className="flex items-center">
         <Button
           variant="outline"
           size="sm"
-          className="inline-flex!"
+          className="flex! rounded-r-none! border-r-0! m-0!"
           onClick={() => onNavigate("TODAY")}
         >
           {t("Today")}
@@ -66,7 +66,7 @@ function CustomToolbar({ label, onNavigate }: ToolbarProps<WorklogEvent, object>
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8 inline-flex! px-0! py-0!"
+          className="h-8 w-8 flex! rounded-none! border-r-0! px-0! py-0!"
           onClick={() => onNavigate("PREV")}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -74,12 +74,12 @@ function CustomToolbar({ label, onNavigate }: ToolbarProps<WorklogEvent, object>
         <Button
           variant="outline"
           size="icon"
-          className="h-8 w-8 inline-flex! px-0! py-0!"
+          className="h-8 w-8 flex! rounded-l-none! px-0! py-0!"
           onClick={() => onNavigate("NEXT")}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
-      </span>
+      </div>
       <span className="rbc-toolbar-label">{label}</span>
     </div>
   )
@@ -224,97 +224,9 @@ export function WorklogCalendar({ onClose }: { onClose: () => void }) {
                 {error.message}
               </div>
             )}
-            <style>{`
-            .rbc-calendar {
-              font-family: inherit;
-            }
-            .rbc-toolbar {
-              margin-bottom: 1rem;
-              flex-wrap: nowrap;
-            }
-            .rbc-toolbar button {
-              color: hsl(var(--foreground));
-              border-color: hsl(var(--border));
-              background: transparent;
-              border-radius: var(--radius);
-              font-size: 0.875rem;
-            }
-            .rbc-toolbar button:hover {
-              background: hsl(var(--accent));
-              color: hsl(var(--accent-foreground));
-              border-color: hsl(var(--border));
-            }
-            .rbc-toolbar button:active,
-            .rbc-toolbar button.rbc-active {
-              background: hsl(var(--accent));
-              color: hsl(var(--accent-foreground));
-              border-color: hsl(var(--border));
-              box-shadow: none;
-            }
-            .rbc-toolbar-label {
-              font-weight: 600;
-              font-size: 1.25rem;
-            }
-            .rbc-header {
-              padding: 8px 0;
-              font-weight: 500;
-              color: hsl(var(--muted-foreground));
-              text-transform: uppercase;
-              font-size: 0.75rem;
-              letter-spacing: 0.05em;
-            }
-            .rbc-day-bg {
-              transition: background-color 0.2s;
-              cursor: pointer;
-            }
-            .rbc-day-bg:hover {
-              background-color: hsl(var(--accent) / 0.5);
-            }
-            .rbc-off-range-bg {
-              background: hsl(var(--muted) / 0.3);
-            }
-            .rbc-off-range {
-              color: hsl(var(--muted-foreground) / 0.4);
-            }
-            .rbc-off-range > a {
-              color: hsl(var(--muted-foreground) / 0.4) !important;
-            }
-            .rbc-today {
-              background-color: hsl(var(--accent) / 0.3);
-            }
-            .rbc-date-cell {
-              padding: 8px;
-              text-align: left;
-              cursor: pointer;
-            }
-            .rbc-date-cell > a {
-              font-size: 0.875rem;
-              font-weight: 500;
-              color: hsl(var(--muted-foreground));
-            }
-            .rbc-now > a {
-              color: hsl(var(--foreground));
-            }
-            .rbc-row-segment {
-              padding: 0 8px 4px 8px;
-            }
-            .rbc-row-bg {
-              right: 0;
-            }
-            .rbc-event {
-              padding: 2px 6px !important;
-            }
-            .rbc-show-more {
-              color: hsl(var(--primary));
-              font-size: 0.75rem;
-            }
-            /* Hide week/day/agenda buttons - only month view */
-            .rbc-btn-group:last-child {
-              display: none;
-            }
-          `}</style>
+
             <Calendar
-              className="[&_.rbc-header]:border-b-muted-foreground/30! [&_.rbc-header]:border-b! [&_.rbc-header+.rbc-header]:border-l-muted-foreground/30! [&_.rbc-header+.rbc-header]:border-l! [&_.rbc-month-view]:border-muted-foreground/30! [&_.rbc-month-view]:border! [&_.rbc-month-view]:rounded-md! [&_.rbc-month-view]:overflow-hidden! [&_.rbc-day-bg+.rbc-day-bg]:border-l-muted-foreground/30! [&_.rbc-day-bg+.rbc-day-bg]:border-l! [&_.rbc-month-row+.rbc-month-row]:border-t-muted-foreground/30! [&_.rbc-month-row+.rbc-month-row]:border-t!"
+              className="font-[inherit]! [&_.rbc-toolbar]:mb-4! [&_.rbc-toolbar]:flex-nowrap! [&_.rbc-toolbar_button]:text-foreground! [&_.rbc-toolbar_button]:border-border! [&_.rbc-toolbar_button]:bg-transparent! [&_.rbc-toolbar_button]:text-sm! [&_.rbc-toolbar_button:hover]:bg-accent! [&_.rbc-toolbar_button:hover]:text-accent-foreground! [&_.rbc-toolbar_button:hover]:border-border! [&_.rbc-toolbar_button:active]:bg-accent! [&_.rbc-toolbar_button:active]:text-accent-foreground! [&_.rbc-toolbar_button:active]:border-border! [&_.rbc-toolbar_button:active]:shadow-none! [&_.rbc-toolbar_button.rbc-active]:bg-accent! [&_.rbc-toolbar_button.rbc-active]:text-accent-foreground! [&_.rbc-toolbar_button.rbc-active]:border-border! [&_.rbc-toolbar_button.rbc-active]:shadow-none! [&_.rbc-toolbar-label]:font-semibold! [&_.rbc-toolbar-label]:text-xl! [&_.rbc-header]:py-2! [&_.rbc-header]:font-medium! [&_.rbc-header]:text-muted-foreground! [&_.rbc-header]:uppercase! [&_.rbc-header]:text-xs! [&_.rbc-header]:tracking-wider! [&_.rbc-day-bg]:transition-colors! [&_.rbc-day-bg]:duration-200! [&_.rbc-day-bg]:cursor-pointer! [&_.rbc-day-bg:hover]:bg-accent/50! [&_.rbc-off-range-bg]:bg-muted/30! [&_.rbc-off-range]:text-muted-foreground/40! [&_.rbc-off-range_>_a]:text-muted-foreground/40! [&_.rbc-today]:bg-accent/30! [&_.rbc-date-cell]:p-2! [&_.rbc-date-cell]:text-left! [&_.rbc-date-cell]:cursor-pointer! [&_.rbc-date-cell_>_a]:text-sm! [&_.rbc-date-cell_>_a]:font-medium! [&_.rbc-date-cell_>_a]:text-muted-foreground! [&_.rbc-now_>_a]:text-foreground! [&_.rbc-row-segment]:px-2! [&_.rbc-row-segment]:pb-1! [&_.rbc-row-bg]:right-0! [&_.rbc-event]:px-1.5! [&_.rbc-event]:py-0.5! [&_.rbc-show-more]:text-primary! [&_.rbc-show-more]:text-xs! [&_.rbc-btn-group:last-child]:hidden! [&_.rbc-header]:border-b-muted-foreground/30! [&_.rbc-header]:border-b! [&_.rbc-header+.rbc-header]:border-l-muted-foreground/30! [&_.rbc-header+.rbc-header]:border-l! [&_.rbc-month-view]:border-muted-foreground/30! [&_.rbc-month-view]:border! [&_.rbc-month-view]:rounded-md! [&_.rbc-month-view]:overflow-hidden! [&_.rbc-day-bg+.rbc-day-bg]:border-l-muted-foreground/30! [&_.rbc-day-bg+.rbc-day-bg]:border-l! [&_.rbc-month-row+.rbc-month-row]:border-t-muted-foreground/30! [&_.rbc-month-row+.rbc-month-row]:border-t!"
               localizer={localizer}
               culture={culture}
               events={events}
