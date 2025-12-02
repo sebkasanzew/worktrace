@@ -1,14 +1,27 @@
-import { format, getDay, parse, startOfWeek } from "date-fns"
+import {
+  differenceInCalendarWeeks,
+  endOfMonth,
+  endOfWeek,
+  format,
+  getDay,
+  parse,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns"
 import { de, enUS } from "date-fns/locale"
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { useCallback, useMemo, useState } from "react"
+import type { ToolbarProps } from "react-big-calendar"
 import { Calendar, dateFnsLocalizer, type View } from "react-big-calendar"
 import { useTranslation } from "react-i18next"
 import "react-big-calendar/lib/css/react-big-calendar.css"
+import { ViewHeader } from "@/components/ViewHeader"
 import { cn } from "@/lib/utils"
 import { useUserWorklogsByDateRange } from "@/services/jira.hooks"
 import type { UserWorklogEntry } from "@/types/bindings"
 import { DayWorklogsDialog } from "./DayWorklogsDialog"
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import { Button } from "./ui/button"
+import { Card, CardContent } from "./ui/card"
 
 const locales = {
   "en-US": enUS,
@@ -36,7 +49,43 @@ interface WorklogEvent {
   }
 }
 
-export function WorklogCalendar() {
+function CustomToolbar({ label, onNavigate }: ToolbarProps<WorklogEvent, object>) {
+  const { t } = useTranslation()
+
+  return (
+    <div className="rbc-toolbar">
+      <span className="rbc-btn-group">
+        <Button
+          variant="outline"
+          size="sm"
+          className="inline-flex!"
+          onClick={() => onNavigate("TODAY")}
+        >
+          {t("Today")}
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 inline-flex! px-0! py-0!"
+          onClick={() => onNavigate("PREV")}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 inline-flex! px-0! py-0!"
+          onClick={() => onNavigate("NEXT")}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </span>
+      <span className="rbc-toolbar-label">{label}</span>
+    </div>
+  )
+}
+
+export function WorklogCalendar({ onClose }: { onClose: () => void }) {
   const { t, i18n } = useTranslation()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
@@ -57,7 +106,7 @@ export function WorklogCalendar() {
     }
   }, [currentDate])
 
-  const { data } = useUserWorklogsByDateRange(dateRange.start, dateRange.end)
+  const { data, isLoading, error } = useUserWorklogsByDateRange(dateRange.start, dateRange.end)
 
   // Group worklogs by date and convert to events
   const events = useMemo<WorklogEvent[]>(() => {
@@ -131,17 +180,51 @@ export function WorklogCalendar() {
     }
   }, [])
 
+  const components = useMemo(
+    () => ({
+      toolbar: CustomToolbar,
+      month: {
+        dateHeader: ({ label }: { label: string }) => (
+          <div className="flex items-center gap-1">
+            <span>{label}</span>
+            {isLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+          </div>
+        ),
+      },
+    }),
+    [isLoading]
+  )
+
   // Get current locale
   const culture = i18n.language.startsWith("de") ? "de" : "en-US"
 
+  // Calculate the height based on the number of weeks displayed
+  const calendarHeight = useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 1 })
+    const end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 1 })
+    const weeks = differenceInCalendarWeeks(end, start, { weekStartsOn: 1 }) + 1
+    return weeks > 5 ? 500 : 420
+  }, [currentDate])
+
   return (
-    <>
-      <Card className="h-full border-0 shadow-none">
-        <CardHeader className="p-4">
-          <CardTitle>{t("Worklog Calendar")}</CardTitle>
-        </CardHeader>
-        <CardContent className="px-4 pb-4">
-          <style>{`
+    <div className="min-h-screen bg-background">
+      <ViewHeader
+        title={t("Worklog Calendar")}
+        actions={
+          <Button variant="outline" size="sm" onClick={onClose}>
+            {t("Close")}
+          </Button>
+        }
+      />
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        <Card>
+          <CardContent className="p-6">
+            {error && (
+              <div className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {error.message}
+              </div>
+            )}
+            <style>{`
             .rbc-calendar {
               font-family: inherit;
             }
@@ -155,7 +238,6 @@ export function WorklogCalendar() {
               background: transparent;
               border-radius: var(--radius);
               font-size: 0.875rem;
-              padding: 0.5rem 1rem;
             }
             .rbc-toolbar button:hover {
               background: hsl(var(--accent));
@@ -174,18 +256,12 @@ export function WorklogCalendar() {
               font-size: 1.25rem;
             }
             .rbc-header {
-              padding: 12px 0;
+              padding: 8px 0;
               font-weight: 500;
               color: hsl(var(--muted-foreground));
               text-transform: uppercase;
               font-size: 0.75rem;
               letter-spacing: 0.05em;
-              border-color: hsl(var(--border));
-            }
-            .rbc-month-view {
-              border-color: hsl(var(--border));
-              border-radius: var(--radius);
-              overflow: hidden;
             }
             .rbc-day-bg {
               transition: background-color 0.2s;
@@ -194,14 +270,14 @@ export function WorklogCalendar() {
             .rbc-day-bg:hover {
               background-color: hsl(var(--accent) / 0.5);
             }
-            .rbc-day-bg + .rbc-day-bg {
-              border-color: hsl(var(--border));
-            }
-            .rbc-month-row + .rbc-month-row {
-              border-color: hsl(var(--border));
-            }
             .rbc-off-range-bg {
               background: hsl(var(--muted) / 0.3);
+            }
+            .rbc-off-range {
+              color: hsl(var(--muted-foreground) / 0.4);
+            }
+            .rbc-off-range > a {
+              color: hsl(var(--muted-foreground) / 0.4) !important;
             }
             .rbc-today {
               background-color: hsl(var(--accent) / 0.3);
@@ -222,6 +298,9 @@ export function WorklogCalendar() {
             .rbc-row-segment {
               padding: 0 8px 4px 8px;
             }
+            .rbc-row-bg {
+              right: 0;
+            }
             .rbc-event {
               padding: 2px 6px !important;
             }
@@ -234,32 +313,30 @@ export function WorklogCalendar() {
               display: none;
             }
           `}</style>
-          <Calendar
-            localizer={localizer}
-            culture={culture}
-            events={events}
-            date={currentDate}
-            onNavigate={handleNavigate}
-            view="month"
-            views={["month"] as View[]}
-            onSelectSlot={handleSelectSlot}
-            onSelectEvent={handleSelectEvent}
-            selectable
-            eventPropGetter={eventPropGetter}
-            dayPropGetter={dayPropGetter}
-            style={{ height: 500 }}
-            messages={{
-              today: t("Today"),
-              previous: "←",
-              next: "→",
-            }}
-          />
-        </CardContent>
-      </Card>
+            <Calendar
+              className="[&_.rbc-header]:border-b-muted-foreground/30! [&_.rbc-header]:border-b! [&_.rbc-header+.rbc-header]:border-l-muted-foreground/30! [&_.rbc-header+.rbc-header]:border-l! [&_.rbc-month-view]:border-muted-foreground/30! [&_.rbc-month-view]:border! [&_.rbc-month-view]:rounded-md! [&_.rbc-month-view]:overflow-hidden! [&_.rbc-day-bg+.rbc-day-bg]:border-l-muted-foreground/30! [&_.rbc-day-bg+.rbc-day-bg]:border-l! [&_.rbc-month-row+.rbc-month-row]:border-t-muted-foreground/30! [&_.rbc-month-row+.rbc-month-row]:border-t!"
+              localizer={localizer}
+              culture={culture}
+              events={events}
+              date={currentDate}
+              onNavigate={handleNavigate}
+              view="month"
+              views={["month"] as View[]}
+              onSelectSlot={handleSelectSlot}
+              onSelectEvent={handleSelectEvent}
+              selectable
+              eventPropGetter={eventPropGetter}
+              dayPropGetter={dayPropGetter}
+              components={components}
+              style={{ height: calendarHeight }}
+            />
+          </CardContent>
+        </Card>
+      </div>
 
       {selectedDate && (
         <DayWorklogsDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} date={selectedDate} />
       )}
-    </>
+    </div>
   )
 }

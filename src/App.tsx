@@ -11,6 +11,7 @@ import { MinimalView } from "@/components/MinimalView"
 import { Settings } from "@/components/Settings"
 import { TaskList } from "@/components/TaskList"
 import { UpdateChecker } from "@/components/UpdateChecker"
+import { WorklogCalendar } from "@/components/WorklogCalendar"
 import { useTheme } from "@/hooks/useTheme"
 import { safeStringify } from "@/lib/utils"
 import { useLoginStatus } from "@/services/auth.hooks"
@@ -24,7 +25,7 @@ function AppContent() {
   const { showUpdateChecker, openUpdateChecker, handleUpdateCheckComplete, isSilentCheck } =
     useUpdateChecker()
   const { isLoggedIn, isLoading, handleLoginSuccess, logout } = useLoginStatus()
-  const [view, setView] = useState<"tasks" | "settings" | "minimal">("tasks")
+  const [view, setView] = useState<"tasks" | "settings" | "minimal" | "calendar">("tasks")
   const timeTracker = useTimeTracker()
   const { dialogOpen } = timeTracker
   useTheme()
@@ -74,6 +75,15 @@ function AppContent() {
       )
     }
 
+    if (isLoggedIn && view === "calendar") {
+      return (
+        <>
+          {updateChecker}
+          <WorklogCalendar onClose={() => setView("tasks")} />
+        </>
+      )
+    }
+
     return (
       <>
         <AppMenu onUpdateCheck={openUpdateChecker} />
@@ -82,6 +92,7 @@ function AppContent() {
           <TaskList
             onLogout={logout}
             onOpenSettings={() => setView("settings")}
+            onOpenCalendar={() => setView("calendar")}
             onEnterMiniMode={() => setMiniMode(true)}
             timeTracker={timeTracker}
           />
