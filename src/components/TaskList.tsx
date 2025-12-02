@@ -22,10 +22,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { ViewHeader } from "@/components/ViewHeader"
-import { WorklogCalendar } from "@/components/WorklogCalendar"
 import { WorklogDialog } from "@/components/WorklogDialog"
 import { WorklogHistory } from "@/components/WorklogHistory"
 import { formatDuration } from "@/lib/utils"
@@ -40,6 +38,7 @@ import type { JiraIssue, JiraSettings } from "@/types/bindings"
 interface TaskListProps {
   onLogout: () => void
   onOpenSettings: () => void
+  onOpenCalendar: () => void
   onEnterMiniMode: () => void
   timeTracker: ReturnType<typeof useTimeTracker>
 }
@@ -47,13 +46,13 @@ interface TaskListProps {
 export function TaskList({
   onLogout,
   onOpenSettings,
+  onOpenCalendar,
   onEnterMiniMode,
   timeTracker,
 }: TaskListProps) {
   const { t } = useTranslation()
   const [expandedIssue, setExpandedIssue] = useState<string | null>(null)
   const [customIssuesDialogOpen, setCustomIssuesDialogOpen] = useState(false)
-  const [calendarOpen, setCalendarOpen] = useState(false)
   const [manualWorklogIssue, setManualWorklogIssue] = useState<string | null>(null)
   const [filters, setFilters] = useState({ assigned: true, custom: false })
   const customIssuesChangedRef = useRef(false)
@@ -278,7 +277,7 @@ export function TaskList({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCalendarOpen(true)}
+                  onClick={onOpenCalendar}
                   aria-label={t("Worklog Calendar")}
                 >
                   <CalendarIcon className="h-4 w-4" />
@@ -512,11 +511,6 @@ export function TaskList({
         onOpenChange={handleCustomIssuesOpenChange}
         onIssuesChanged={handleIssuesChanged}
       />
-      <Dialog open={calendarOpen} onOpenChange={setCalendarOpen}>
-        <DialogContent className="max-w-4xl h-[80vh] overflow-y-auto">
-          <WorklogCalendar />
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

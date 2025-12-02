@@ -312,6 +312,27 @@ pub fn jira_get_user_worklogs_by_date_range(
 
     let client = reqwest::blocking::Client::new();
 
+    // Step 0: Fetch current user's accountId for reliable author matching
+    let myself_response = create_client_request(&client, reqwest::Method::GET, &config, "myself")
+        .send()
+        .map_err(|e| format!("Failed to fetch current user info: {}", e))?;
+
+    if !myself_response.status().is_success() {
+        let status = myself_response.status();
+        let error_text = myself_response.text().unwrap_or_else(|_| "Unknown error".to_string());
+        return Err(format!("Failed to get current user: {} - {}", status, error_text));
+    }
+
+    let myself: serde_json::Value = myself_response.json()
+        .map_err(|e| format!("Failed to parse current user response: {}", e))?;
+    
+    let current_account_id = myself["accountId"].as_str().unwrap_or_default().to_string();
+    let current_email = myself["emailAddress"].as_str().unwrap_or_default().to_string();
+    let current_name = myself["name"].as_str().unwrap_or_default().to_string();
+    
+    log::debug!(target: "jira", "Current user - accountId: '{}', email: '{}', name: '{}'", 
+        current_account_id, current_email, current_name);
+
     // Step 1: Find issues with worklogs in the date range using JQL
     let jql = format!(
         "worklogDate >= {} AND worklogDate <= {} AND worklogAuthor = currentUser()",
@@ -395,20 +416,30 @@ pub fn jira_get_user_worklogs_by_date_range(
         let worklogs = worklog_results["worklogs"].as_array()
             .unwrap_or(&empty_vec);
 
+        log::debug!(target: "jira", "Issue {} has {} worklogs to check", issue_key, worklogs.len());
+
         for w in worklogs {
-            // Check if worklog author matches
-            // API v3 uses emailAddress, API v2 uses name (username)
+            // Check if worklog author matches current user
+            // Try matching by accountId first (most reliable for JIRA Cloud),
+            // then fall back to email/name for JIRA Server/Data Center
+            let author_account_id = w["author"]["accountId"].as_str().unwrap_or_default();
             let author_email = w["author"]["emailAddress"].as_str().unwrap_or_default();
             let author_name = w["author"]["name"].as_str().unwrap_or_default();
-            let author_display_name = w["author"]["displayName"].as_str().unwrap_or_default();
             
-            let is_author = author_email.eq_ignore_ascii_case(config.username)
-                || author_name.eq_ignore_ascii_case(config.username)
-                || author_display_name.eq_ignore_ascii_case(config.username);
+            let is_author = 
+                // Match by accountId (JIRA Cloud)
+                (!current_account_id.is_empty() && !author_account_id.is_empty() && author_account_id == current_account_id)
+                // Match by email
+                || (!current_email.is_empty() && !author_email.is_empty() && author_email.eq_ignore_ascii_case(&current_email))
+                // Match by name/username (JIRA Server)
+                || (!current_name.is_empty() && !author_name.is_empty() && author_name.eq_ignore_ascii_case(&current_name))
+                // Fallback: match against config username
+                || author_email.eq_ignore_ascii_case(config.username)
+                || author_name.eq_ignore_ascii_case(config.username);
 
             if !is_author {
-                log::trace!(target: "jira", "Skipping worklog - author mismatch. Looking for '{}', found email='{}', name='{}', displayName='{}'", 
-                    config.username, author_email, author_name, author_display_name);
+                log::trace!(target: "jira", "Skipping worklog - author mismatch. Current user: accountId='{}', email='{}', name='{}'. Worklog author: accountId='{}', email='{}', name='{}'", 
+                    current_account_id, current_email, current_name, author_account_id, author_email, author_name);
                 continue;
             }
 
