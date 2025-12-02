@@ -8,6 +8,13 @@ pub fn jira_get_current_user(
     password: String,
 ) -> Result<JiraUserSession, String> {
     log::info!(target: "jira", "Getting current user info");
+    log::debug!(target: "jira", "Auth params - URL: {}, Username: {}, Password present: {}", 
+        url, username, !password.is_empty());
+
+    if password.is_empty() {
+        log::error!(target: "jira", "Password/API token is empty!");
+        return Err("API token is empty. Please enter your API token.".to_string());
+    }
 
     if username.contains('@') {
         log::warn!(target: "jira", "Username '{}' contains '@'. If this is JIRA Server/Data Center, you likely need to use your username (e.g. 'jdoe') instead of your email address.", username);

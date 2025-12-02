@@ -86,6 +86,11 @@ export function createJiraClient(config: JiraSettings) {
   const { username, apiToken: password, apiVersion, authType } = config
 
   debug(`[JIRA Client] Using URL: ${redactSensitive(normalizedUrl)}`)
+  debug(`[JIRA Client] Username: ${username}, API Token present: ${password.length > 0}`)
+
+  if (!password || password.length === 0) {
+    throw new Error("API token is empty. Please enter your API token.")
+  }
 
   return {
     /**
