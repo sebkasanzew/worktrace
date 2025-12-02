@@ -156,7 +156,7 @@ export function Login({ onLoginSuccess }: LoginProps) {
               )}
               {useApiToken && (
                 <p className="text-xs text-muted-foreground">
-                  Create an API token at:{" "}
+                  {t("Create an API token at:")}{" "}
                   <a
                     href="https://id.atlassian.com/manage-profile/security/api-tokens"
                     target="_blank"
@@ -169,8 +169,9 @@ export function Login({ onLoginSuccess }: LoginProps) {
               )}
               {!useApiToken && (
                 <p className="text-xs text-muted-foreground">
-                  Note: Password authentication may not work with JIRA Cloud. Use API token for
-                  better security.
+                  {t(
+                    "Note: Password authentication may not work with JIRA Cloud. Use API token for better security."
+                  )}
                 </p>
               )}
             </div>
