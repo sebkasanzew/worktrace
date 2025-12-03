@@ -72,7 +72,7 @@
     "@faker-js/faker": "10.1.0",
     "@playwright/test": "1.57.0",
     "@tailwindcss/vite": "4.1.17",
-    "@tauri-apps/api": "2.9.0",
+    "@tauri-apps/api": "2.9.1",
     "@tauri-apps/cli": "2.9.4",
     "@types/node": "24.10.1",
     "@types/react": "19.2.7",
