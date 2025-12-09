@@ -1,0 +1,7 @@
+{
+  "errorMessages": [
+    "Error in the JQL Query: 'invalid syntax' is not a valid JQL query."
+  ],
+  "errors": {},
+  "warningMessages": []
+}

@@ -1,6 +1,6 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod bindings;
-mod jira;
+pub mod jira;
 mod menu;
 mod updater;
 

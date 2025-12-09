@@ -1,0 +1,69 @@
+{
+  "startAt": 0,
+  "maxResults": 20,
+  "total": 2,
+  "worklogs": [
+    {
+      "self": "https://example.atlassian.net/rest/api/3/issue/10001/worklog/10100",
+      "id": "10100",
+      "author": {
+        "self": "https://example.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+        "accountId": "5b10ac8d82e05b22cc7d4ef5",
+        "displayName": "John Doe",
+        "emailAddress": "john.doe@example.com",
+        "avatarUrls": {
+          "48x48": "https://secure.gravatar.com/avatar/abc123",
+          "24x24": "https://secure.gravatar.com/avatar/abc123?s=24",
+          "16x16": "https://secure.gravatar.com/avatar/abc123?s=16",
+          "32x32": "https://secure.gravatar.com/avatar/abc123?s=32"
+        }
+      },
+      "updateAuthor": {
+        "self": "https://example.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+        "accountId": "5b10ac8d82e05b22cc7d4ef5",
+        "displayName": "John Doe"
+      },
+      "comment": {
+        "version": 1,
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Implemented login flow"
+              }
+            ]
+          }
+        ]
+      },
+      "created": "2024-01-15T14:30:00.000+0000",
+      "updated": "2024-01-15T14:30:00.000+0000",
+      "started": "2024-01-15T10:00:00.000+0000",
+      "timeSpent": "2h",
+      "timeSpentSeconds": 7200,
+      "issueId": "10001"
+    },
+    {
+      "self": "https://example.atlassian.net/rest/api/3/issue/10001/worklog/10101",
+      "id": "10101",
+      "author": {
+        "self": "https://example.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+        "accountId": "5b10ac8d82e05b22cc7d4ef5",
+        "displayName": "John Doe"
+      },
+      "updateAuthor": {
+        "self": "https://example.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+        "accountId": "5b10ac8d82e05b22cc7d4ef5",
+        "displayName": "John Doe"
+      },
+      "created": "2024-01-16T12:00:00.000+0000",
+      "updated": "2024-01-16T12:00:00.000+0000",
+      "started": "2024-01-16T09:00:00.000+0000",
+      "timeSpent": "30m",
+      "timeSpentSeconds": 1800,
+      "issueId": "10001"
+    }
+  ]
+}

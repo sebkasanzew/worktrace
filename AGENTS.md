@@ -321,11 +321,50 @@ e2e/
 
 ### Unit Tests (Rust)
 
-- Use `cargo test` in `src-tauri/`
-- Test Tauri commands and business logic
-- Tests in `#[cfg(test)]` modules
 - Run: `cd src-tauri && cargo test`
-- Currently tests: Command error handling for invalid inputs
+- Tests in `#[cfg(test)]` modules within each file
+- **Test categories:**
+  - **Parsing tests**: JSON → Rust struct deserialization
+  - **Type tests**: Serialization roundtrips, default values
+  - **Pure function tests**: Date parsing, comment extraction
+
+### Integration Tests (Rust + wiremock)
+
+- Location: `src-tauri/tests/jira_api.rs`
+- Uses `wiremock` to mock JIRA HTTP endpoints
+- Run: `cd src-tauri && cargo test --test jira_api`
+- Tests full request/response flows without hitting real JIRA
+
+### JSON Fixtures
+
+- Location: `src-tauri/src/jira/fixtures/`
+- Naming: `<endpoint>_<scenario>.json` (e.g., `myself_success_v3.json`, `search_jql_error.json`)
+- Used by integration tests with `include_str!()`
+- **Adding new fixtures:**
+  1. Capture real JIRA API response (sanitize sensitive data)
+  2. Save to `fixtures/` with descriptive name
+  3. Write test using `include_str!()` to load fixture
+  4. Parse and verify expected fields
+
+### Reproducing JIRA API Issues
+
+When encountering a JIRA API issue:
+
+1. **Capture the response**: Save the JSON body to `fixtures/<endpoint>_<issue>.json`
+2. **Write a failing test**: Create a test that loads the fixture and exposes the bug
+3. **Fix the parsing/handling code**
+4. **Verify the test passes**
+
+Example:
+```rust
+#[test]
+fn test_parse_worklog_missing_author() {
+    let fixture = include_str!("fixtures/worklog_missing_author.json");
+    let json: serde_json::Value = serde_json::from_str(fixture).unwrap();
+    let worklog = parse_worklog(&json);
+    assert!(worklog.author.is_none()); // Should not panic
+}
+```
 
 ## Best Practices
 

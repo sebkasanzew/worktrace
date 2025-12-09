@@ -7,7 +7,7 @@ use super::requests::{create_client_request, RequestConfig};
 
 #[tauri::command]
 #[specta::specta]
-pub fn jira_add_worklog(
+pub async fn jira_add_worklog(
     connection: JiraConnection,
     issue_key: String,
     payload: WorklogPayload,
@@ -63,21 +63,23 @@ pub fn jira_add_worklog(
         })
     };
 
-    let client = reqwest::blocking::Client::new();
+    let client = reqwest::Client::new();
     let path = format!("issue/{}/worklog", issue_key);
     
     let response = create_client_request(&client, reqwest::Method::POST, &config, &path)
         .json(&worklog_payload)
         .send()
+        .await
         .map_err(|e| format!("Failed to send request to JIRA: {}", e))?;
 
     if !response.status().is_success() {
         let status = response.status();
-        let error_text = response.text().unwrap_or_else(|_| "Unknown error".to_string());
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
         return Err(format!("JIRA API error {}: {}", status, error_text));
     }
 
     let created: serde_json::Value = response.json()
+        .await
         .map_err(|e| format!("Failed to parse JIRA response: {}", e))?;
     
     let worklog_id = created["id"].as_str()
@@ -89,7 +91,7 @@ pub fn jira_add_worklog(
 
 #[tauri::command]
 #[specta::specta]
-pub fn jira_update_worklog(
+pub async fn jira_update_worklog(
     connection: JiraConnection,
     issue_key: String,
     worklog_id: String,
@@ -146,17 +148,18 @@ pub fn jira_update_worklog(
         })
     };
 
-    let client = reqwest::blocking::Client::new();
+    let client = reqwest::Client::new();
     let path = format!("issue/{}/worklog/{}", issue_key, worklog_id);
 
     let response = create_client_request(&client, reqwest::Method::PUT, &config, &path)
         .json(&worklog_payload)
         .send()
+        .await
         .map_err(|e| format!("Failed to send request to JIRA: {}", e))?;
 
     if !response.status().is_success() {
         let status = response.status();
-        let error_text = response.text().unwrap_or_else(|_| "Unknown error".to_string());
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
         return Err(format!("JIRA API error {}: {}", status, error_text));
     }
 
@@ -165,7 +168,7 @@ pub fn jira_update_worklog(
 
 #[tauri::command]
 #[specta::specta]
-pub fn jira_delete_worklog(
+pub async fn jira_delete_worklog(
     connection: JiraConnection,
     issue_key: String,
     worklog_id: String,
@@ -174,16 +177,17 @@ pub fn jira_delete_worklog(
 
     let config = RequestConfig::from(&connection);
 
-    let client = reqwest::blocking::Client::new();
+    let client = reqwest::Client::new();
     let path = format!("issue/{}/worklog/{}", issue_key, worklog_id);
 
     let response = create_client_request(&client, reqwest::Method::DELETE, &config, &path)
         .send()
+        .await
         .map_err(|e| format!("Failed to send request to JIRA: {}", e))?;
 
     if !response.status().is_success() {
         let status = response.status();
-        let error_text = response.text().unwrap_or_else(|_| "Unknown error".to_string());
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
         return Err(format!("JIRA API error {}: {}", status, error_text));
     }
 
@@ -192,7 +196,7 @@ pub fn jira_delete_worklog(
 
 #[tauri::command]
 #[specta::specta]
-pub fn jira_get_worklogs(
+pub async fn jira_get_worklogs(
     connection: JiraConnection,
     issue_key: String,
 ) -> Result<JiraWorklogListResponse, String> {
@@ -200,20 +204,22 @@ pub fn jira_get_worklogs(
 
     let config = RequestConfig::from(&connection);
 
-    let client = reqwest::blocking::Client::new();
+    let client = reqwest::Client::new();
     let path = format!("issue/{}/worklog", issue_key);
 
     let response = create_client_request(&client, reqwest::Method::GET, &config, &path)
         .send()
+        .await
         .map_err(|e| format!("Failed to send request to JIRA: {}", e))?;
 
     if !response.status().is_success() {
         let status = response.status();
-        let error_text = response.text().unwrap_or_else(|_| "Unknown error".to_string());
+        let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
         return Err(format!("JIRA API error {}: {}", status, error_text));
     }
 
     let results: serde_json::Value = response.json()
+        .await
         .map_err(|e| format!("Failed to parse response: {}", e))?;
 
     let empty_vec = vec![];
@@ -238,7 +244,7 @@ fn get_str<'a>(obj: &'a serde_json::Map<String, serde_json::Value>, key: &str) -
 }
 
 /// Helper to parse author from JSON object
-fn parse_author(author_value: &serde_json::Value) -> Option<JiraWorklogAuthor> {
+pub fn parse_author(author_value: &serde_json::Value) -> Option<JiraWorklogAuthor> {
     let a = author_value.as_object()?;
     Some(JiraWorklogAuthor {
         display_name: get_str(a, "displayName").unwrap_or_default().to_string(),
@@ -251,26 +257,12 @@ fn parse_author(author_value: &serde_json::Value) -> Option<JiraWorklogAuthor> {
 }
 
 /// Parse worklog from JSON (shared helper)
-fn parse_worklog(w: &serde_json::Value) -> JiraWorklog {
+pub fn parse_worklog(w: &serde_json::Value) -> JiraWorklog {
     let author = w.get("author").and_then(parse_author);
     let update_author = w.get("updateAuthor").and_then(parse_author);
     
     // Handle comment which can be string (v2) or ADF (v3)
-    let comment_text = if let Some(comment_str) = w.get("comment").and_then(|c| c.as_str()) {
-        Some(comment_str.to_string())
-    } else if let Some(comment_obj) = w.get("comment").and_then(|c| c.as_object()) {
-        comment_obj.get("content")
-            .and_then(|c| c.as_array())
-            .and_then(|arr| arr.first())
-            .and_then(|p| p.get("content"))
-            .and_then(|c| c.as_array())
-            .and_then(|arr| arr.first())
-            .and_then(|t| t.get("text"))
-            .and_then(|t| t.as_str())
-            .map(|s| s.to_string())
-    } else {
-        None
-    };
+    let comment_text = parse_worklog_comment(w.get("comment"));
 
     JiraWorklog {
         id: w.get("id").and_then(|v| v.as_str()).unwrap_or_default().to_string(),
@@ -285,11 +277,32 @@ fn parse_worklog(w: &serde_json::Value) -> JiraWorklog {
     }
 }
 
+/// Parse worklog comment which can be string (v2) or ADF (v3)
+pub fn parse_worklog_comment(comment: Option<&serde_json::Value>) -> Option<String> {
+    comment.and_then(|c| {
+        if let Some(comment_str) = c.as_str() {
+            Some(comment_str.to_string())
+        } else if let Some(comment_obj) = c.as_object() {
+            comment_obj.get("content")
+                .and_then(|content| content.as_array())
+                .and_then(|arr| arr.first())
+                .and_then(|p| p.get("content"))
+                .and_then(|content| content.as_array())
+                .and_then(|arr| arr.first())
+                .and_then(|t| t.get("text"))
+                .and_then(|t| t.as_str())
+                .map(|s| s.to_string())
+        } else {
+            None
+        }
+    })
+}
+
 /// Get all worklogs for the current user within a date range
 /// Uses JQL to find issues with worklogs in the date range, then fetches and filters worklogs
 #[tauri::command]
 #[specta::specta]
-pub fn jira_get_user_worklogs_by_date_range(
+pub async fn jira_get_user_worklogs_by_date_range(
     connection: JiraConnection,
     start_date: String,
     end_date: String,
@@ -310,20 +323,22 @@ pub fn jira_get_user_worklogs_by_date_range(
         return Err("start_date must be before or equal to end_date".to_string());
     }
 
-    let client = reqwest::blocking::Client::new();
+    let client = reqwest::Client::new();
 
     // Step 0: Fetch current user's accountId for reliable author matching
     let myself_response = create_client_request(&client, reqwest::Method::GET, &config, "myself")
         .send()
+        .await
         .map_err(|e| format!("Failed to fetch current user info: {}", e))?;
 
     if !myself_response.status().is_success() {
         let status = myself_response.status();
-        let error_text = myself_response.text().unwrap_or_else(|_| "Unknown error".to_string());
+        let error_text = myself_response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
         return Err(format!("Failed to get current user: {} - {}", status, error_text));
     }
 
     let myself: serde_json::Value = myself_response.json()
+        .await
         .map_err(|e| format!("Failed to parse current user response: {}", e))?;
     
     let current_account_id = myself["accountId"].as_str().unwrap_or_default().to_string();
@@ -348,15 +363,17 @@ pub fn jira_get_user_worklogs_by_date_range(
             "maxResults": 100
         }))
         .send()
+        .await
         .map_err(|e| format!("Failed to search issues: {}", e))?;
 
     if !search_response.status().is_success() {
         let status = search_response.status();
-        let error_text = search_response.text().unwrap_or_else(|_| "Unknown error".to_string());
+        let error_text = search_response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
         return Err(format!("JIRA search error {}: {}", status, error_text));
     }
 
     let search_results: serde_json::Value = search_response.json()
+        .await
         .map_err(|e| format!("Failed to parse search response: {}", e))?;
 
     let issues = search_results["issues"].as_array()
@@ -389,7 +406,8 @@ pub fn jira_get_user_worklogs_by_date_range(
             &config, 
             &worklog_path
         )
-        .send();
+        .send()
+        .await;
 
         let worklog_response = match worklog_response {
             Ok(r) => r,
@@ -404,7 +422,7 @@ pub fn jira_get_user_worklogs_by_date_range(
             continue;
         }
 
-        let worklog_results: serde_json::Value = match worklog_response.json() {
+        let worklog_results: serde_json::Value = match worklog_response.json().await {
             Ok(r) => r,
             Err(e) => {
                 log::warn!(target: "jira", "Failed to parse worklogs for {}: {}", issue_key, e);
@@ -477,4 +495,132 @@ pub fn jira_get_user_worklogs_by_date_range(
         end_date,
         total_time_seconds,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_worklog_comment_string_v2() {
+        let comment = serde_json::json!("This is a plain text comment");
+        assert_eq!(
+            parse_worklog_comment(Some(&comment)),
+            Some("This is a plain text comment".to_string())
+        );
+    }
+
+    #[test]
+    fn test_parse_worklog_comment_adf_v3() {
+        let comment = serde_json::json!({
+            "version": 1,
+            "type": "doc",
+            "content": [
+                {
+                    "type": "paragraph",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "This is an ADF comment"
+                        }
+                    ]
+                }
+            ]
+        });
+        assert_eq!(
+            parse_worklog_comment(Some(&comment)),
+            Some("This is an ADF comment".to_string())
+        );
+    }
+
+    #[test]
+    fn test_parse_worklog_comment_none() {
+        assert_eq!(parse_worklog_comment(None), None);
+    }
+
+    #[test]
+    fn test_parse_worklog_comment_empty_adf() {
+        let comment = serde_json::json!({
+            "version": 1,
+            "type": "doc",
+            "content": []
+        });
+        assert_eq!(parse_worklog_comment(Some(&comment)), None);
+    }
+
+    #[test]
+    fn test_parse_author_full() {
+        let author = serde_json::json!({
+            "displayName": "John Doe",
+            "name": "jdoe",
+            "emailAddress": "john@example.com",
+            "avatarUrls": {
+                "48x48": "https://example.com/avatar.png"
+            }
+        });
+        let result = parse_author(&author).unwrap();
+        assert_eq!(result.display_name, "John Doe");
+        assert_eq!(result.name, Some("jdoe".to_string()));
+        assert_eq!(result.email_address, Some("john@example.com".to_string()));
+        assert!(result.avatar_urls.is_some());
+    }
+
+    #[test]
+    fn test_parse_author_minimal() {
+        let author = serde_json::json!({
+            "displayName": "Jane Doe"
+        });
+        let result = parse_author(&author).unwrap();
+        assert_eq!(result.display_name, "Jane Doe");
+        assert!(result.name.is_none());
+        assert!(result.email_address.is_none());
+    }
+
+    #[test]
+    fn test_parse_author_null() {
+        assert!(parse_author(&serde_json::Value::Null).is_none());
+    }
+
+    #[test]
+    fn test_parse_worklog_full() {
+        let worklog = serde_json::json!({
+            "id": "12345",
+            "author": {
+                "displayName": "John Doe",
+                "emailAddress": "john@example.com"
+            },
+            "updateAuthor": {
+                "displayName": "Jane Doe"
+            },
+            "comment": "Worked on feature",
+            "created": "2024-01-15T10:00:00.000Z",
+            "updated": "2024-01-15T10:00:00.000Z",
+            "started": "2024-01-15T09:00:00.000Z",
+            "timeSpent": "1h",
+            "timeSpentSeconds": 3600
+        });
+        
+        let result = parse_worklog(&worklog);
+        assert_eq!(result.id, "12345");
+        assert!(result.author.is_some());
+        assert_eq!(result.author.unwrap().display_name, "John Doe");
+        assert!(result.update_author.is_some());
+        assert_eq!(result.comment, Some("Worked on feature".to_string()));
+        assert_eq!(result.time_spent, "1h");
+        assert_eq!(result.time_spent_seconds, 3600);
+    }
+
+    #[test]
+    fn test_parse_worklog_minimal() {
+        let worklog = serde_json::json!({
+            "id": "67890",
+            "timeSpentSeconds": 1800
+        });
+        
+        let result = parse_worklog(&worklog);
+        assert_eq!(result.id, "67890");
+        assert!(result.author.is_none());
+        assert!(result.comment.is_none());
+        assert_eq!(result.time_spent_seconds, 1800);
+    }
 }

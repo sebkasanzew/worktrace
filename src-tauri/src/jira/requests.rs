@@ -1,4 +1,4 @@
-use reqwest::blocking::Client;
+use reqwest::Client;
 use reqwest::Method;
 
 use super::types::JiraConnection;
@@ -30,7 +30,7 @@ pub fn create_client_request(
     method: Method,
     config: &RequestConfig,
     path: &str,
-) -> reqwest::blocking::RequestBuilder {
+) -> reqwest::RequestBuilder {
     let endpoint = format!("{}/rest/api/{}/{}", config.url, config.api_version, path);
     let mut req = client.request(method, &endpoint)
         .header("Accept", "application/json")

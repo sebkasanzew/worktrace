@@ -226,3 +226,62 @@ pub struct UserWorklogsResponse {
     pub end_date: String,
     pub total_time_seconds: u64,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_jira_user_session_deserialize() {
+        let json = r#"{"name": "John Doe", "apiVersion": "3", "authType": "Basic"}"#;
+        let session: JiraUserSession = serde_json::from_str(json).unwrap();
+        assert_eq!(session.name, "John Doe");
+        assert_eq!(session.api_version, "3");
+        assert_eq!(session.auth_type, "Basic");
+    }
+
+    #[test]
+    fn test_jira_connection_default_values() {
+        let json = r#"{
+            "url": "https://example.atlassian.net",
+            "username": "test@example.com",
+            "password": "token"
+        }"#;
+        let conn: JiraConnection = serde_json::from_str(json).unwrap();
+        assert_eq!(conn.api_version, "3");
+        assert_eq!(conn.auth_type, "Basic");
+    }
+
+    #[test]
+    fn test_worklog_payload_serialize() {
+        let payload = WorklogPayload {
+            time_spent_seconds: 3600,
+            started: "2024-01-15T10:00:00.000+0000".to_string(),
+            comment: "Test comment".to_string(),
+        };
+        let json = serde_json::to_value(&payload).unwrap();
+        assert_eq!(json["timeSpentSeconds"], 3600);
+        assert_eq!(json["started"], "2024-01-15T10:00:00.000+0000");
+    }
+
+    #[test]
+    fn test_jira_worklog_author_optional_fields() {
+        let json = r#"{"displayName": "John Doe"}"#;
+        let author: JiraWorklogAuthor = serde_json::from_str(json).unwrap();
+        assert_eq!(author.display_name, "John Doe");
+        assert!(author.name.is_none());
+        assert!(author.email_address.is_none());
+    }
+
+    #[test]
+    fn test_jira_status_category_roundtrip() {
+        let category = JiraStatusCategory {
+            key: "done".to_string(),
+            name: "Done".to_string(),
+        };
+        let json = serde_json::to_string(&category).unwrap();
+        let parsed: JiraStatusCategory = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.key, "done");
+        assert_eq!(parsed.name, "Done");
+    }
+}

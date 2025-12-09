@@ -1,0 +1,16 @@
+{
+  "self": "https://jira.example.com/rest/api/2/user?username=jdoe",
+  "key": "jdoe",
+  "name": "jdoe",
+  "emailAddress": "john.doe@example.com",
+  "displayName": "John Doe",
+  "active": true,
+  "timeZone": "Europe/Berlin",
+  "locale": "en_US",
+  "avatarUrls": {
+    "48x48": "https://jira.example.com/secure/useravatar?ownerId=jdoe&avatarId=10500",
+    "24x24": "https://jira.example.com/secure/useravatar?size=small&ownerId=jdoe&avatarId=10500",
+    "16x16": "https://jira.example.com/secure/useravatar?size=xsmall&ownerId=jdoe&avatarId=10500",
+    "32x32": "https://jira.example.com/secure/useravatar?size=medium&ownerId=jdoe&avatarId=10500"
+  }
+}
