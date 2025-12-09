@@ -382,17 +382,40 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
 
               <section>
                 <h2 className="text-xl font-semibold mb-4">{t("Work Log Preferences")}</h2>
-                <div>
-                  <label htmlFor="defaultDesc" className="block text-sm font-medium mb-1">
-                    {t("Default Worklog Description")}
-                  </label>
-                  <Input
-                    id="defaultDesc"
-                    value={formData.general.defaultWorklogDescription}
-                    onChange={(e) =>
-                      updateGeneralField("defaultWorklogDescription", e.target.value)
-                    }
-                  />
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="defaultDesc" className="block text-sm font-medium mb-1">
+                      {t("Default Worklog Description")}
+                    </label>
+                    <Input
+                      id="defaultDesc"
+                      value={formData.general.defaultWorklogDescription}
+                      onChange={(e) =>
+                        updateGeneralField("defaultWorklogDescription", e.target.value)
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="roundingStep" className="block text-sm font-medium mb-1">
+                      {t("Rounding Step (minutes)")}
+                    </label>
+                    <Input
+                      id="roundingStep"
+                      type="number"
+                      min="0"
+                      max="60"
+                      value={formData.general.roundingStep}
+                      onChange={(e) => {
+                        const val = Number.parseInt(e.target.value, 10)
+                        if (!Number.isNaN(val) && val >= 0 && val <= 60) {
+                          updateGeneralField("roundingStep", val)
+                        }
+                      }}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t("0 to disable rounding. Example: 5 rounds up 2m to 5m.")}
+                    </p>
+                  </div>
                 </div>
               </section>
 

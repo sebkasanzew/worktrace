@@ -252,4 +252,10 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Fix for dark mode number input arrows */
+  .dark input[type="number"]::-webkit-inner-spin-button,
+  .dark input[type="number"]::-webkit-outer-spin-button {
+    filter: invert(1);
+  }
 }

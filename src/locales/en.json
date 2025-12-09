@@ -1,4 +1,5 @@
 {
+  "0 to disable rounding. Example: 5 rounds up 2m to 5m.": "0 to disable rounding. Example: 5 rounds up 2m to 5m.",
   "Add a comment (optional)": "Add a comment (optional)",
   "Add issues that are not assigned to you but you want to track.": "Add issues that are not assigned to you but you want to track.",
   "Add Type": "Add Type",
@@ -87,6 +88,7 @@
   "Please enter a valid time duration (e.g., 1h 30m)": "Please enter a valid time duration (e.g., 1h 30m)",
   "Refresh": "Refresh",
   "Refreshing...": "Refreshing...",
+  "Rounding Step (minutes)": "Rounding Step (minutes)",
   "Save": "Save",
   "Save Changes": "Save Changes",
   "Saving...": "Saving...",
