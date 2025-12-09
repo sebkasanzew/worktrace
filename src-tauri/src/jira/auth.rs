@@ -2,7 +2,7 @@ use super::types::*;
 
 #[tauri::command]
 #[specta::specta]
-pub fn jira_get_current_user(
+pub async fn jira_get_current_user(
     url: String,
     username: String,
     password: String,
@@ -20,7 +20,7 @@ pub fn jira_get_current_user(
         log::warn!(target: "jira", "Username '{}' contains '@'. If this is JIRA Server/Data Center, you likely need to use your username (e.g. 'jdoe') instead of your email address.", username);
     }
 
-    let client = reqwest::blocking::Client::builder()
+    let client = reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(10))
         .redirect(reqwest::redirect::Policy::none())
         .user_agent("Worktrace/1.0")
@@ -51,11 +51,11 @@ pub fn jira_get_current_user(
             req = req.bearer_auth(&password);
         }
 
-        match req.send() {
+        match req.send().await {
             Ok(response) => {
                 let status = response.status();
                 if status.is_success() {
-                    let text = response.text().unwrap_or_default();
+                    let text = response.text().await.unwrap_or_default();
                     match serde_json::from_str::<serde_json::Value>(&text) {
                         Ok(user_data) => {
                             let name = user_data["displayName"].as_str()
@@ -76,7 +76,7 @@ pub fn jira_get_current_user(
                         }
                     }
                 } else {
-                    let text = response.text().unwrap_or_default();
+                    let text = response.text().await.unwrap_or_default();
                     let error_preview = if text.len() > 200 { format!("{}...", &text[..200]) } else { text };
                     log::debug!(target: "jira", "v{} {} failed: {} - {}", version, auth_type, status, error_preview);
                     last_error = format!("HTTP {}: {}", status, error_preview);
@@ -97,13 +97,13 @@ pub fn jira_get_current_user(
 mod tests {
     use super::*;
 
-    #[test]
-    fn test_jira_get_current_user_invalid_credentials() {
+    #[tokio::test]
+    async fn test_jira_get_current_user_invalid_credentials() {
         let result = jira_get_current_user(
             "https://invalid.atlassian.net".to_string(),
             "invalid@example.com".to_string(),
             "invalid-token".to_string(),
-        );
+        ).await;
 
         assert!(result.is_err());
     }

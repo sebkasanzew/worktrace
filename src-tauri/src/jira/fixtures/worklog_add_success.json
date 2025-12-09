@@ -1,0 +1,33 @@
+{
+  "self": "https://example.atlassian.net/rest/api/3/issue/10001/worklog/10102",
+  "id": "10102",
+  "author": {
+    "accountId": "5b10ac8d82e05b22cc7d4ef5",
+    "displayName": "John Doe"
+  },
+  "updateAuthor": {
+    "accountId": "5b10ac8d82e05b22cc7d4ef5",
+    "displayName": "John Doe"
+  },
+  "comment": {
+    "version": 1,
+    "type": "doc",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "New worklog entry"
+          }
+        ]
+      }
+    ]
+  },
+  "created": "2024-01-17T10:00:00.000+0000",
+  "updated": "2024-01-17T10:00:00.000+0000",
+  "started": "2024-01-17T09:00:00.000+0000",
+  "timeSpent": "1h",
+  "timeSpentSeconds": 3600,
+  "issueId": "10001"
+}

@@ -1,0 +1,16 @@
+{
+  "self": "https://example.atlassian.net/rest/api/3/user?accountId=5b10ac8d82e05b22cc7d4ef5",
+  "accountId": "5b10ac8d82e05b22cc7d4ef5",
+  "accountType": "atlassian",
+  "emailAddress": "john.doe@example.com",
+  "displayName": "John Doe",
+  "active": true,
+  "timeZone": "Europe/Berlin",
+  "locale": "en_US",
+  "avatarUrls": {
+    "48x48": "https://secure.gravatar.com/avatar/abc123?d=https://avatar-management.jira.com/avatar/48",
+    "24x24": "https://secure.gravatar.com/avatar/abc123?d=https://avatar-management.jira.com/avatar/24",
+    "16x16": "https://secure.gravatar.com/avatar/abc123?d=https://avatar-management.jira.com/avatar/16",
+    "32x32": "https://secure.gravatar.com/avatar/abc123?d=https://avatar-management.jira.com/avatar/32"
+  }
+}
