@@ -11,6 +11,7 @@ const defaultGeneralSettings: GeneralSettings = {
   enableAutomaticUpdates: false,
   alwaysOnTop: false,
   customIssueKeys: [],
+  roundingStep: 0,
 }
 
 /**

@@ -218,6 +218,7 @@ export type GeneralSettings = {
   enableAutomaticUpdates: boolean
   alwaysOnTop: boolean
   customIssueKeys: string[]
+  roundingStep?: number
 }
 /**
  * JIRA issue assignee

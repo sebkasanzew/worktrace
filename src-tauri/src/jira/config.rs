@@ -308,6 +308,7 @@ pub async fn save_app_settings(app: tauri::AppHandle, settings: AppSettings) -> 
 fn default_general_settings() -> GeneralSettings {
     GeneralSettings {
         theme: "system".to_string(),
+        rounding_step: 0,
         worklog_types: vec![
             WorklogType {
                 name: "Development".to_string(),

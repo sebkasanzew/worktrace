@@ -48,15 +48,23 @@ export function WorklogDialog({
     onSubmit(payload)
   }
 
-  const initialValues: WorklogFormData = useMemo(
-    () => ({
-      timeSpent: initialSeconds > 0 ? formatDurationHuman(initialSeconds) : "",
+  const initialValues: WorklogFormData = useMemo(() => {
+    let seconds = initialSeconds
+    const roundingStep = settings?.general.roundingStep || 0
+
+    if (seconds > 0 && roundingStep > 0) {
+      const minutes = seconds / 60
+      const roundedMinutes = Math.ceil(minutes / roundingStep) * roundingStep
+      seconds = roundedMinutes * 60
+    }
+
+    return {
+      timeSpent: seconds > 0 ? formatDurationHuman(seconds) : "",
       comment: settings?.general.defaultWorklogDescription || "",
       workType: settings?.general.worklogTypes?.[0]?.name || "",
       started: new Date(),
-    }),
-    [initialSeconds, settings]
-  )
+    }
+  }, [initialSeconds, settings])
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>

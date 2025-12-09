@@ -123,6 +123,8 @@ pub struct GeneralSettings {
     pub enable_automatic_updates: bool,
     pub always_on_top: bool,
     pub custom_issue_keys: Vec<String>,
+    #[serde(default)]
+    pub rounding_step: u8,
 }
 
 /// Application settings
