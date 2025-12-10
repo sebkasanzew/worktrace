@@ -1,8 +1,14 @@
 import i18n from "i18next"
 import LanguageDetector from "i18next-browser-languagedetector"
 import { initReactI18next } from "react-i18next"
+import bg from "./locales/bg.json"
 import de from "./locales/de.json"
 import en from "./locales/en.json"
+import fr from "./locales/fr.json"
+import hi from "./locales/hi.json"
+import pl from "./locales/pl.json"
+import ru from "./locales/ru.json"
+import uk from "./locales/uk.json"
 
 i18n
   // detect user language
@@ -19,6 +25,24 @@ i18n
       },
       de: {
         translation: de,
+      },
+      hi: {
+        translation: hi,
+      },
+      ru: {
+        translation: ru,
+      },
+      uk: {
+        translation: uk,
+      },
+      fr: {
+        translation: fr,
+      },
+      bg: {
+        translation: bg,
+      },
+      pl: {
+        translation: pl,
       },
     },
     fallbackLng: "en",

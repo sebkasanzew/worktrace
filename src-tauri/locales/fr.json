@@ -1,0 +1,23 @@
+{
+  "About {{app_name}}": "À propos de %{app_name}",
+  "Services": "Services",
+  "Hide {{app_name}}": "Masquer %{app_name}",
+  "Hide Others": "Masquer les autres",
+  "Show All": "Tout afficher",
+  "Quit {{app_name}}": "Quitter %{app_name}",
+  "File": "Fichier",
+  "Close Window": "Fermer la fenêtre",
+  "Edit": "Édition",
+  "Undo": "Annuler",
+  "Redo": "Rétablir",
+  "Cut": "Couper",
+  "Copy": "Copier",
+  "Paste": "Coller",
+  "Select All": "Tout sélectionner",
+  "View": "Affichage",
+  "Enter Full Screen": "Passer en plein écran",
+  "Toggle Full Screen": "Basculer en plein écran",
+  "Window": "Fenêtre",
+  "Minimize": "Réduire",
+  "Zoom": "Zoom"
+}

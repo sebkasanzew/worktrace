@@ -7,6 +7,13 @@ import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { ViewHeader } from "@/components/ViewHeader"
 import { useAppSettings, useSaveAppSettings } from "@/services/settings.hooks"
 import type { AppSettings, GeneralSettings, JiraSettings, WorklogType } from "@/types/bindings"
@@ -25,12 +32,19 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
   const saveMutation = useSaveAppSettings()
 
   const [formData, setFormData] = useState<AppSettings | null>(null)
+  const [roundingStepInput, setRoundingStepInput] = useState<string | null>(null)
 
   useEffect(() => {
     if (settings) {
       setFormData(settings)
     }
   }, [settings])
+
+  useEffect(() => {
+    if (formData && roundingStepInput === null) {
+      setRoundingStepInput((formData.general.roundingStep ?? 0).toString())
+    }
+  }, [formData, roundingStepInput])
 
   if (isLoading) {
     return (
@@ -274,21 +288,25 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
 
               <section>
                 <h2 className="text-xl font-semibold mb-4">{t("Language")}</h2>
-                <div className="flex gap-4 mb-6">
-                  <Button
-                    variant={i18n.resolvedLanguage === "en" ? "default" : "outline"}
-                    onClick={() => i18n.changeLanguage("en")}
-                    size="sm"
+                <div className="mb-6">
+                  <Select
+                    value={i18n.resolvedLanguage}
+                    onValueChange={(value) => i18n.changeLanguage(value)}
                   >
-                    English
-                  </Button>
-                  <Button
-                    variant={i18n.resolvedLanguage === "de" ? "default" : "outline"}
-                    onClick={() => i18n.changeLanguage("de")}
-                    size="sm"
-                  >
-                    Deutsch
-                  </Button>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder={t("Language")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="en">English</SelectItem>
+                      <SelectItem value="de">Deutsch</SelectItem>
+                      <SelectItem value="hi">हिन्दी</SelectItem>
+                      <SelectItem value="ru">Русский</SelectItem>
+                      <SelectItem value="uk">Українська</SelectItem>
+                      <SelectItem value="fr">Français</SelectItem>
+                      <SelectItem value="bg">Български</SelectItem>
+                      <SelectItem value="pl">Polski</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <h2 className="text-xl font-semibold mb-4">{t("Theme")}</h2>
@@ -404,11 +422,24 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
                       type="number"
                       min="0"
                       max="60"
-                      value={formData.general.roundingStep}
+                      value={roundingStepInput ?? formData.general.roundingStep ?? 0}
                       onChange={(e) => {
-                        const val = Number.parseInt(e.target.value, 10)
+                        const valStr = e.target.value
+                        setRoundingStepInput(valStr)
+                        const val = Number.parseInt(valStr, 10)
                         if (!Number.isNaN(val) && val >= 0 && val <= 60) {
                           updateGeneralField("roundingStep", val)
+                        }
+                      }}
+                      onBlur={() => {
+                        if (
+                          roundingStepInput === "" ||
+                          Number.isNaN(Number.parseInt(roundingStepInput || "", 10))
+                        ) {
+                          setRoundingStepInput("0")
+                          updateGeneralField("roundingStep", 0)
+                        } else {
+                          setRoundingStepInput((formData.general.roundingStep ?? 0).toString())
                         }
                       }}
                     />

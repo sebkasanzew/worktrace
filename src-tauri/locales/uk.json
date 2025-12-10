@@ -1,0 +1,23 @@
+{
+  "About {{app_name}}": "Про програму %{app_name}",
+  "Services": "Служби",
+  "Hide {{app_name}}": "Приховати %{app_name}",
+  "Hide Others": "Приховати інші",
+  "Show All": "Показати всі",
+  "Quit {{app_name}}": "Завершить %{app_name}",
+  "File": "Файл",
+  "Close Window": "Закрити вікно",
+  "Edit": "Правка",
+  "Undo": "Скасувати",
+  "Redo": "Повторити",
+  "Cut": "Вирізати",
+  "Copy": "Копіювати",
+  "Paste": "Вставити",
+  "Select All": "Вибрати все",
+  "View": "Вигляд",
+  "Enter Full Screen": "Повноекранний режим",
+  "Toggle Full Screen": "Перемкнути повноекранний режим",
+  "Window": "Вікно",
+  "Minimize": "Згорнути",
+  "Zoom": "Масштаб"
+}
