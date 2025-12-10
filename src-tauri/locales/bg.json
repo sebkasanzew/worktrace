@@ -1,0 +1,23 @@
+{
+  "About {{app_name}}": "За %{app_name}",
+  "Services": "Услуги",
+  "Hide {{app_name}}": "Скрий %{app_name}",
+  "Hide Others": "Скрий другите",
+  "Show All": "Покажи всички",
+  "Quit {{app_name}}": "Изход от %{app_name}",
+  "File": "Файл",
+  "Close Window": "Затвори прозореца",
+  "Edit": "Редактиране",
+  "Undo": "Отмени",
+  "Redo": "Повтори",
+  "Cut": "Изрежи",
+  "Copy": "Копирай",
+  "Paste": "Постави",
+  "Select All": "Избери всички",
+  "View": "Изглед",
+  "Enter Full Screen": "Цял екран",
+  "Toggle Full Screen": "Превключи цял екран",
+  "Window": "Прозорец",
+  "Minimize": "Минимизирай",
+  "Zoom": "Увеличи"
+}
