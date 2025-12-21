@@ -12,6 +12,7 @@ const defaultGeneralSettings: GeneralSettings = {
   alwaysOnTop: false,
   customIssueKeys: [],
   roundingStep: 0,
+  language: null,
 }
 
 /**

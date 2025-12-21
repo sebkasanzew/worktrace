@@ -125,7 +125,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
               >
                 {checking ? (
                   <>
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    <RefreshCw className="me-2 h-4 w-4 animate-spin" />
                     {t("Checking...")}
                   </>
                 ) : (

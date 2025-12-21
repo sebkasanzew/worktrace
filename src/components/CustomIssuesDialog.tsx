@@ -137,12 +137,12 @@ export function CustomIssuesDialog({
 
         <div className="flex flex-col gap-4 flex-1">
           <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute start-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={t("Search by issue key or summary...")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8"
+              className="ps-8"
             />
           </div>
 

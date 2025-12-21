@@ -290,8 +290,11 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
                 <h2 className="text-xl font-semibold mb-4">{t("Language")}</h2>
                 <div className="mb-6">
                   <Select
-                    value={i18n.resolvedLanguage}
-                    onValueChange={(value) => i18n.changeLanguage(value)}
+                    value={formData.general.language || i18n.resolvedLanguage}
+                    onValueChange={(value) => {
+                      updateGeneralField("language", value)
+                      i18n.changeLanguage(value)
+                    }}
                   >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder={t("Language")} />
@@ -299,6 +302,19 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
                     <SelectContent>
                       <SelectItem value="en">English</SelectItem>
                       <SelectItem value="de">Deutsch</SelectItem>
+                      <SelectItem value="es">Español</SelectItem>
+                      <SelectItem value="zh-Hans">简体中文</SelectItem>
+                      <SelectItem value="pt-BR">Português (Brasil)</SelectItem>
+                      <SelectItem value="ar">العربية</SelectItem>
+                      <SelectItem value="ja">日本語</SelectItem>
+                      <SelectItem value="ko">한국어</SelectItem>
+                      <SelectItem value="tr">Türkçe</SelectItem>
+                      <SelectItem value="vi">Tiếng Việt</SelectItem>
+                      <SelectItem value="id">Bahasa Indonesia</SelectItem>
+                      <SelectItem value="bn">বাংলা</SelectItem>
+                      <SelectItem value="pt-PT">Português (Portugal)</SelectItem>
+                      <SelectItem value="hu">Magyar</SelectItem>
+                      <SelectItem value="it">Italiano</SelectItem>
                       <SelectItem value="hi">हिन्दी</SelectItem>
                       <SelectItem value="ru">Русский</SelectItem>
                       <SelectItem value="uk">Українська</SelectItem>
@@ -354,7 +370,7 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
                       onClick={onCheckForUpdates}
                       disabled={isChecking}
                     >
-                      {isChecking && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isChecking && <Loader2 className="me-2 h-4 w-4 animate-spin" />}
                       {t("Check for Updates")}
                     </Button>
                     {/* Show current running app version next to the update button */}
@@ -393,7 +409,7 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
                     </div>
                   ))}
                   <Button variant="outline" size="sm" onClick={addWorklogType} className="w-full">
-                    <Plus className="h-4 w-4 mr-2" /> {t("Add Type")}
+                    <Plus className="h-4 w-4 me-2" /> {t("Add Type")}
                   </Button>
                 </div>
               </section>
@@ -454,11 +470,11 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
                 <h2 className="text-xl font-semibold mb-4">{t("Configuration Backup")}</h2>
                 <div className="flex gap-4 flex-col">
                   <Button variant="outline" onClick={handleExportConfig} className="flex-1">
-                    <Download className="mr-2 h-4 w-4" />
+                    <Download className="me-2 h-4 w-4" />
                     {t("Export Settings")}
                   </Button>
                   <Button variant="outline" onClick={handleImportConfig} className="flex-1">
-                    <Upload className="mr-2 h-4 w-4" />
+                    <Upload className="me-2 h-4 w-4" />
                     {t("Import Settings")}
                   </Button>
                 </div>
@@ -470,7 +486,7 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
         <div className="flex justify-end mt-6">
           {saveMutation.isPending ? (
             <div className="flex items-center text-muted-foreground">
-              <Loader2 className="animate-spin mr-2 h-4 w-4" />
+              <Loader2 className="animate-spin me-2 h-4 w-4" />
               {t("Save")}...
             </div>
           ) : null}

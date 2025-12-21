@@ -21,12 +21,12 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }: C
         button_previous: cn(
           buttonVariants({ variant: "outline" }),
           "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-          "absolute left-3 top-3"
+          "absolute start-3 top-3"
         ),
         button_next: cn(
           buttonVariants({ variant: "outline" }),
           "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100",
-          "absolute right-3 top-3"
+          "absolute end-3 top-3"
         ),
         month_grid: "w-full border-collapse space-y-1",
         weekdays: "flex",
