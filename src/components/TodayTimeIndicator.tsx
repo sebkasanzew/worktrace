@@ -36,7 +36,7 @@ export function TodayTimeIndicator() {
       >
         <Clock className="h-4 w-4" />
         <span className="text-sm font-medium">{t("Today: {{time}}", { time: timeString })}</span>
-        <Badge variant="secondary" className="ml-1 text-xs">
+        <Badge variant="secondary" className="ms-1 text-xs">
           {data.entries.length}
         </Badge>
       </Button>

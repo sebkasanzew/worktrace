@@ -148,6 +148,7 @@ export function TaskList({
               size="sm"
               onClick={handleRefresh}
               disabled={isLoading || isFetching}
+              data-testid="refresh-button"
             >
               <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
               {isFetching ? t("Refreshing...") : t("Refresh")}
@@ -157,13 +158,20 @@ export function TaskList({
               size="sm"
               onClick={onEnterMiniMode}
               aria-label={t("Mini Mode")}
+              data-testid="mini-mode-button"
             >
               <Minimize2 className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={onOpenSettings} aria-label={t("Settings")}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onOpenSettings}
+              aria-label={t("Settings")}
+              data-testid="settings-button"
+            >
               <Settings className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={handleLogout}>
+            <Button variant="outline" size="sm" onClick={handleLogout} data-testid="logout-button">
               <LogOut className="h-4 w-4" />
               {t("Logout")}
             </Button>
@@ -316,7 +324,7 @@ export function TaskList({
                       <div onClick={(e) => e.stopPropagation()}>
                         {activeIssueKey === issue.key ? (
                           <div className="flex items-center gap-2">
-                            <div className="text-sm font-mono text-muted-foreground min-w-16 text-right">
+                            <div className="text-sm font-mono text-muted-foreground min-w-16 text-end">
                               {formatDuration(Math.floor(getElapsedFor(issue.key) / 1000))}
                             </div>
                             <Button
@@ -325,7 +333,7 @@ export function TaskList({
                               aria-label={`Stop timer for ${issue.key}`}
                               className="bg-destructive hover:bg-destructive/90 text-white"
                             >
-                              <Square className="h-4 w-4 mr-1" /> {t("Stop")}
+                              <Square className="h-4 w-4 me-1" /> {t("Stop")}
                             </Button>
                           </div>
                         ) : (
@@ -336,7 +344,7 @@ export function TaskList({
                               onClick={() => setManualWorklogIssue(issue.key)}
                               aria-label={`Log work for ${issue.key}`}
                             >
-                              <Plus className="h-4 w-4 mr-1" /> {t("Log Work")}
+                              <Plus className="h-4 w-4 me-1" /> {t("Log Work")}
                             </Button>
                             <Button
                               size="sm"
@@ -344,7 +352,7 @@ export function TaskList({
                               aria-label={`Start timer for ${issue.key}`}
                               className="bg-blue-600 hover:bg-blue-700 text-white"
                             >
-                              <Play className="h-4 w-4 mr-1" /> {t("Start")}
+                              <Play className="h-4 w-4 me-1" /> {t("Start")}
                             </Button>
                           </div>
                         )}

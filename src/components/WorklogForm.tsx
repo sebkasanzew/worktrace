@@ -99,11 +99,11 @@ export function WorklogForm({
                 <Button
                   variant={"outline"}
                   className={cn(
-                    "w-full justify-start text-left font-normal",
+                    "w-full justify-start text-start font-normal",
                     !startedDate && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="me-2 h-4 w-4" />
                   {startedDate ? format(startedDate, "PPP") : <span>{t("Pick a date")}</span>}
                 </Button>
               </PopoverTrigger>
@@ -212,7 +212,7 @@ export function WorklogForm({
               className="w-full h-auto whitespace-normal text-center"
               disabled={isDeleting}
             >
-              <Trash2 className="mr-2 h-4 w-4 shrink-0" />
+              <Trash2 className="me-2 h-4 w-4 shrink-0" />
               {isDeleting
                 ? t("Deleting...")
                 : showDeleteConfirm

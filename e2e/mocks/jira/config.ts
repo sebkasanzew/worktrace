@@ -49,6 +49,7 @@ const defaultAppSettings: AppSettings = {
     enableAutomaticUpdates: false,
     alwaysOnTop: false,
     customIssueKeys: [],
+    language: null,
   },
   jira: null,
 }

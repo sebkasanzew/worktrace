@@ -125,6 +125,7 @@ pub struct GeneralSettings {
     pub custom_issue_keys: Vec<String>,
     #[serde(default)]
     pub rounding_step: u8,
+    pub language: Option<String>,
 }
 
 /// Application settings

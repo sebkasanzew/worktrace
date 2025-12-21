@@ -247,10 +247,27 @@ pub async fn get_app_settings(app: tauri::AppHandle) -> Result<AppSettings, Stri
         }
     };
 
-    let general: GeneralSettings = store
+    let mut general: GeneralSettings = store
         .get("general")
         .and_then(|v| serde_json::from_value(v.clone()).ok())
         .unwrap_or_else(default_general_settings);
+
+    // If language is not set (e.g. old config), use OS locale
+    if general.language.is_none() {
+        general.language = sys_locale::get_locale()
+            .map(|l| {
+                if l.starts_with("zh-Hans") {
+                    "zh-Hans".to_string()
+                } else if l.starts_with("pt-BR") {
+                    "pt-BR".to_string()
+                } else if l.starts_with("pt-PT") {
+                    "pt-PT".to_string()
+                } else {
+                    l.split('-').next().unwrap_or("en").to_string()
+                }
+            })
+            .or(Some("en".to_string()));
+    }
 
     let jira = load_jira_settings(&store);
 
@@ -306,6 +323,21 @@ pub async fn save_app_settings(app: tauri::AppHandle, settings: AppSettings) -> 
 }
 
 fn default_general_settings() -> GeneralSettings {
+    let language = sys_locale::get_locale()
+        .map(|l| {
+            // Normalize locale (e.g., en-US -> en, zh-Hans-CN -> zh-Hans)
+            if l.starts_with("zh-Hans") {
+                "zh-Hans".to_string()
+            } else if l.starts_with("pt-BR") {
+                "pt-BR".to_string()
+            } else if l.starts_with("pt-PT") {
+                "pt-PT".to_string()
+            } else {
+                l.split('-').next().unwrap_or("en").to_string()
+            }
+        })
+        .or(Some("en".to_string()));
+
     GeneralSettings {
         theme: "system".to_string(),
         rounding_step: 0,
@@ -323,6 +355,7 @@ fn default_general_settings() -> GeneralSettings {
         enable_automatic_updates: true,
         always_on_top: false,
         custom_issue_keys: vec![],
+        language,
     }
 }
 

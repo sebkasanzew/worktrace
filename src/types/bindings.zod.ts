@@ -98,6 +98,7 @@ export const generalSettingsSchema = z.object({
   alwaysOnTop: z.boolean(),
   customIssueKeys: z.array(z.string()),
   roundingStep: z.number().optional(),
+  language: z.string().nullable(),
 })
 
 export const jiraSubtaskFieldsSchema = z.object({

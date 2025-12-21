@@ -92,7 +92,7 @@ export function MinimalView({ onMaximize, timeTracker }: MinimalViewProps) {
               onClick={stopAndOpenDialog}
               className="h-8 px-3"
             >
-              <Square className="h-3 w-3 mr-2 fill-current" />
+              <Square className="h-3 w-3 me-2 fill-current" />
               {t("Stop")}
             </Button>
           )}

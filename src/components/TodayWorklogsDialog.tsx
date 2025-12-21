@@ -59,7 +59,7 @@ export function TodayWorklogsDialog({ open, onOpenChange }: TodayWorklogsDialogP
               size="sm"
               onClick={handleRefresh}
               disabled={isFetching}
-              className="mr-6"
+              className="me-6"
             >
               <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
             </Button>
@@ -84,7 +84,7 @@ export function TodayWorklogsDialog({ open, onOpenChange }: TodayWorklogsDialogP
                   <TableHead>{t("Issue")}</TableHead>
                   <TableHead>{t("Summary")}</TableHead>
                   <TableHead>{t("Time")}</TableHead>
-                  <TableHead className="text-right">{t("Started")}</TableHead>
+                  <TableHead className="text-end">{t("Started")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -103,7 +103,7 @@ export function TodayWorklogsDialog({ open, onOpenChange }: TodayWorklogsDialogP
                           className="p-0 h-auto font-mono"
                           onClick={() => openIssue(entry.issueKey)}
                         >
-                          {entry.issueKey} <ExternalLink className="ml-1 h-3 w-3" />
+                          {entry.issueKey} <ExternalLink className="ms-1 h-3 w-3" />
                         </Button>
                       </TableCell>
                       <TableCell className="max-w-[250px] truncate" title={entry.issueSummary}>
@@ -112,7 +112,7 @@ export function TodayWorklogsDialog({ open, onOpenChange }: TodayWorklogsDialogP
                       <TableCell>
                         <Badge variant="outline">{entry.worklog.timeSpent}</Badge>
                       </TableCell>
-                      <TableCell className="text-right text-muted-foreground">
+                      <TableCell className="text-end text-muted-foreground">
                         {format(new Date(entry.worklog.started), "HH:mm")}
                       </TableCell>
                     </TableRow>

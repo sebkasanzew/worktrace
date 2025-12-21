@@ -15,13 +15,15 @@ import { WorklogCalendar } from "@/components/WorklogCalendar"
 import { useTheme } from "@/hooks/useTheme"
 import { safeStringify } from "@/lib/utils"
 import { useLoginStatus } from "@/services/auth.hooks"
+import { useAppSettings } from "@/services/settings.hooks"
 import { useTimeTracker } from "@/services/time-tracker.hooks"
 import { useUpdateChecker } from "@/services/updater.hooks"
 
 const queryClient = new QueryClient()
 
 function AppContent() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const { data: settings } = useAppSettings()
   const { showUpdateChecker, openUpdateChecker, handleUpdateCheckComplete, isSilentCheck } =
     useUpdateChecker()
   const { isLoggedIn, isLoading, handleLoginSuccess, logout } = useLoginStatus()
@@ -29,6 +31,18 @@ function AppContent() {
   const timeTracker = useTimeTracker()
   const { dialogOpen } = timeTracker
   useTheme()
+
+  useEffect(() => {
+    if (settings?.general.language && settings.general.language !== i18n.language) {
+      i18n.changeLanguage(settings.general.language)
+    }
+  }, [settings?.general.language, i18n])
+
+  useEffect(() => {
+    const dir = i18n.dir()
+    document.documentElement.dir = dir
+    document.documentElement.lang = i18n.language
+  }, [i18n.language, i18n.dir])
 
   const setMiniMode = useCallback(async (enable: boolean) => {
     try {
