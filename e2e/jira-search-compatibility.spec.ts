@@ -19,6 +19,7 @@ test.describe("JIRA Search JQL Compatibility", () => {
           enableAutomaticUpdates: false,
           alwaysOnTop: false,
           customIssueKeys: [],
+          language: "en",
         },
         jira: {
           instanceUrl: "https://jira.example.com",

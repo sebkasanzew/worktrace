@@ -47,6 +47,7 @@ test.describe("Worklog Rounding", () => {
           alwaysOnTop: false,
           customIssueKeys: [],
           roundingStep: 0,
+          language: "en",
         },
       },
     })
@@ -80,6 +81,7 @@ test.describe("Worklog Rounding", () => {
           alwaysOnTop: false,
           customIssueKeys: [],
           roundingStep: 5,
+          language: "en",
         },
       },
     })
@@ -113,6 +115,7 @@ test.describe("Worklog Rounding", () => {
           alwaysOnTop: false,
           customIssueKeys: [],
           roundingStep: 60,
+          language: "en",
         },
       },
     })

@@ -17,6 +17,7 @@ test.describe("Custom Issues", () => {
           enableAutomaticUpdates: false,
           alwaysOnTop: false,
           customIssueKeys: [],
+          language: "en",
         },
         jira: {
           instanceUrl: "https://test.atlassian.net",

@@ -91,6 +91,7 @@ test.describe("Demo Video", () => {
         enableAutomaticUpdates: false,
         alwaysOnTop: false,
         customIssueKeys: [],
+        language: "en",
       },
       jira: null,
     }
