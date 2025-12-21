@@ -102,6 +102,7 @@ test.describe("Settings Page", () => {
           enableAutomaticUpdates: true,
           alwaysOnTop: false,
           customIssueKeys: [],
+          language: "en",
         },
         jira: {
           instanceUrl: "https://existing.atlassian.net",
