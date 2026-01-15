@@ -21,6 +21,18 @@
   ],
   "packageRules": [
     {
+      "matchPackageNames": [
+        "tauri"
+      ],
+      "matchPackagePatterns": [
+        "^@tauri-apps/",
+        "^tauri-plugin-",
+        "^tauri-specta",
+        "^tauri-build"
+      ],
+      "groupName": "tauri dependencies"
+    },
+    {
       "matchUpdateTypes": [
         "major"
       ],
