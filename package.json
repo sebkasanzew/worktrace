@@ -44,7 +44,7 @@
     "@radix-ui/react-scroll-area": "1.2.10",
     "@radix-ui/react-select": "2.2.6",
     "@tanstack/react-query": "5.90.16",
-    "@tauri-apps/plugin-dialog": "2.5.0",
+    "@tauri-apps/plugin-dialog": "2.6.0",
     "@tauri-apps/plugin-fs": "2.4.5",
     "@tauri-apps/plugin-log": "2.8.0",
     "@tauri-apps/plugin-opener": "2.5.3",
