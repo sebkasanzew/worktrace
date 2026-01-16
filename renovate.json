@@ -30,6 +30,10 @@
         "^tauri-specta",
         "^tauri-build"
       ],
+      "matchManagers": [
+        "cargo",
+        "npm"
+      ],
       "groupName": "tauri dependencies"
     },
     {
