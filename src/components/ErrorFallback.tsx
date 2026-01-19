@@ -19,14 +19,15 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
   const [installing, setInstalling] = useState(false)
   const [installProgress, setInstallProgress] = useState(0)
   const [updateError, setUpdateError] = useState<string | null>(null)
+  const errorMessage = error instanceof Error ? error.message : String(error)
 
   // Log error on mount
   useEffect(() => {
-    logError(`App crashed: ${error?.message || String(error)}`)
-    if (error?.stack) {
+    logError(`App crashed: ${errorMessage}`)
+    if (error instanceof Error && error.stack) {
       logError(`Stack trace: ${error.stack}`)
     }
-  }, [error])
+  }, [error, errorMessage])
 
   const checkForUpdates = async () => {
     setChecking(true)
@@ -73,7 +74,7 @@ export function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
         <CardContent className="space-y-4">
           {/* Error details */}
           <div className="rounded-md bg-muted p-3 text-sm">
-            <p className="font-medium text-destructive">{error?.message || String(error)}</p>
+            <p className="font-medium text-destructive">{errorMessage}</p>
           </div>
 
           {/* Version info */}
