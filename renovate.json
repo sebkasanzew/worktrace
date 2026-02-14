@@ -22,29 +22,30 @@
   "packageRules": [
     {
       "matchPackageNames": [
-        "tauri"
-      ],
-      "matchPackagePatterns": [
-        "^@tauri-apps/",
-        "^tauri-plugin-",
-        "^tauri-specta",
-        "^tauri-build"
+        "@tauri-apps/**",
+        "tauri",
+        "tauri-build",
+        "tauri-plugin-*",
+        "tauri-specta"
       ],
       "matchManagers": [
         "cargo",
         "npm"
       ],
-      "groupName": "tauri dependencies"
-    },
-    {
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "dependencyDashboardApproval": true
+      "groupName": "tauri dependencies",
+      "separateMajorMinor": false,
+      "minimumReleaseAge": "3 days"
     },
     {
       "matchManagers": [
         "cargo"
+      ],
+      "excludePackageNames": [
+        "@tauri-apps/**",
+        "tauri",
+        "tauri-build",
+        "tauri-plugin-*",
+        "tauri-specta"
       ],
       "groupName": "rust dependencies",
       "minimumReleaseAge": "3 days"
@@ -52,6 +53,13 @@
     {
       "matchDatasources": [
         "npm"
+      ],
+      "excludePackageNames": [
+        "@tauri-apps/**",
+        "tauri",
+        "tauri-build",
+        "tauri-plugin-*",
+        "tauri-specta"
       ],
       "groupName": "pnpm dependencies",
       "minimumReleaseAge": "3 days"
