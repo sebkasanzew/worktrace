@@ -17,6 +17,18 @@
       "depNameTemplate": "rust",
       "datasourceTemplate": "rust",
       "versioningTemplate": "semver"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/(^|/)biome\\.json$/"
+      ],
+      "matchStrings": [
+        "\\\"\\$schema\\\"\\s*:\\s*\\\"https://biomejs.dev/schemas/(?<currentValue>\\d+\\.\\d+\\.\\d+)/schema\\.json\\\""
+      ],
+      "depNameTemplate": "@biomejs/biome",
+      "datasourceTemplate": "npm",
+      "versioningTemplate": "npm"
     }
   ],
   "packageRules": [
