@@ -54,17 +54,13 @@ export function Login({ onLoginSuccess }: LoginProps) {
 
   useEffect(() => {
     const loadConfig = async () => {
-      try {
-        const config = await configService.get()
-        if (config) {
-          setValue("url", config.instanceUrl)
-          setValue("username", config.username)
-          if (config.username && !config.username.includes("@")) {
-            setUseApiToken(false)
-          }
+      const config = await configService.get().catch(() => undefined)
+      if (config) {
+        setValue("url", config.instanceUrl)
+        setValue("username", config.username)
+        if (config.username && !config.username.includes("@")) {
+          setUseApiToken(false)
         }
-      } catch (_e) {
-        // ignore
       }
     }
     loadConfig()
