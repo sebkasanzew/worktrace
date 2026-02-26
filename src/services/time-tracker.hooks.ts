@@ -80,7 +80,6 @@ export function useTimeTracker() {
     return () => {
       if (tickRef.current) window.clearInterval(tickRef.current)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const activeIssueKey = active?.issueKey ?? null

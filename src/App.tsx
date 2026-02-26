@@ -45,9 +45,10 @@ function AppContent() {
   }, [i18n.language, i18n.dir])
 
   const setMiniMode = useCallback(async (enable: boolean) => {
+    const nextView = enable ? "minimal" : "tasks"
     try {
       await invoke("set_mini_mode", { enable })
-      setView(enable ? "minimal" : "tasks")
+      setView(nextView)
     } catch (error) {
       logError(`Failed to toggle mini mode: ${safeStringify(error)}`)
     }

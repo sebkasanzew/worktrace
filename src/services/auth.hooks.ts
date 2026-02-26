@@ -7,25 +7,32 @@ export function useLoginStatus() {
   const [isLoading, setIsLoading] = useState(true)
 
   const refreshLoginStatus = useCallback(async () => {
-    try {
-      const config = await configService.get()
-      if (config?.instanceUrl && config?.username && config?.apiToken) {
-        try {
-          await jiraApi.getCurrentUser(config)
-          setIsLoggedIn(true)
-        } catch (error) {
-          logError(`Credentials verification failed: ${error}`)
-          setIsLoggedIn(false)
-        }
-      } else {
+    const config = await configService.get().catch((error: unknown) => {
+      logError(`Failed to check login status: ${error}`)
+      return undefined
+    })
+
+    if (!config) {
+      setIsLoggedIn(false)
+      setIsLoading(false)
+      return
+    }
+
+    const hasCredentials = config.instanceUrl && config.username && config.apiToken
+
+    if (hasCredentials) {
+      try {
+        await jiraApi.getCurrentUser(config)
+        setIsLoggedIn(true)
+      } catch (error) {
+        logError(`Credentials verification failed: ${error}`)
         setIsLoggedIn(false)
       }
-    } catch (error) {
-      logError(`Failed to check login status: ${error}`)
+    } else {
       setIsLoggedIn(false)
-    } finally {
-      setIsLoading(false)
     }
+
+    setIsLoading(false)
   }, [])
 
   useEffect(() => {

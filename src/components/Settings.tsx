@@ -177,42 +177,44 @@ export function Settings({ onClose, onCheckForUpdates, isChecking = false }: Set
   }
 
   const handleImportConfig = async () => {
-    try {
-      const filePath = await open({
-        filters: [
-          {
-            name: "JSON",
-            extensions: ["json"],
-          },
-        ],
-        multiple: false,
+    const filePath = await open({
+      filters: [
+        {
+          name: "JSON",
+          extensions: ["json"],
+        },
+      ],
+      multiple: false,
+    }).catch((error: unknown) => {
+      logError(`Failed to import config: ${error}`)
+      return null
+    })
+
+    if (!filePath || typeof filePath !== "string") return
+
+    const importedConfig = await readTextFile(filePath)
+      .then((content) => JSON.parse(content))
+      .catch((error: unknown) => {
+        logError(`Failed to import config: ${error}`)
+        return null
       })
 
-      if (filePath && typeof filePath === "string") {
-        const content = await readTextFile(filePath)
-        const importedConfig = JSON.parse(content)
+    if (!importedConfig || !Array.isArray(importedConfig.worklogTypes)) return
 
-        if (importedConfig && Array.isArray(importedConfig.worklogTypes)) {
-          setFormData((prev) => {
-            if (!prev) return null
-            const newState = {
-              ...prev,
-              general: {
-                ...prev.general,
-                worklogTypes: importedConfig.worklogTypes,
-                defaultWorklogDescription:
-                  importedConfig.defaultWorklogDescription ??
-                  prev.general.defaultWorklogDescription,
-              },
-            }
-            saveMutation.mutate(newState)
-            return newState
-          })
-        }
+    setFormData((prev) => {
+      if (!prev) return null
+      const newState = {
+        ...prev,
+        general: {
+          ...prev.general,
+          worklogTypes: importedConfig.worklogTypes,
+          defaultWorklogDescription:
+            importedConfig.defaultWorklogDescription ?? prev.general.defaultWorklogDescription,
+        },
       }
-    } catch (error) {
-      logError(`Failed to import config: ${error}`)
-    }
+      saveMutation.mutate(newState)
+      return newState
+    })
   }
 
   const getAuthLabels = () => {
