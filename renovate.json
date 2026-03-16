@@ -51,6 +51,7 @@
       ],
       "groupName": "tauri dependencies",
       "separateMajorMinor": false,
+      "automerge": true,
       "minimumReleaseAge": "3 days"
     },
     {
@@ -65,6 +66,7 @@
         "tauri-specta"
       ],
       "groupName": "rust dependencies",
+      "automerge": true,
       "minimumReleaseAge": "3 days"
     },
     {
@@ -79,6 +81,7 @@
         "tauri-specta"
       ],
       "groupName": "pnpm dependencies",
+      "automerge": true,
       "minimumReleaseAge": "3 days"
     }
   ]
