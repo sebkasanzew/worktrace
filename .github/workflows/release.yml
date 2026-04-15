@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
@@ -144,7 +144,7 @@ jobs:
         shell: bash
 
       - name: Upload release assets
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             ${{ matrix.artifact_patterns }}
@@ -179,7 +179,7 @@ jobs:
         shell: bash
 
       - name: Upload merged latest.json
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: latest.json
           fail_on_unmatched_files: true
