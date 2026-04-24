@@ -23,13 +23,14 @@ if (args.length === 0) {
 }
 
 const command = args[0];
-// Expand comma-separated bundle values so tauri receives each as a separate argument.
-// e.g. --bundles nsis,msi → --bundles nsis --bundles msi
+// Expand comma- or space-separated bundle values so tauri receives each as a separate argument.
+// e.g. "--bundles" "nsis,msi" or "--bundles" "nsis msi" → --bundles nsis --bundles msi
+// PowerShell treats "nsis,msi" as an array and joins elements with a space before passing to Node.
 const rawArgs = args.slice(1);
 const commandArgs: string[] = [];
 for (let i = 0; i < rawArgs.length; i++) {
-  if (rawArgs[i] === '--bundles' && rawArgs[i + 1]?.includes(',')) {
-    for (const bundle of rawArgs[i + 1].split(',')) {
+  if (rawArgs[i] === '--bundles' && rawArgs[i + 1] && /[,\s]/.test(rawArgs[i + 1])) {
+    for (const bundle of rawArgs[i + 1].split(/[,\s]+/).filter(Boolean)) {
       commandArgs.push('--bundles', bundle);
     }
     i++;
