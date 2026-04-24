@@ -23,7 +23,20 @@ if (args.length === 0) {
 }
 
 const command = args[0];
-const commandArgs = args.slice(1);
+// Expand comma-separated bundle values so tauri receives each as a separate argument.
+// e.g. --bundles nsis,msi → --bundles nsis --bundles msi
+const rawArgs = args.slice(1);
+const commandArgs: string[] = [];
+for (let i = 0; i < rawArgs.length; i++) {
+  if (rawArgs[i] === '--bundles' && rawArgs[i + 1]?.includes(',')) {
+    for (const bundle of rawArgs[i + 1].split(',')) {
+      commandArgs.push('--bundles', bundle);
+    }
+    i++;
+  } else {
+    commandArgs.push(rawArgs[i]);
+  }
+};
 
 const isWindows = process.platform === 'win32';
 
