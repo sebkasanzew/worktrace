@@ -263,3 +263,4 @@ The app stores your JIRA configuration securely using Tauri's store plugin. The 
 ## Support
 
 For issues and questions, please create an issue on GitHub.
+
