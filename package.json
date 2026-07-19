@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.4.5",
   "type": "module",
-  "packageManager": "pnpm@10.34.4",
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
     "dev": "tauri dev",
     "dev:vite": "vite --host",
@@ -63,15 +63,15 @@
     "react-dom": "19.2.7",
     "react-error-boundary": "6.1.2",
     "react-hook-form": "7.81.0",
-    "react-i18next": "17.0.9",
+    "react-i18next": "17.0.10",
     "tailwind-merge": "3.6.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.3",
+    "@biomejs/biome": "2.5.4",
     "@faker-js/faker": "10.5.0",
     "@playwright/test": "1.61.1",
-    "@tailwindcss/vite": "4.3.2",
+    "@tailwindcss/vite": "4.3.3",
     "@tauri-apps/api": "2.10.1",
     "@tauri-apps/cli": "2.10.1",
     "@types/node": "24.13.3",
@@ -81,10 +81,10 @@
     "@vitejs/plugin-react": "6.0.3",
     "i18next-parser": "9.4.0",
     "merge-partially": "2.0.2",
-    "tailwindcss": "4.3.2",
+    "tailwindcss": "4.3.3",
     "ts-to-zod": "5.1.0",
     "tw-animate-css": "1.4.0",
     "typescript": "6.0.3",
-    "vite": "8.1.4"
+    "vite": "8.1.5"
   }
 }
