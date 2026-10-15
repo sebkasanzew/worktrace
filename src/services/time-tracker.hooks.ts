@@ -122,7 +122,7 @@ export function useTimeTracker() {
 
   const resume = useCallback(() => {
     const a = activeRef.current
-    if (!a || !a.pausedAt) {
+    if (!a?.pausedAt) {
       setDialogOpen(false)
       return
     }
