@@ -121,7 +121,6 @@ export function WorklogForm({
                       setIsCalendarOpen(false)
                     }
                   }}
-                  initialFocus
                 />
               </PopoverContent>
             </Popover>
