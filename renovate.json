@@ -13,18 +13,6 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/(^|/)rust-toolchain\\.toml$/"
-      ],
-      "matchStrings": [
-        "channel\\s*=\\s*\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
-      ],
-      "depNameTemplate": "rust",
-      "datasourceTemplate": "rust",
-      "versioningTemplate": "semver"
-    },
-    {
-      "customType": "regex",
-      "managerFilePatterns": [
         "/(^|/)biome\\.json$/"
       ],
       "matchStrings": [
@@ -41,14 +29,14 @@
         "@tauri-apps/**",
         "tauri",
         "tauri-build",
-        "tauri-plugin-*",
-        "tauri-specta"
+        "tauri-plugin-*"
       ],
       "matchManagers": [
         "cargo",
         "npm"
       ],
       "groupName": "tauri dependencies",
+      "rangeStrategy": "replace",
       "separateMajorMinor": false,
       "automerge": true,
       "minimumReleaseAge": "3 days"
@@ -57,27 +45,26 @@
       "matchManagers": [
         "cargo"
       ],
-      "excludePackageNames": [
-        "@tauri-apps/**",
-        "tauri",
-        "tauri-build",
-        "tauri-plugin-*",
-        "tauri-specta"
+      "matchPackageNames": [
+        "!@tauri-apps/**",
+        "!tauri",
+        "!tauri-build",
+        "!tauri-plugin-*"
       ],
       "groupName": "rust dependencies",
+      "rangeStrategy": "replace",
       "automerge": true,
       "minimumReleaseAge": "3 days"
     },
     {
-      "matchDatasources": [
+      "matchManagers": [
         "npm"
       ],
-      "excludePackageNames": [
-        "@tauri-apps/**",
-        "tauri",
-        "tauri-build",
-        "tauri-plugin-*",
-        "tauri-specta"
+      "matchPackageNames": [
+        "!@tauri-apps/**",
+        "!tauri",
+        "!tauri-build",
+        "!tauri-plugin-*"
       ],
       "groupName": "pnpm dependencies",
       "automerge": true,

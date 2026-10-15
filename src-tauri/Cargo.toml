@@ -15,7 +15,7 @@ name = "worktrace_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.5.1", features = [] }
+tauri-build = { version = "=2.7.3", features = [] }
 
 [dependencies]
 base64 = "0.22.1"
