@@ -3,6 +3,11 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
+	"hostRequirements": {
+		"cpus": 4,
+		"memory": "8gb",
+		"storage": "32gb"
+	},
 	"features": {
 		"ghcr.io/devcontainers/features/node:2": {
 			"version": "24"
@@ -24,5 +29,9 @@
 	"forwardPorts": [
 		1420
 	],
-	"postCreateCommand": "export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 && corepack enable && pnpm install && pnpm exec playwright install chromium --with-deps && cd src-tauri && cargo fetch"
+	"postCreateCommand": "export COREPACK_ENABLE_DOWNLOAD_PROMPT=0 && corepack enable && pnpm install && pnpm exec playwright install chromium --with-deps && cd src-tauri && cargo fetch",
+	"containerEnv": {
+		"DISPLAY": ":99"
+	},
+	"postStartCommand": "sh -c 'pgrep Xvfb >/dev/null || nohup /usr/bin/Xvfb :99 -screen 0 1024x768x16 -nolisten tcp >/tmp/xvfb.log 2>&1 &'"
 }
