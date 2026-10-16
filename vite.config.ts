@@ -11,8 +11,12 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
+  },
+
+  optimizeDeps: {
+    entries: ["index.html"],
   },
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
