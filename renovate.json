@@ -25,6 +25,12 @@
   ],
   "packageRules": [
     {
+      "matchManagers": [
+        "cargo"
+      ],
+      "rangeStrategy": "pin"
+    },
+    {
       "matchPackageNames": [
         "@tauri-apps/**",
         "tauri",
@@ -36,7 +42,7 @@
         "npm"
       ],
       "groupName": "tauri dependencies",
-      "rangeStrategy": "replace",
+      "rangeStrategy": "pin",
       "separateMajorMinor": false,
       "automerge": true,
       "minimumReleaseAge": "3 days"
@@ -52,7 +58,7 @@
         "!tauri-plugin-*"
       ],
       "groupName": "rust dependencies",
-      "rangeStrategy": "replace",
+      "rangeStrategy": "pin",
       "automerge": true,
       "minimumReleaseAge": "3 days"
     },
