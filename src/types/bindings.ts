@@ -17,23 +17,19 @@ export const commands = {
     apiVersion: string | null,
     authType: string | null
   ) =>
-    typedError<JiraSearchResponse_Serialize, string>(
+    typedError<JiraSearchResponse, string>(
       __TAURI_INVOKE("jira_api_request", { url, username, password, jql, apiVersion, authType })
     ),
   jiraGetCurrentUser: (url: string, username: string, password: string) =>
     typedError<JiraUserSession, string>(
       __TAURI_INVOKE("jira_get_current_user", { url, username, password })
     ),
-  jiraAddWorklog: (
-    connection: JiraConnection_Deserialize,
-    issueKey: string,
-    payload: WorklogPayload
-  ) =>
+  jiraAddWorklog: (connection: JiraConnection, issueKey: string, payload: WorklogPayload) =>
     typedError<WorklogResponse, string>(
       __TAURI_INVOKE("jira_add_worklog", { connection, issueKey, payload })
     ),
   jiraUpdateWorklog: (
-    connection: JiraConnection_Deserialize,
+    connection: JiraConnection,
     issueKey: string,
     worklogId: string,
     payload: WorklogPayload
@@ -41,16 +37,12 @@ export const commands = {
     typedError<WorklogResponse, string>(
       __TAURI_INVOKE("jira_update_worklog", { connection, issueKey, worklogId, payload })
     ),
-  jiraDeleteWorklog: (
-    connection: JiraConnection_Deserialize,
-    issueKey: string,
-    worklogId: string
-  ) =>
+  jiraDeleteWorklog: (connection: JiraConnection, issueKey: string, worklogId: string) =>
     typedError<null, string>(
       __TAURI_INVOKE("jira_delete_worklog", { connection, issueKey, worklogId })
     ),
-  jiraGetWorklogs: (connection: JiraConnection_Deserialize, issueKey: string) =>
-    typedError<JiraWorklogListResponse_Serialize, string>(
+  jiraGetWorklogs: (connection: JiraConnection, issueKey: string) =>
+    typedError<JiraWorklogListResponse, string>(
       __TAURI_INVOKE("jira_get_worklogs", { connection, issueKey })
     ),
   /**
@@ -58,21 +50,19 @@ export const commands = {
    *  Uses JQL to find issues with worklogs in the date range, then fetches and filters worklogs
    */
   jiraGetUserWorklogsByDateRange: (
-    connection: JiraConnection_Deserialize,
+    connection: JiraConnection,
     startDate: string,
     endDate: string
   ) =>
-    typedError<UserWorklogsResponse_Serialize, string>(
+    typedError<UserWorklogsResponse, string>(
       __TAURI_INVOKE("jira_get_user_worklogs_by_date_range", { connection, startDate, endDate })
     ),
-  saveJiraConfig: (settings: JiraSettings_Deserialize) =>
+  saveJiraConfig: (settings: JiraSettings) =>
     typedError<null, string>(__TAURI_INVOKE("save_jira_config", { settings })),
-  getJiraConfig: () =>
-    typedError<JiraSettings_Serialize | null, string>(__TAURI_INVOKE("get_jira_config")),
+  getJiraConfig: () => typedError<JiraSettings | null, string>(__TAURI_INVOKE("get_jira_config")),
   clearJiraConfig: () => typedError<null, string>(__TAURI_INVOKE("clear_jira_config")),
-  getAppSettings: () =>
-    typedError<AppSettings_Serialize, string>(__TAURI_INVOKE("get_app_settings")),
-  saveAppSettings: (settings: AppSettings_Deserialize) =>
+  getAppSettings: () => typedError<AppSettings, string>(__TAURI_INVOKE("get_app_settings")),
+  saveAppSettings: (settings: AppSettings) =>
     typedError<null, string>(__TAURI_INVOKE("save_app_settings", { settings })),
   /**
    *  Reset all app configuration to defaults
@@ -85,25 +75,13 @@ export const commands = {
 
 /* Types */
 /**  Application settings */
-export type AppSettings = AppSettings_Serialize | AppSettings_Deserialize
-
-/**  Application settings */
-export type AppSettings_Deserialize = {
-  general: GeneralSettings_Deserialize
-  jira?: JiraSettings_Deserialize | null
-}
-
-/**  Application settings */
-export type AppSettings_Serialize = {
-  general: GeneralSettings_Serialize
-  jira: JiraSettings_Serialize | null
+export type AppSettings = {
+  general: GeneralSettings
+  jira: JiraSettings | null
 }
 
 /**  General application settings */
-export type GeneralSettings = GeneralSettings_Serialize | GeneralSettings_Deserialize
-
-/**  General application settings */
-export type GeneralSettings_Deserialize = {
+export type GeneralSettings = {
   theme: string
   worklogTypes: WorklogType[]
   defaultWorklogDescription: string
@@ -111,18 +89,6 @@ export type GeneralSettings_Deserialize = {
   alwaysOnTop: boolean
   customIssueKeys: string[]
   roundingStep?: number
-  language?: string | null
-}
-
-/**  General application settings */
-export type GeneralSettings_Serialize = {
-  theme: string
-  worklogTypes: WorklogType[]
-  defaultWorklogDescription: string
-  enableAutomaticUpdates: boolean
-  alwaysOnTop: boolean
-  customIssueKeys: string[]
-  roundingStep: number
   language: string | null
 }
 
@@ -133,10 +99,7 @@ export type JiraAssignee = {
 }
 
 /**  JIRA connection parameters for API calls */
-export type JiraConnection = JiraConnection_Serialize | JiraConnection_Deserialize
-
-/**  JIRA connection parameters for API calls */
-export type JiraConnection_Deserialize = {
+export type JiraConnection = {
   url: string
   username: string
   password: string
@@ -144,46 +107,25 @@ export type JiraConnection_Deserialize = {
   authType?: string
 }
 
-/**  JIRA connection parameters for API calls */
-export type JiraConnection_Serialize = {
-  url: string
-  username: string
-  password: string
-  apiVersion: string
-  authType: string
-}
-
 /**  JIRA issue fields */
-export type JiraFields = JiraFields_Serialize | JiraFields_Deserialize
-
-/**  JIRA issue fields */
-export type JiraFields_Deserialize = {
+export type JiraFields = {
   summary: string
-  status: JiraStatus_Deserialize
-  issuetype: JiraIssueType
-  assignee?: JiraAssignee | null
-  /**  Unix timestamp in milliseconds (for JavaScript Date compatibility) */
-  created: number
-  /**  Unix timestamp in milliseconds (for JavaScript Date compatibility) */
-  updated: number
-  subtasks: JiraSubtask_Deserialize[]
-}
-
-/**  JIRA issue fields */
-export type JiraFields_Serialize = {
-  summary: string
-  status: JiraStatus_Serialize
+  status: JiraStatus
   issuetype: JiraIssueType
   assignee: JiraAssignee | null
   /**  Unix timestamp in milliseconds (for JavaScript Date compatibility) */
   created: number
   /**  Unix timestamp in milliseconds (for JavaScript Date compatibility) */
   updated: number
-  subtasks: JiraSubtask_Serialize[]
+  subtasks: JiraSubtask[]
 }
 
 /**  JIRA issue */
-export type JiraIssue = JiraIssue_Serialize | JiraIssue_Deserialize
+export type JiraIssue = {
+  id: string
+  key: string
+  fields: JiraFields
+}
 
 /**  JIRA issue type */
 export type JiraIssueType = {
@@ -191,42 +133,15 @@ export type JiraIssueType = {
   subtask: boolean
 }
 
-/**  JIRA issue */
-export type JiraIssue_Deserialize = {
-  id: string
-  key: string
-  fields: JiraFields_Deserialize
-}
-
-/**  JIRA issue */
-export type JiraIssue_Serialize = {
-  id: string
-  key: string
-  fields: JiraFields_Serialize
-}
-
 /**  JIRA search API response */
-export type JiraSearchResponse = JiraSearchResponse_Serialize | JiraSearchResponse_Deserialize
-
-/**  JIRA search API response */
-export type JiraSearchResponse_Deserialize = {
-  issues: JiraIssue_Deserialize[]
-  total: number
-  isLast: boolean
-}
-
-/**  JIRA search API response */
-export type JiraSearchResponse_Serialize = {
-  issues: JiraIssue_Serialize[]
+export type JiraSearchResponse = {
+  issues: JiraIssue[]
   total: number
   isLast: boolean
 }
 
 /**  JIRA configuration stored in app settings */
-export type JiraSettings = JiraSettings_Serialize | JiraSettings_Deserialize
-
-/**  JIRA configuration stored in app settings */
-export type JiraSettings_Deserialize = {
+export type JiraSettings = {
   instanceUrl: string
   username: string
   apiToken: string
@@ -234,17 +149,11 @@ export type JiraSettings_Deserialize = {
   authType?: string
 }
 
-/**  JIRA configuration stored in app settings */
-export type JiraSettings_Serialize = {
-  instanceUrl: string
-  username: string
-  apiToken: string
-  apiVersion: string
-  authType: string
-}
-
 /**  JIRA issue status */
-export type JiraStatus = JiraStatus_Serialize | JiraStatus_Deserialize
+export type JiraStatus = {
+  name: string
+  statusCategory: JiraStatusCategory | null
+}
 
 /**  JIRA status category */
 export type JiraStatusCategory = {
@@ -252,48 +161,17 @@ export type JiraStatusCategory = {
   name: string
 }
 
-/**  JIRA issue status */
-export type JiraStatus_Deserialize = {
-  name: string
-  statusCategory?: JiraStatusCategory | null
-}
-
-/**  JIRA issue status */
-export type JiraStatus_Serialize = {
-  name: string
-  statusCategory: JiraStatusCategory | null
-}
-
 /**  JIRA subtask */
-export type JiraSubtask = JiraSubtask_Serialize | JiraSubtask_Deserialize
-
-/**  JIRA subtask fields */
-export type JiraSubtaskFields = JiraSubtaskFields_Serialize | JiraSubtaskFields_Deserialize
-
-/**  JIRA subtask fields */
-export type JiraSubtaskFields_Deserialize = {
-  summary: string
-  status: JiraStatus_Deserialize
-}
-
-/**  JIRA subtask fields */
-export type JiraSubtaskFields_Serialize = {
-  summary: string
-  status: JiraStatus_Serialize
-}
-
-/**  JIRA subtask */
-export type JiraSubtask_Deserialize = {
+export type JiraSubtask = {
   id: string
   key: string
-  fields: JiraSubtaskFields_Deserialize
+  fields: JiraSubtaskFields
 }
 
-/**  JIRA subtask */
-export type JiraSubtask_Serialize = {
-  id: string
-  key: string
-  fields: JiraSubtaskFields_Serialize
+/**  JIRA subtask fields */
+export type JiraSubtaskFields = {
+  summary: string
+  status: JiraStatus
 }
 
 /**  JIRA current user session info */
@@ -304,23 +182,20 @@ export type JiraUserSession = {
 }
 
 /**  JIRA worklog */
-export type JiraWorklog = JiraWorklog_Serialize | JiraWorklog_Deserialize
-
-/**  JIRA worklog author */
-export type JiraWorklogAuthor = JiraWorklogAuthor_Serialize | JiraWorklogAuthor_Deserialize
-
-/**  JIRA worklog author */
-export type JiraWorklogAuthor_Deserialize = {
-  displayName: string
-  /**  Username (used in API v2, e.g., "jdoe") */
-  name?: string | null
-  /**  Email address (used in API v3) */
-  emailAddress?: string | null
-  avatarUrls?: [string, string][] | null
+export type JiraWorklog = {
+  id: string
+  author: JiraWorklogAuthor | null
+  updateAuthor: JiraWorklogAuthor | null
+  comment: string | null
+  created: string
+  updated: string
+  started: string
+  timeSpent: string
+  timeSpentSeconds: number
 }
 
 /**  JIRA worklog author */
-export type JiraWorklogAuthor_Serialize = {
+export type JiraWorklogAuthor = {
   displayName: string
   /**  Username (used in API v2, e.g., "jdoe") */
   name: string | null
@@ -330,83 +205,23 @@ export type JiraWorklogAuthor_Serialize = {
 }
 
 /**  JIRA worklog list response */
-export type JiraWorklogListResponse =
-  | JiraWorklogListResponse_Serialize
-  | JiraWorklogListResponse_Deserialize
-
-/**  JIRA worklog list response */
-export type JiraWorklogListResponse_Deserialize = {
-  worklogs: JiraWorklog_Deserialize[]
+export type JiraWorklogListResponse = {
+  worklogs: JiraWorklog[]
   total: number
   maxResults: number
   startAt: number
 }
 
-/**  JIRA worklog list response */
-export type JiraWorklogListResponse_Serialize = {
-  worklogs: JiraWorklog_Serialize[]
-  total: number
-  maxResults: number
-  startAt: number
-}
-
-/**  JIRA worklog */
-export type JiraWorklog_Deserialize = {
-  id: string
-  author?: JiraWorklogAuthor_Deserialize | null
-  updateAuthor?: JiraWorklogAuthor_Deserialize | null
-  comment?: string | null
-  created: string
-  updated: string
-  started: string
-  timeSpent: string
-  timeSpentSeconds: number
-}
-
-/**  JIRA worklog */
-export type JiraWorklog_Serialize = {
-  id: string
-  author: JiraWorklogAuthor_Serialize | null
-  updateAuthor: JiraWorklogAuthor_Serialize | null
-  comment: string | null
-  created: string
-  updated: string
-  started: string
-  timeSpent: string
-  timeSpentSeconds: number
-}
-
 /**  User worklog entry with issue context */
-export type UserWorklogEntry = UserWorklogEntry_Serialize | UserWorklogEntry_Deserialize
-
-/**  User worklog entry with issue context */
-export type UserWorklogEntry_Deserialize = {
+export type UserWorklogEntry = {
   issueKey: string
   issueSummary: string
-  worklog: JiraWorklog_Deserialize
-}
-
-/**  User worklog entry with issue context */
-export type UserWorklogEntry_Serialize = {
-  issueKey: string
-  issueSummary: string
-  worklog: JiraWorklog_Serialize
+  worklog: JiraWorklog
 }
 
 /**  Response for user worklogs by date range */
-export type UserWorklogsResponse = UserWorklogsResponse_Serialize | UserWorklogsResponse_Deserialize
-
-/**  Response for user worklogs by date range */
-export type UserWorklogsResponse_Deserialize = {
-  entries: UserWorklogEntry_Deserialize[]
-  startDate: string
-  endDate: string
-  totalTimeSeconds: number
-}
-
-/**  Response for user worklogs by date range */
-export type UserWorklogsResponse_Serialize = {
-  entries: UserWorklogEntry_Serialize[]
+export type UserWorklogsResponse = {
+  entries: UserWorklogEntry[]
   startDate: string
   endDate: string
   totalTimeSeconds: number

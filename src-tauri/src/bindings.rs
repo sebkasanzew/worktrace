@@ -4,6 +4,7 @@ pub fn export_bindings() {
     use tauri_specta::{Builder, collect_commands};
 
     let builder = Builder::<tauri::Wry>::new()
+        .disable_serde_phases()
         .dangerously_cast_bigints_to_number()
         .commands(collect_commands![
             crate::jira::issues::jira_api_request,
