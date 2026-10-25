@@ -64,7 +64,8 @@
     },
     {
       "matchManagers": [
-        "npm"
+        "npm",
+        "custom.regex"
       ],
       "matchPackageNames": [
         "!@tauri-apps/**",
