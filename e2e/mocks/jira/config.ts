@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker"
 import type { Page } from "@playwright/test"
-import { mergePartially } from "merge-partially"
-import type { AppSettings, JiraSettings } from "@/types/bindings"
+import { mergePartially, type NestedPartial } from "merge-partially"
+import type { AppSettings_Serialize, JiraSettings, JiraSettings_Serialize } from "@/types/bindings"
 import { injectCommandMock } from "../../utils/tauri"
 
 interface ConfigMockOptions {
@@ -12,11 +12,11 @@ interface ConfigMockOptions {
   /**
    * Partial config to override default values
    */
-  override?: Partial<JiraSettings>
+  override?: NestedPartial<JiraSettings_Serialize>
   /**
    * Partial app settings to override default values
    */
-  appSettings?: Partial<AppSettings>
+  appSettings?: NestedPartial<AppSettings_Serialize>
 }
 
 interface EmptyConfigMockOptions {
@@ -31,17 +31,21 @@ interface EmptyConfigMockOptions {
  * @param options.override - Partial config to override default values
  * @returns JiraSettings object
  */
-function generateJiraConfig(options: { override?: Partial<JiraSettings> } = {}): JiraSettings {
-  const response: JiraSettings = {
+function generateJiraConfig(
+  options: { override?: NestedPartial<JiraSettings_Serialize> } = {}
+): JiraSettings_Serialize {
+  const response: JiraSettings_Serialize = {
     instanceUrl: faker.internet.url({ appendSlash: false, protocol: "https" }),
     username: faker.internet.email(),
     apiToken: faker.string.alphanumeric({ length: 24 }),
+    apiVersion: "3",
+    authType: "basic",
   }
 
   return options.override ? mergePartially.deep(response, options.override) : response
 }
 
-const defaultAppSettings: AppSettings = {
+const defaultAppSettings: AppSettings_Serialize = {
   general: {
     theme: "system",
     worklogTypes: [],
@@ -49,6 +53,7 @@ const defaultAppSettings: AppSettings = {
     enableAutomaticUpdates: false,
     alwaysOnTop: false,
     customIssueKeys: [],
+    roundingStep: 0,
     language: null,
   },
   jira: null,
