@@ -30,13 +30,13 @@ specta = "=2.0.0-rc.26"
 specta-typescript = "=0.0.13"
 sys-locale = "=0.3.2"
 tauri = { version = "=2.12.5", features = [] }
-tauri-plugin-dialog = "=2.8.3"
+tauri-plugin-dialog = "=2.8.4"
 tauri-plugin-fs = "=2.7.1"
 tauri-plugin-log = "=2.10.1"
 tauri-plugin-opener = "=2.7.2"
 tauri-plugin-process = "=2.4.0"
 tauri-plugin-store = "=2.5.0"
-tauri-plugin-updater = "=2.14.0"
+tauri-plugin-updater = "=2.14.1"
 tauri-specta = { version = "=2.0.0-rc.26", features = ["derive", "typescript"] }
 time = { version = "=0.3.55", features = ["parsing", "formatting"] }
 url = "=2.5.8"
