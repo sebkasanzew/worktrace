@@ -26,6 +26,13 @@
   "packageRules": [
     {
       "matchManagers": [
+        "rust-toolchain"
+      ],
+      "automerge": true,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "matchManagers": [
         "cargo"
       ],
       "rangeStrategy": "pin"
@@ -52,10 +59,28 @@
         "cargo"
       ],
       "matchPackageNames": [
+        "specta",
+        "specta-*",
+        "tauri-specta"
+      ],
+      "groupName": "specta dependencies",
+      "rangeStrategy": "pin",
+      "separateMajorMinor": false,
+      "automerge": true,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "matchManagers": [
+        "cargo"
+      ],
+      "matchPackageNames": [
         "!@tauri-apps/**",
         "!tauri",
         "!tauri-build",
-        "!tauri-plugin-*"
+        "!tauri-plugin-*",
+        "!specta",
+        "!specta-*",
+        "!tauri-specta"
       ],
       "groupName": "rust dependencies",
       "rangeStrategy": "pin",
