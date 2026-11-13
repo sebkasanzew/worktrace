@@ -21,7 +21,7 @@ tauri-build = { version = "=2.7.4", features = [] }
 base64 = "=0.23.1"
 gouqi = "=0.20.0"
 keyring = "=4.2.0"
-log = "=0.4.34"
+log = "=0.4.35"
 reqwest = { version = "=0.13.5", features = ["json"] }
 rust-i18n = "=4.2.4"
 serde = { version = "=1.0.229", features = ["derive"] }
