@@ -39,7 +39,7 @@ tauri-plugin-store = "=2.5.0"
 tauri-plugin-updater = "=2.14.1"
 tauri-specta = { version = "=2.0.0-rc.26", features = ["derive", "typescript"] }
 time = { version = "=0.3.55", features = ["parsing", "formatting"] }
-url = "=2.5.8"
+url = "=2.5.9"
 
 [dev-dependencies]
 tokio = { version = "=1.54.1", features = ["rt-multi-thread", "macros"] }
